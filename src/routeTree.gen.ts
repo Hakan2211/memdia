@@ -16,9 +16,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
+import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
+import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppMemoriesTodayRouteImport } from './routes/_app/memories.today'
+import { Route as AppMemoriesDateRouteImport } from './routes/_app/memories.$date'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -53,6 +57,16 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOnboardingRoute = AppOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMemoriesRoute = AppMemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -68,15 +82,29 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppMemoriesTodayRoute = AppMemoriesTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AppMemoriesRoute,
+} as any)
+const AppMemoriesDateRoute = AppMemoriesDateRouteImport.update({
+  id: '/$date',
+  path: '/$date',
+  getParentRoute: () => AppMemoriesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
   '/admin': typeof AppAdminRoute
   '/dashboard': typeof AppDashboardRoute
+  '/memories': typeof AppMemoriesRouteWithChildren
+  '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/memories/$date': typeof AppMemoriesDateRoute
+  '/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -84,9 +112,13 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/admin': typeof AppAdminRoute
   '/dashboard': typeof AppDashboardRoute
+  '/memories': typeof AppMemoriesRouteWithChildren
+  '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/memories/$date': typeof AppMemoriesDateRoute
+  '/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -97,9 +129,13 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/memories': typeof AppMemoriesRouteWithChildren
+  '/_app/onboarding': typeof AppOnboardingRoute
   '/_app/profile': typeof AppProfileRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
+  '/_app/memories/$date': typeof AppMemoriesDateRoute
+  '/_app/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -109,9 +145,13 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/admin'
     | '/dashboard'
+    | '/memories'
+    | '/onboarding'
     | '/profile'
     | '/login'
     | '/signup'
+    | '/memories/$date'
+    | '/memories/today'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -119,9 +159,13 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/admin'
     | '/dashboard'
+    | '/memories'
+    | '/onboarding'
     | '/profile'
     | '/login'
     | '/signup'
+    | '/memories/$date'
+    | '/memories/today'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -131,9 +175,13 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/_app/admin'
     | '/_app/dashboard'
+    | '/_app/memories'
+    | '/_app/onboarding'
     | '/_app/profile'
     | '/_auth/login'
     | '/_auth/signup'
+    | '/_app/memories/$date'
+    | '/_app/memories/today'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -196,6 +244,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/onboarding': {
+      id: '/_app/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AppOnboardingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/memories': {
+      id: '/_app/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof AppMemoriesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -217,18 +279,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/memories/today': {
+      id: '/_app/memories/today'
+      path: '/today'
+      fullPath: '/memories/today'
+      preLoaderRoute: typeof AppMemoriesTodayRouteImport
+      parentRoute: typeof AppMemoriesRoute
+    }
+    '/_app/memories/$date': {
+      id: '/_app/memories/$date'
+      path: '/$date'
+      fullPath: '/memories/$date'
+      preLoaderRoute: typeof AppMemoriesDateRouteImport
+      parentRoute: typeof AppMemoriesRoute
+    }
   }
 }
+
+interface AppMemoriesRouteChildren {
+  AppMemoriesDateRoute: typeof AppMemoriesDateRoute
+  AppMemoriesTodayRoute: typeof AppMemoriesTodayRoute
+}
+
+const AppMemoriesRouteChildren: AppMemoriesRouteChildren = {
+  AppMemoriesDateRoute: AppMemoriesDateRoute,
+  AppMemoriesTodayRoute: AppMemoriesTodayRoute,
+}
+
+const AppMemoriesRouteWithChildren = AppMemoriesRoute._addFileChildren(
+  AppMemoriesRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppMemoriesRoute: typeof AppMemoriesRouteWithChildren
+  AppOnboardingRoute: typeof AppOnboardingRoute
   AppProfileRoute: typeof AppProfileRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppMemoriesRoute: AppMemoriesRouteWithChildren,
+  AppOnboardingRoute: AppOnboardingRoute,
   AppProfileRoute: AppProfileRoute,
 }
 

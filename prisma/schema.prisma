@@ -25,7 +25,17 @@ model User {
 
   // Billing
   stripeCustomerId   String?
-  subscriptionStatus String? // "active", "canceled", "past_due"
+  subscriptionStatus String? // "active", "canceled", "past_due", "trialing"
+
+  // Trial
+  trialEndsAt DateTime? // 7 days from signup
+
+  // Onboarding
+  onboardingComplete Boolean @default(false)
+
+  // Voice Sessions
+  voiceSessions VoiceSession[]
+  preferences   UserPreferences?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -79,4 +89,82 @@ model Verification {
   updatedAt  DateTime @updatedAt
 
   @@map("verification")
+}
+
+// ==========================================
+// Voice AI Daily Companion Models
+// ==========================================
+
+model VoiceSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session date (user's timezone, stored as start of day)
+  date DateTime
+
+  // Status: active | paused | processing | completed
+  status String @default("active")
+
+  // Time tracking (in seconds)
+  totalUserSpeakingTime Int @default(0)
+  maxDuration           Int @default(180) // 180 = 3 minutes
+
+  // Post-processing results
+  summaryText String?
+  imageUrl    String?
+  imageStyle  String  @default("dreamlike") // dreamlike | watercolor | geometric | sketch
+
+  // Timestamps
+  pausedAt    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Transcript turns
+  turns TranscriptTurn[]
+
+  // Ensure one session per user per day
+  @@unique([userId, date])
+  @@map("voice_session")
+}
+
+model TranscriptTurn {
+  id        String       @id @default(cuid())
+  sessionId String
+  session   VoiceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Speaker: "user" | "ai"
+  speaker String
+
+  // Content
+  text     String
+  audioUrl String? // bunny.net URL
+
+  // Timing (in seconds from session start)
+  startTime Float
+  duration  Float
+  order     Int // sequence number
+
+  createdAt DateTime @default(now())
+
+  @@map("transcript_turn")
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Timezone (IANA format, e.g., "America/New_York")
+  timezone String @default("UTC")
+
+  // AI preferences
+  imageStyle    String @default("dreamlike") // dreamlike | watercolor | geometric | sketch
+  aiPersonality String @default("empathetic") // empathetic | curious
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_preferences")
 }

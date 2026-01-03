@@ -31,6 +31,9 @@ const config = defineConfig({
       'better-sqlite3',
     ],
   },
+  optimizeDeps: {
+    exclude: ['@tanstack/start-server-core', '@tanstack/react-start'],
+  },
 })
 
 export default config

@@ -8,6 +8,11 @@ import {
 import { getSessionFn } from '../server/auth.fn'
 import { signOut, useSession } from '../lib/auth-client'
 import { Button } from '../components/ui/button'
+import {
+  TrialBanner,
+  TrialExpiredBanner,
+} from '../components/common/TrialBanner'
+import { getOnboardingStatusFn } from '../server/session.fn'
 
 // Type for the user from Better-Auth session
 interface AppUser {
@@ -17,19 +22,30 @@ interface AppUser {
   image?: string | null
   emailVerified: boolean
   role?: string
+  onboardingComplete?: boolean
 }
 
 /**
  * Protected App Layout
  * Requires authentication - redirects to login if not authenticated
+ * Checks if onboarding is complete - redirects to onboarding if not
  * Includes sidebar navigation and user dropdown
  */
 export const Route = createFileRoute('/_app')({
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const session = await getSessionFn()
     if (!session?.user) {
       throw redirect({ to: '/login' })
     }
+
+    // Check if user needs onboarding (but not if already on onboarding page)
+    if (!location.pathname.includes('/onboarding')) {
+      const onboardingStatus = await getOnboardingStatusFn()
+      if (!onboardingStatus.onboardingComplete) {
+        throw redirect({ to: '/onboarding' })
+      }
+    }
+
     return { user: session.user as AppUser }
   },
   component: AppLayout,
@@ -60,13 +76,16 @@ function AppLayout() {
           {/* Logo */}
           <div className="flex h-16 items-center border-b px-6">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-primary" />
-              <span className="text-xl font-bold">AppStarter</span>
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/60" />
+              <span className="text-xl font-bold">Memdia</span>
             </Link>
           </div>
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 p-4">
+            <NavLink to="/memories" icon="🎙️">
+              Memories
+            </NavLink>
             <NavLink to="/dashboard" icon="📊">
               Dashboard
             </NavLink>
@@ -107,11 +126,15 @@ function AppLayout() {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
+        {/* Trial Banner */}
+        <TrialBanner />
+        <TrialExpiredBanner />
+
         {/* Mobile Header */}
         <header className="flex h-16 items-center justify-between border-b px-4 md:hidden">
           <Link to="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded-lg bg-primary" />
-            <span className="text-xl font-bold">AppStarter</span>
+            <span className="text-xl font-bold">Memdia</span>
           </Link>
           <Button variant="ghost" size="sm" onClick={handleSignOut}>
             Sign out

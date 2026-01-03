@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -9,10 +9,15 @@ import {
   createCheckoutFn,
   getSubscriptionFn,
 } from '../../server/billing.fn'
+import {
+  getUserPreferencesFn,
+  updateUserPreferencesFn,
+} from '../../server/session.fn'
 import { useSession } from '../../lib/auth-client'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
+import type { AIPersonality, ImageStyle } from '../../types/voice-session'
 
 // Type for user
 interface ProfileUser {
@@ -55,6 +60,28 @@ function ProfilePage() {
     queryFn: () => getSubscriptionFn(),
   })
 
+  const { data: preferences } = useQuery({
+    queryKey: ['user-preferences'],
+    queryFn: () => getUserPreferencesFn(),
+  })
+
+  // Preferences state
+  const [selectedTimezone, setSelectedTimezone] = useState('UTC')
+  const [selectedImageStyle, setSelectedImageStyle] =
+    useState<ImageStyle>('dreamlike')
+  const [selectedPersonality, setSelectedPersonality] =
+    useState<AIPersonality>('empathetic')
+  const [prefsSuccess, setPrefsSuccess] = useState(false)
+
+  // Update local state when preferences load
+  useEffect(() => {
+    if (preferences) {
+      setSelectedTimezone(preferences.timezone)
+      setSelectedImageStyle(preferences.imageStyle as ImageStyle)
+      setSelectedPersonality(preferences.aiPersonality as AIPersonality)
+    }
+  }, [preferences])
+
   const updateMutation = useMutation({
     mutationFn: (input: { name: string }) => updateProfileFn({ data: input }),
     onSuccess: () => {
@@ -75,6 +102,15 @@ function ProfilePage() {
     mutationFn: () => createBillingPortalFn(),
     onSuccess: (data: UrlResponse) => {
       window.location.href = data.url
+    },
+  })
+
+  const updatePrefsMutation = useMutation({
+    mutationFn: updateUserPreferencesFn,
+    onSuccess: () => {
+      setPrefsSuccess(true)
+      void queryClient.invalidateQueries({ queryKey: ['user-preferences'] })
+      setTimeout(() => setPrefsSuccess(false), 3000)
     },
   })
 
@@ -218,6 +254,148 @@ function ProfilePage() {
               {checkoutMutation.isPending ? 'Loading...' : 'Upgrade to Pro'}
             </Button>
           )}
+        </div>
+      </div>
+
+      {/* Preferences */}
+      <div className="max-w-2xl rounded-lg border bg-card p-6">
+        <h2 className="mb-4 text-xl font-semibold">Preferences</h2>
+
+        {prefsSuccess && (
+          <div className="mb-4 rounded-md bg-green-500/10 p-3 text-sm text-green-600">
+            Preferences saved successfully!
+          </div>
+        )}
+
+        <div className="space-y-6">
+          {/* Timezone */}
+          <div className="space-y-2">
+            <Label>Timezone</Label>
+            <select
+              value={selectedTimezone}
+              onChange={(e) => setSelectedTimezone(e.target.value)}
+              className="w-full p-2 border rounded-md text-sm"
+            >
+              {[
+                'America/New_York',
+                'America/Chicago',
+                'America/Denver',
+                'America/Los_Angeles',
+                'America/Anchorage',
+                'Pacific/Honolulu',
+                'Europe/London',
+                'Europe/Paris',
+                'Europe/Berlin',
+                'Asia/Tokyo',
+                'Asia/Shanghai',
+                'Asia/Kolkata',
+                'Australia/Sydney',
+                'UTC',
+              ].map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz.replace('_', ' ')}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Used for scheduling and displaying dates
+            </p>
+          </div>
+
+          {/* AI Personality */}
+          <div className="space-y-2">
+            <Label>AI Personality</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  value: 'empathetic' as const,
+                  label: 'Empathetic',
+                  description: 'Warm, supportive, understanding',
+                },
+                {
+                  value: 'curious' as const,
+                  label: 'Curious',
+                  description: 'Inquisitive, thought-provoking',
+                },
+              ].map((p) => (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setSelectedPersonality(p.value)}
+                  className={`p-3 rounded-lg border text-left transition-colors ${
+                    selectedPersonality === p.value
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="font-medium text-sm">{p.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {p.description}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Image Style */}
+          <div className="space-y-2">
+            <Label>Memory Image Style</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  value: 'dreamlike' as const,
+                  label: 'Dreamlike',
+                  description: 'Ethereal, soft focus, pastel',
+                },
+                {
+                  value: 'watercolor' as const,
+                  label: 'Watercolor',
+                  description: 'Delicate washes, flowing shapes',
+                },
+                {
+                  value: 'geometric' as const,
+                  label: 'Geometric',
+                  description: 'Clean lines, modern minimalist',
+                },
+                {
+                  value: 'sketch' as const,
+                  label: 'Sketch',
+                  description: 'Elegant pencil, fine line art',
+                },
+              ].map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => setSelectedImageStyle(s.value)}
+                  className={`p-3 rounded-lg border text-left transition-colors ${
+                    selectedImageStyle === s.value
+                      ? 'border-primary bg-primary/5'
+                      : 'border-muted hover:border-muted-foreground/30'
+                  }`}
+                >
+                  <div className="font-medium text-sm">{s.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {s.description}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button
+            onClick={() =>
+              updatePrefsMutation.mutate({
+                data: {
+                  timezone: selectedTimezone,
+                  imageStyle: selectedImageStyle,
+                  aiPersonality: selectedPersonality,
+                },
+              })
+            }
+            disabled={updatePrefsMutation.isPending}
+          >
+            {updatePrefsMutation.isPending ? 'Saving...' : 'Save Preferences'}
+          </Button>
         </div>
       </div>
     </div>
