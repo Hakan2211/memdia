@@ -39,6 +39,11 @@ const IMAGE_STYLES: {
   description: string
 }[] = [
   {
+    value: 'realistic',
+    label: 'Realistic',
+    description: 'Photorealistic, cinematic, hyperreal',
+  },
+  {
     value: 'dreamlike',
     label: 'Dreamlike',
     description: 'Ethereal, soft focus, pastel colors',
@@ -86,7 +91,7 @@ function OnboardingPage() {
     Intl.DateTimeFormat().resolvedOptions().timeZone,
   )
   const [selectedImageStyle, setSelectedImageStyle] =
-    useState<ImageStyle>('dreamlike')
+    useState<ImageStyle>('realistic')
   const [selectedPersonality, setSelectedPersonality] =
     useState<AIPersonality>('empathetic')
 

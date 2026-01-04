@@ -5,6 +5,7 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
+import { format } from 'date-fns'
 import { prisma } from '../db'
 import { authMiddleware } from './middleware'
 import {
@@ -183,6 +184,28 @@ export const startSessionFn = createServerFn({ method: 'POST' })
       }
     }
 
+    // Check if there was a deleted session today (user already used one attempt)
+    const deletedAttempt = await prisma.deletedSessionAttempt.findUnique({
+      where: {
+        userId_date: {
+          userId: context.user.id,
+          date: today,
+        },
+      },
+    })
+
+    // If there was a deleted attempt, this would be attempt 2
+    // If there are 2 deleted attempts tracked (via multiple records somehow), block
+    // Actually our schema only allows one record per day, so if it exists, this is attempt 2
+    const recordingAttempt = deletedAttempt ? 2 : 1
+
+    // Block if this would be attempt 3 (shouldn't happen with current schema, but defensive)
+    if (recordingAttempt > 2) {
+      throw new Error(
+        'You have used all recording attempts for today. Come back tomorrow!',
+      )
+    }
+
     // Get user preferences for image style
     const preferences = await prisma.userPreferences.findUnique({
       where: { userId: context.user.id },
@@ -195,7 +218,8 @@ export const startSessionFn = createServerFn({ method: 'POST' })
         date: today,
         status: 'active',
         maxDuration: subCheck.maxDurationSeconds,
-        imageStyle: (preferences?.imageStyle as ImageStyle) || 'dreamlike',
+        imageStyle: (preferences?.imageStyle as ImageStyle) || 'realistic',
+        recordingAttempt,
       },
     })
 
@@ -336,6 +360,29 @@ export const deleteSessionFn = createServerFn({ method: 'POST' })
       throw new Error('Session not found')
     }
 
+    // Check if this is already attempt 2 - if so, block deletion (no more retries)
+    if (session.recordingAttempt >= 2) {
+      throw new Error(
+        'You cannot delete this session. You have used all recording attempts for today.',
+      )
+    }
+
+    // Track that this user has deleted a session for this date (uses one attempt)
+    const sessionDate = getStartOfDay(session.date)
+    await prisma.deletedSessionAttempt.upsert({
+      where: {
+        userId_date: {
+          userId: context.user.id,
+          date: sessionDate,
+        },
+      },
+      create: {
+        userId: context.user.id,
+        date: sessionDate,
+      },
+      update: {}, // No update needed, just ensure the record exists
+    })
+
     // Delete from Bunny.net (audio files and image)
     try {
       const { deleteSessionFiles } = await import('./services/bunny.service')
@@ -350,7 +397,7 @@ export const deleteSessionFn = createServerFn({ method: 'POST' })
       where: { id: session.id },
     })
 
-    return { success: true }
+    return { success: true, wasLastAttempt: false }
   })
 
 // ==========================================
@@ -485,7 +532,7 @@ export const getSessionsForMonthFn = createServerFn({ method: 'GET' })
     > = {}
 
     for (const session of sessions) {
-      const dateKey = session.date.toISOString().split('T')[0]!
+      const dateKey = format(session.date, 'yyyy-MM-dd')
       sessionsByDate[dateKey] = {
         id: session.id,
         status: session.status as SessionStatus,

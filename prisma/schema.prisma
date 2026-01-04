@@ -106,6 +106,9 @@ model VoiceSession {
   // Status: active | paused | processing | completed
   status String @default("active")
 
+  // Recording attempt tracking (1 = first, 2 = retry, max 2 allowed)
+  recordingAttempt Int @default(1)
+
   // Time tracking (in seconds)
   totalUserSpeakingTime Int @default(0)
   maxDuration           Int @default(180) // 180 = 3 minutes
@@ -113,7 +116,7 @@ model VoiceSession {
   // Post-processing results
   summaryText String?
   imageUrl    String?
-  imageStyle  String  @default("dreamlike") // dreamlike | watercolor | geometric | sketch
+  imageStyle  String  @default("realistic") // realistic | dreamlike | watercolor | geometric | sketch
 
   // Timestamps
   pausedAt    DateTime?
@@ -160,11 +163,24 @@ model UserPreferences {
   timezone String @default("UTC")
 
   // AI preferences
-  imageStyle    String @default("dreamlike") // dreamlike | watercolor | geometric | sketch
+  imageStyle    String @default("realistic") // realistic | dreamlike | watercolor | geometric | sketch
   aiPersonality String @default("empathetic") // empathetic | curious
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("user_preferences")
+}
+
+// Track deleted session attempts to enforce 2-recording limit per day
+model DeletedSessionAttempt {
+  id     String   @id @default(cuid())
+  userId String
+  date   DateTime // The date of the deleted session (start of day)
+  
+  createdAt DateTime @default(now())
+  
+  // Unique constraint: one record per user per day (tracks that an attempt was used)
+  @@unique([userId, date])
+  @@map("deleted_session_attempt")
 }

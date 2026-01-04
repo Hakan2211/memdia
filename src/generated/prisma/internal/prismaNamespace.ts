@@ -390,7 +390,8 @@ export const ModelName = {
   Verification: 'Verification',
   VoiceSession: 'VoiceSession',
   TranscriptTurn: 'TranscriptTurn',
-  UserPreferences: 'UserPreferences'
+  UserPreferences: 'UserPreferences',
+  DeletedSessionAttempt: 'DeletedSessionAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences"
+    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -928,6 +929,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DeletedSessionAttempt: {
+      payload: Prisma.$DeletedSessionAttemptPayload<ExtArgs>
+      fields: Prisma.DeletedSessionAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeletedSessionAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeletedSessionAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.DeletedSessionAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeletedSessionAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.DeletedSessionAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.DeletedSessionAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.DeletedSessionAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeletedSessionAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.DeletedSessionAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>
+        }
+        update: {
+          args: Prisma.DeletedSessionAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeletedSessionAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeletedSessionAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeletedSessionAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeletedSessionAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedSessionAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.DeletedSessionAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeletedSessionAttempt>
+        }
+        groupBy: {
+          args: Prisma.DeletedSessionAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeletedSessionAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeletedSessionAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeletedSessionAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1031,6 +1106,7 @@ export const VoiceSessionScalarFieldEnum = {
   userId: 'userId',
   date: 'date',
   status: 'status',
+  recordingAttempt: 'recordingAttempt',
   totalUserSpeakingTime: 'totalUserSpeakingTime',
   maxDuration: 'maxDuration',
   summaryText: 'summaryText',
@@ -1071,6 +1147,16 @@ export const UserPreferencesScalarFieldEnum = {
 } as const
 
 export type UserPreferencesScalarFieldEnum = (typeof UserPreferencesScalarFieldEnum)[keyof typeof UserPreferencesScalarFieldEnum]
+
+
+export const DeletedSessionAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  createdAt: 'createdAt'
+} as const
+
+export type DeletedSessionAttemptScalarFieldEnum = (typeof DeletedSessionAttemptScalarFieldEnum)[keyof typeof DeletedSessionAttemptScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1231,6 +1317,7 @@ export type GlobalOmitConfig = {
   voiceSession?: Prisma.VoiceSessionOmit
   transcriptTurn?: Prisma.TranscriptTurnOmit
   userPreferences?: Prisma.UserPreferencesOmit
+  deletedSessionAttempt?: Prisma.DeletedSessionAttemptOmit
 }
 
 /* Types for Logging */

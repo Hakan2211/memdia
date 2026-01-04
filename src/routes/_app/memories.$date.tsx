@@ -6,10 +6,20 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Trash2, Play, Pause, Clock } from 'lucide-react'
-import { useState } from 'react'
+import {
+  ArrowLeft,
+  Trash2,
+  Play,
+  Pause,
+  Clock,
+  Volume2,
+  SkipForward,
+  Square,
+} from 'lucide-react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from '../../components/ui/button'
 import { getSessionByDateFn, deleteSessionFn } from '../../server/session.fn'
+import { useAudioPlayer } from '../../hooks/useAudioPlayer'
 import type { VoiceSession, TranscriptTurn } from '../../types/voice-session'
 
 export const Route = createFileRoute('/_app/memories/$date')({
@@ -21,6 +31,12 @@ function SessionByDate() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [activeTurnIndex, setActiveTurnIndex] = useState<number | null>(null)
+
+  // Function to play a specific turn (set by AudioPlayer)
+  const [playTurnFn, setPlayTurnFn] = useState<
+    ((index: number) => void) | null
+  >(null)
 
   // Fetch session for this date
   const {
@@ -148,7 +164,11 @@ function SessionByDate() {
       {/* Audio Player */}
       {session.turns && session.turns.length > 0 && (
         <div className="mb-8">
-          <AudioPlayer session={session} />
+          <AudioPlayer
+            session={session}
+            onTurnChange={setActiveTurnIndex}
+            onPlayTurnReady={(fn) => setPlayTurnFn(() => fn)}
+          />
         </div>
       )}
 
@@ -156,7 +176,11 @@ function SessionByDate() {
       {session.turns && session.turns.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold mb-3">Transcript</h2>
-          <TranscriptView turns={session.turns} />
+          <TranscriptView
+            turns={session.turns}
+            activeTurnIndex={activeTurnIndex}
+            onPlayTurn={(index) => playTurnFn?.(index)}
+          />
         </div>
       )}
 
@@ -223,47 +247,264 @@ function SessionStatusBadge({ status }: { status: string }) {
 
 function AudioPlayer({
   session,
+  onTurnChange,
+  onPlayTurnReady,
 }: {
   session: VoiceSession & { turns: TranscriptTurn[] }
+  onTurnChange?: (turnIndex: number | null) => void
+  onPlayTurnReady?: (playFn: (index: number) => void) => void
 }) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  // TODO: Wire up setCurrentTime to audio element events
-  void setCurrentTime
+  const [isSequentialMode, setIsSequentialMode] = useState(false)
+  const [currentTurnIndex, setCurrentTurnIndex] = useState<number | null>(null)
+  const [overallProgress, setOverallProgress] = useState(0)
+  const turnsWithAudio = session.turns.filter((t) => t.audioUrl)
 
-  // TODO: Implement actual audio playback
+  // Use refs to track current values for the onEnd callback
+  const isSequentialModeRef = useRef(isSequentialMode)
+  const currentTurnIndexRef = useRef(currentTurnIndex)
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    isSequentialModeRef.current = isSequentialMode
+  }, [isSequentialMode])
+
+  useEffect(() => {
+    currentTurnIndexRef.current = currentTurnIndex
+  }, [currentTurnIndex])
+
+  // playNextTurn needs to be defined before useAudioPlayer
+  const playNextTurnRef = useRef<() => void>(() => {})
+
+  const [audioState, audioActions] = useAudioPlayer({
+    onEnd: () => {
+      // When a turn ends, play the next one in sequence mode
+      // Use refs to get current values
+      console.log('[AudioPlayer] onEnd called', {
+        isSequentialMode: isSequentialModeRef.current,
+        currentTurnIndex: currentTurnIndexRef.current,
+      })
+      if (isSequentialModeRef.current && currentTurnIndexRef.current !== null) {
+        console.log('[AudioPlayer] Playing next turn...')
+        playNextTurnRef.current()
+      }
+    },
+  })
+
+  // Calculate total duration
   const totalDuration = session.turns.reduce(
     (acc, turn) => acc + turn.duration,
     0,
   )
 
+  // Calculate cumulative start times for progress tracking
+  const turnStartTimes = useRef<number[]>([])
+  useEffect(() => {
+    let cumulative = 0
+    turnStartTimes.current = session.turns.map((turn) => {
+      const start = cumulative
+      cumulative += turn.duration
+      return start
+    })
+  }, [session.turns])
+
+  // Update progress based on current turn and audio progress
+  useEffect(() => {
+    if (currentTurnIndex !== null && audioState.duration > 0) {
+      const turnStart = turnStartTimes.current[currentTurnIndex] || 0
+      const turnProgress =
+        audioState.progress * session.turns[currentTurnIndex].duration
+      setOverallProgress(turnStart + turnProgress)
+    }
+  }, [
+    currentTurnIndex,
+    audioState.progress,
+    audioState.duration,
+    session.turns,
+  ])
+
+  // Notify parent of current turn for highlighting
+  useEffect(() => {
+    onTurnChange?.(currentTurnIndex)
+  }, [currentTurnIndex, onTurnChange])
+
+  const playTurn = useCallback(
+    async (index: number) => {
+      const turn = session.turns[index]
+      console.log('[AudioPlayer] playTurn called', {
+        index,
+        turn,
+        audioUrl: turn?.audioUrl,
+      })
+      if (!turn?.audioUrl) {
+        console.warn('[AudioPlayer] No audio URL for turn', index)
+        return
+      }
+
+      setCurrentTurnIndex(index)
+      try {
+        await audioActions.play(turn.audioUrl)
+        console.log('[AudioPlayer] Started playing turn', index)
+      } catch (error) {
+        console.error('Failed to play turn:', error)
+      }
+    },
+    [session.turns, audioActions],
+  )
+
+  const playNextTurn = useCallback(() => {
+    const currentIdx = currentTurnIndexRef.current
+    console.log('[AudioPlayer] playNextTurn called', {
+      currentIdx,
+      totalTurns: session.turns.length,
+    })
+    if (currentIdx === null) return
+
+    // Find next turn with audio
+    let nextIndex = currentIdx + 1
+    while (nextIndex < session.turns.length) {
+      if (session.turns[nextIndex].audioUrl) {
+        console.log(
+          '[AudioPlayer] Found next turn with audio at index',
+          nextIndex,
+        )
+        playTurn(nextIndex)
+        return
+      }
+      nextIndex++
+    }
+
+    // No more turns with audio
+    console.log(
+      '[AudioPlayer] No more turns with audio, stopping sequential mode',
+    )
+    setIsSequentialMode(false)
+    setCurrentTurnIndex(null)
+  }, [session.turns, playTurn])
+
+  // Keep the ref updated with the latest playNextTurn function
+  useEffect(() => {
+    playNextTurnRef.current = playNextTurn
+  }, [playNextTurn])
+
+  const handlePlayAll = useCallback(async () => {
+    if (audioState.isPlaying) {
+      audioActions.pause()
+      return
+    }
+
+    if (currentTurnIndex !== null && !audioState.isPlaying) {
+      // Resume current turn
+      audioActions.resume()
+      return
+    }
+
+    // Start from beginning
+    setIsSequentialMode(true)
+    const firstTurnWithAudio = session.turns.findIndex((t) => t.audioUrl)
+    if (firstTurnWithAudio >= 0) {
+      await playTurn(firstTurnWithAudio)
+    }
+  }, [
+    audioState.isPlaying,
+    currentTurnIndex,
+    session.turns,
+    playTurn,
+    audioActions,
+  ])
+
+  const handleStop = useCallback(() => {
+    audioActions.stop()
+    setIsSequentialMode(false)
+    setCurrentTurnIndex(null)
+    setOverallProgress(0)
+  }, [audioActions])
+
+  const handlePlaySingleTurn = useCallback(
+    (index: number) => {
+      console.log('[AudioPlayer] handlePlaySingleTurn called', { index })
+      setIsSequentialMode(false) // Don't continue to next turn
+      playTurn(index)
+    },
+    [playTurn],
+  )
+
+  // Expose the play function to parent component
+  useEffect(() => {
+    onPlayTurnReady?.(handlePlaySingleTurn)
+  }, [handlePlaySingleTurn, onPlayTurnReady])
+
+  // Check if there are any turns with audio
+  const hasAudio = turnsWithAudio.length > 0
+
+  if (!hasAudio) {
+    return (
+      <div className="border rounded-lg p-4 text-center text-muted-foreground">
+        <Volume2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
+        <p className="text-sm">
+          No audio recordings available for this session
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="border rounded-lg p-4">
       <div className="flex items-center gap-4">
+        {/* Play/Pause button */}
         <Button
           variant="outline"
           size="icon"
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={handlePlayAll}
           className="h-12 w-12 rounded-full"
+          disabled={audioState.isLoading}
         >
-          {isPlaying ? (
+          {audioState.isLoading ? (
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          ) : audioState.isPlaying ? (
             <Pause className="h-5 w-5" />
           ) : (
             <Play className="h-5 w-5 ml-0.5" />
           )}
         </Button>
 
+        {/* Stop button */}
+        {(audioState.isPlaying || currentTurnIndex !== null) && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleStop}
+            className="h-10 w-10"
+          >
+            <Square className="h-4 w-4" />
+          </Button>
+        )}
+
+        {/* Skip button */}
+        {isSequentialMode && currentTurnIndex !== null && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={playNextTurn}
+            className="h-10 w-10"
+          >
+            <SkipForward className="h-4 w-4" />
+          </Button>
+        )}
+
         <div className="flex-1">
+          {/* Progress bar */}
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary transition-all"
-              style={{ width: `${(currentTime / totalDuration) * 100}%` }}
+              className="h-full bg-primary transition-all duration-200"
+              style={{ width: `${(overallProgress / totalDuration) * 100}%` }}
             />
           </div>
+
+          {/* Time display */}
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>
-              {Math.floor(currentTime / 60)}:
-              {String(Math.floor(currentTime % 60)).padStart(2, '0')}
+              {Math.floor(overallProgress / 60)}:
+              {String(Math.floor(overallProgress % 60)).padStart(2, '0')}
             </span>
             <span>
               {Math.floor(totalDuration / 60)}:
@@ -272,30 +513,104 @@ function AudioPlayer({
           </div>
         </div>
       </div>
+
+      {/* Current turn indicator */}
+      {currentTurnIndex !== null && (
+        <div className="mt-3 text-xs text-muted-foreground text-center">
+          Playing:{' '}
+          {session.turns[currentTurnIndex].speaker === 'ai' ? 'AI' : 'You'}
+          {isSequentialMode && (
+            <span className="ml-2 text-primary">(Sequential mode)</span>
+          )}
+        </div>
+      )}
+
+      {/* Enable audio button if blocked */}
+      {!audioState.canAutoplay && (
+        <div className="mt-3 text-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => audioActions.enableAutoplay()}
+            className="text-xs"
+          >
+            <Volume2 className="h-3 w-3 mr-1" />
+            Click to enable audio
+          </Button>
+        </div>
+      )}
     </div>
   )
 }
 
-function TranscriptView({ turns }: { turns: TranscriptTurn[] }) {
+// Individual turn play button for transcript view
+function TurnPlayButton({
+  turn,
+  isActive,
+  onPlay,
+}: {
+  turn: TranscriptTurn
+  isActive: boolean
+  onPlay: () => void
+}) {
+  if (!turn.audioUrl) return null
+
+  return (
+    <button
+      onClick={onPlay}
+      className={`inline-flex items-center justify-center h-6 w-6 rounded-full transition-colors ${
+        isActive
+          ? 'bg-primary text-primary-foreground'
+          : 'bg-muted hover:bg-muted-foreground/20'
+      }`}
+      title="Play this turn"
+    >
+      <Play className="h-3 w-3 ml-0.5" />
+    </button>
+  )
+}
+
+function TranscriptView({
+  turns,
+  activeTurnIndex,
+  onPlayTurn,
+}: {
+  turns: TranscriptTurn[]
+  activeTurnIndex: number | null
+  onPlayTurn: (index: number) => void
+}) {
   return (
     <div className="space-y-4">
-      {turns.map((turn) => (
+      {turns.map((turn, index) => (
         <div
           key={turn.id}
           className={`flex ${turn.speaker === 'user' ? 'justify-end' : 'justify-start'}`}
         >
           <div
-            className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+            className={`max-w-[80%] rounded-2xl px-4 py-2 transition-all ${
               turn.speaker === 'user'
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-muted'
+            } ${
+              activeTurnIndex === index
+                ? 'ring-2 ring-primary ring-offset-2'
+                : ''
             }`}
           >
-            <p className="text-sm">{turn.text}</p>
-            <p className="text-xs opacity-70 mt-1">
-              {Math.floor(turn.startTime / 60)}:
-              {String(Math.floor(turn.startTime % 60)).padStart(2, '0')}
-            </p>
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                <p className="text-sm">{turn.text}</p>
+                <p className="text-xs opacity-70 mt-1">
+                  {Math.floor(turn.startTime / 60)}:
+                  {String(Math.floor(turn.startTime % 60)).padStart(2, '0')}
+                </p>
+              </div>
+              <TurnPlayButton
+                turn={turn}
+                isActive={activeTurnIndex === index}
+                onPlay={() => onPlayTurn(index)}
+              />
+            </div>
           </div>
         </div>
       ))}

@@ -30,6 +30,8 @@ import type { AIPersonality, ImageStyle } from '../types/voice-session'
 const conversationSchema = z.object({
   sessionId: z.string(),
   userMessage: z.string(),
+  userAudioBase64: z.string().optional(), // Base64 encoded user audio (WebM/PCM)
+  userAudioContentType: z.string().optional(), // e.g., 'audio/webm' or 'audio/pcm'
 })
 
 const generateGreetingSchema = z.object({
@@ -176,13 +178,37 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
       ? lastTurn.startTime + lastTurn.duration + 0.5
       : 0
 
+    // Upload user audio if provided
+    let userAudioUrl: string | null = null
+    if (data.userAudioBase64 && data.userAudioBase64.length > 0) {
+      try {
+        // Decode base64 to buffer
+        const audioBuffer = Buffer.from(data.userAudioBase64, 'base64')
+        const contentType = data.userAudioContentType || 'audio/webm'
+
+        const uploadResult = await uploadAudio(
+          context.user.id,
+          session.id,
+          session.turns.length, // Use current turn count as order
+          'user',
+          audioBuffer,
+          contentType,
+        )
+        userAudioUrl = uploadResult.url
+        console.log('[Conversation] Uploaded user audio:', userAudioUrl)
+      } catch (error) {
+        console.error('[Conversation] Failed to upload user audio:', error)
+        // Continue without user audio - don't fail the whole request
+      }
+    }
+
     // Save user's message as a turn
     const userTurn = await prisma.transcriptTurn.create({
       data: {
         sessionId: session.id,
         speaker: 'user',
         text: data.userMessage,
-        audioUrl: null, // User audio would be uploaded separately
+        audioUrl: userAudioUrl,
         startTime,
         duration: Math.ceil(data.userMessage.split(' ').length / 2.5), // Rough estimate
         order: session.turns.length,
@@ -267,6 +293,33 @@ export const processSessionFn = createServerFn({ method: 'POST' })
       throw new Error('Session not found or not in processing state')
     }
 
+    // Check if there are any user turns (actual conversation happened)
+    const userTurns = session.turns.filter((t) => t.speaker === 'user')
+
+    // If no user turns or very short session, skip summary/image generation
+    if (userTurns.length === 0 || session.totalUserSpeakingTime < 10) {
+      console.log(
+        '[Process Session] Skipping summary/image - no meaningful user input',
+      )
+
+      const updatedSession = await prisma.voiceSession.update({
+        where: { id: session.id },
+        data: {
+          status: 'completed',
+          summaryText: null,
+          imageUrl: null,
+        },
+      })
+
+      return {
+        session: updatedSession,
+        summaryText: null,
+        imageUrl: null,
+        skipped: true,
+        reason: 'No meaningful user input detected',
+      }
+    }
+
     // Format transcript
     const transcript = formatTranscriptForSummary(
       session.turns.map((t) => ({
@@ -286,9 +339,9 @@ export const processSessionFn = createServerFn({ method: 'POST' })
       console.error('Failed to generate summary:', error)
     }
 
-    // Generate image
+    // Generate image only if we have a meaningful summary
     let imageUrl: string | null = null
-    if (summaryText) {
+    if (summaryText && summaryText.length > 50) {
       try {
         // Build prompt and generate image
         void buildImagePrompt(summaryText, session.imageStyle as ImageStyle)

@@ -19,9 +19,15 @@ export type Speaker = 'user' | 'ai'
 // Image Styles
 // ==========================================
 
-export type ImageStyle = 'dreamlike' | 'watercolor' | 'geometric' | 'sketch'
+export type ImageStyle =
+  | 'realistic'
+  | 'dreamlike'
+  | 'watercolor'
+  | 'geometric'
+  | 'sketch'
 
 export const IMAGE_STYLE_LABELS: Record<ImageStyle, string> = {
+  realistic: 'Realistic & Hyperreal',
   dreamlike: 'Minimal & Dreamlike',
   watercolor: 'Watercolor',
   geometric: 'Abstract Geometric',
@@ -82,6 +88,7 @@ export interface VoiceSession {
   userId: string
   date: Date
   status: SessionStatus
+  recordingAttempt: number // 1 = first, 2 = retry (max 2 allowed)
   totalUserSpeakingTime: number // seconds
   maxDuration: number // seconds
   summaryText: string | null

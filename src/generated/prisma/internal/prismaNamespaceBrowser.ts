@@ -57,7 +57,8 @@ export const ModelName = {
   Verification: 'Verification',
   VoiceSession: 'VoiceSession',
   TranscriptTurn: 'TranscriptTurn',
-  UserPreferences: 'UserPreferences'
+  UserPreferences: 'UserPreferences',
+  DeletedSessionAttempt: 'DeletedSessionAttempt'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -140,6 +141,7 @@ export const VoiceSessionScalarFieldEnum = {
   userId: 'userId',
   date: 'date',
   status: 'status',
+  recordingAttempt: 'recordingAttempt',
   totalUserSpeakingTime: 'totalUserSpeakingTime',
   maxDuration: 'maxDuration',
   summaryText: 'summaryText',
@@ -180,6 +182,16 @@ export const UserPreferencesScalarFieldEnum = {
 } as const
 
 export type UserPreferencesScalarFieldEnum = (typeof UserPreferencesScalarFieldEnum)[keyof typeof UserPreferencesScalarFieldEnum]
+
+
+export const DeletedSessionAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  createdAt: 'createdAt'
+} as const
+
+export type DeletedSessionAttemptScalarFieldEnum = (typeof DeletedSessionAttemptScalarFieldEnum)[keyof typeof DeletedSessionAttemptScalarFieldEnum]
 
 
 export const SortOrder = {

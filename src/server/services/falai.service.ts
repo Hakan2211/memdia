@@ -136,6 +136,11 @@ function estimateDuration(text: string): number {
 
 /** Style prompts for different image styles */
 const STYLE_PROMPTS: Record<ImageStyle, string> = {
+  realistic: `Style: photorealistic, hyperreal, cinematic photography quality,
+    realistic lighting and shadows, natural textures, detailed environmental elements,
+    editorial photography aesthetic, lifelike colors, professional composition,
+    high-quality 4K detail, real-world scene visualization`,
+
   dreamlike: `Style: ethereal, soft focus, pastel colors, minimalist composition, 
     dreamlike atmosphere, gentle gradients, calm and serene, subtle symbolism, 
     fine art photography aesthetic, muted tones, peaceful mood`,

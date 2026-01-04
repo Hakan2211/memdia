@@ -14,7 +14,11 @@ import {
   startSessionFn,
   endSessionFn,
   updateSessionTimeFn,
+  deleteSessionFn,
 } from '../../server/session.fn'
+
+// Minimum session duration in seconds (sessions shorter than this are discarded)
+const MIN_SESSION_DURATION = 60
 import {
   generateGreetingFn,
   sendMessageFn,
@@ -53,6 +57,90 @@ function TodaySession() {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const pendingTranscriptRef = useRef('')
 
+  // Accumulate audio chunks for uploading user audio
+  const audioChunksRef = useRef<Int16Array[]>([])
+
+  // Helper to create a WAV file from PCM data
+  const createWavFromPcm = useCallback(
+    (pcmData: Int16Array, sampleRate: number = 16000): ArrayBuffer => {
+      const numChannels = 1
+      const bitsPerSample = 16
+      const byteRate = sampleRate * numChannels * (bitsPerSample / 8)
+      const blockAlign = numChannels * (bitsPerSample / 8)
+      const dataSize = pcmData.length * (bitsPerSample / 8)
+      const headerSize = 44
+      const totalSize = headerSize + dataSize
+
+      const buffer = new ArrayBuffer(totalSize)
+      const view = new DataView(buffer)
+
+      // RIFF header
+      const writeString = (offset: number, str: string) => {
+        for (let i = 0; i < str.length; i++) {
+          view.setUint8(offset + i, str.charCodeAt(i))
+        }
+      }
+
+      writeString(0, 'RIFF')
+      view.setUint32(4, totalSize - 8, true) // File size - 8
+      writeString(8, 'WAVE')
+
+      // fmt sub-chunk
+      writeString(12, 'fmt ')
+      view.setUint32(16, 16, true) // Subchunk1Size (16 for PCM)
+      view.setUint16(20, 1, true) // AudioFormat (1 for PCM)
+      view.setUint16(22, numChannels, true)
+      view.setUint32(24, sampleRate, true)
+      view.setUint32(28, byteRate, true)
+      view.setUint16(32, blockAlign, true)
+      view.setUint16(34, bitsPerSample, true)
+
+      // data sub-chunk
+      writeString(36, 'data')
+      view.setUint32(40, dataSize, true)
+
+      // Write PCM data
+      const pcmOffset = 44
+      for (let i = 0; i < pcmData.length; i++) {
+        view.setInt16(pcmOffset + i * 2, pcmData[i], true)
+      }
+
+      return buffer
+    },
+    [],
+  )
+
+  // Helper to get accumulated audio as base64 WAV
+  const getAccumulatedAudioBase64 = useCallback((): string | undefined => {
+    if (audioChunksRef.current.length === 0) return undefined
+
+    // Calculate total length
+    const totalLength = audioChunksRef.current.reduce(
+      (acc, chunk) => acc + chunk.length,
+      0,
+    )
+    if (totalLength === 0) return undefined
+
+    // Concatenate all chunks
+    const combined = new Int16Array(totalLength)
+    let offset = 0
+    for (const chunk of audioChunksRef.current) {
+      combined.set(chunk, offset)
+      offset += chunk.length
+    }
+
+    // Create WAV file
+    const wavBuffer = createWavFromPcm(combined, 16000)
+
+    // Convert to base64
+    const uint8Array = new Uint8Array(wavBuffer)
+    let binary = ''
+    for (let i = 0; i < uint8Array.length; i++) {
+      binary += String.fromCharCode(uint8Array[i])
+    }
+    return btoa(binary)
+  }, [createWavFromPcm])
+
   // Deepgram STT hook for real-time transcription
   const [sttState, sttActions] = useDeepgramSTT({
     onFinalTranscript: (transcript) => {
@@ -63,13 +151,18 @@ function TodaySession() {
     },
     onSpeechStart: () => {
       setCurrentSpeaker('user')
+      // Clear accumulated audio when new speech starts
+      audioChunksRef.current = []
     },
     onSpeechEnd: () => {
       // Send accumulated transcript when user stops speaking
       if (pendingTranscriptRef.current.trim() && session) {
-        handleUserSpeechEnd(pendingTranscriptRef.current.trim())
+        // Get accumulated audio and convert to base64
+        const audioBase64 = getAccumulatedAudioBase64()
+        handleUserSpeechEnd(pendingTranscriptRef.current.trim(), audioBase64)
         pendingTranscriptRef.current = ''
         setLiveTranscript('')
+        audioChunksRef.current = [] // Clear after sending
       }
     },
     onError: (error) => {
@@ -103,10 +196,12 @@ function TodaySession() {
     queryFn: () => getTodaySessionFn(),
   })
 
-  // Audio recorder hook - sends audio to Deepgram
+  // Audio recorder hook - sends audio to Deepgram and accumulates for upload
   const [recorderState, recorderActions] = useAudioRecorder({
     onSpeechStart: () => {
       setCurrentSpeaker('user')
+      // Clear accumulated audio when new speech starts
+      audioChunksRef.current = []
     },
     onSpeechEnd: () => {
       // When Deepgram is not connected, use recorder's VAD for speech detection
@@ -117,9 +212,11 @@ function TodaySession() {
         session
       ) {
         console.log('[Recorder VAD] Speech ended, sending pending transcript')
-        handleUserSpeechEnd(pendingTranscriptRef.current.trim())
+        const audioBase64 = getAccumulatedAudioBase64()
+        handleUserSpeechEnd(pendingTranscriptRef.current.trim(), audioBase64)
         pendingTranscriptRef.current = ''
         setLiveTranscript('')
+        audioChunksRef.current = [] // Clear after sending
       }
     },
     onPCMData: (pcmData) => {
@@ -127,6 +224,9 @@ function TodaySession() {
       if (sttState.isConnected && useVoiceInput) {
         sttActions.sendAudio(pcmData)
       }
+      // Also accumulate for later upload
+      const pcmArray = new Int16Array(pcmData)
+      audioChunksRef.current.push(pcmArray)
     },
   })
 
@@ -171,12 +271,20 @@ function TodaySession() {
     [audioActions],
   )
 
+  // State for showing second attempt warning
+  const [showRetryWarning, setShowRetryWarning] = useState(false)
+
   // Start session mutation
   const startMutation = useMutation({
     mutationFn: () => startSessionFn(),
     onSuccess: async (newSession) => {
       queryClient.setQueryData(['session', 'today'], newSession)
       setSessionState('recording')
+
+      // Show warning if this is the second (and final) attempt
+      if (newSession.recordingAttempt === 2) {
+        setShowRetryWarning(true)
+      }
 
       // Enable audio autoplay on user interaction
       audioActions.enableAutoplay()
@@ -249,8 +357,12 @@ function TodaySession() {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (params: { sessionId: string; userMessage: string }) =>
-      sendMessageFn({ data: params }),
+    mutationFn: (params: {
+      sessionId: string
+      userMessage: string
+      userAudioBase64?: string
+      userAudioContentType?: string
+    }) => sendMessageFn({ data: params }),
     onSuccess: (result) => {
       // Play AI audio using our hook
       playAudio(result.aiAudioUrl)
@@ -336,12 +448,14 @@ function TodaySession() {
     processSessionMutation.mutate(sessionId)
   }
 
-  const handleUserSpeechEnd = (transcript: string) => {
+  const handleUserSpeechEnd = (transcript: string, audioBase64?: string) => {
     if (session && transcript.trim()) {
       setCurrentSpeaker(null)
       sendMessageMutation.mutate({
         sessionId: session.id,
         userMessage: transcript,
+        userAudioBase64: audioBase64,
+        userAudioContentType: 'audio/wav', // WAV format (playable in browsers)
       })
     }
   }
@@ -358,11 +472,48 @@ function TodaySession() {
     startMutation.mutate()
   }, [startMutation, recorderActions])
 
-  const handleEndSession = useCallback(() => {
-    if (session) {
-      endMutation.mutate(session.id)
+  const handleEndSession = useCallback(async () => {
+    if (!session) return
+
+    // Check if session is too short (less than 60 seconds)
+    if (elapsedTime < MIN_SESSION_DURATION) {
+      // Stop recording and cleanup
+      recorderActions.stopRecording()
+      sttActions.disconnect()
+      audioActions.stop()
+      stopTimer()
+
+      // Delete the session without saving
+      try {
+        await deleteSessionFn({ data: { sessionId: session.id } })
+      } catch (error) {
+        console.error('Failed to delete short session:', error)
+      }
+
+      // Reset state
+      queryClient.invalidateQueries({ queryKey: ['session', 'today'] })
+      setSessionState('idle')
+      setElapsedTime(0)
+      setShowRetryWarning(false)
+
+      // Show friendly notification
+      alert(
+        'Session too short! You need at least 1 minute to record. Come back anytime to try again.',
+      )
+      return
     }
-  }, [session, endMutation])
+
+    endMutation.mutate(session.id)
+  }, [
+    session,
+    elapsedTime,
+    endMutation,
+    recorderActions,
+    sttActions,
+    audioActions,
+    stopTimer,
+    queryClient,
+  ])
 
   const handleToggleMute = useCallback(() => {
     recorderActions.toggleMute()
@@ -436,6 +587,35 @@ function TodaySession() {
         </h1>
       </div>
 
+      {/* Retry Warning Banner */}
+      {showRetryWarning && (
+        <div className="mb-6 max-w-md rounded-lg border border-amber-200 bg-amber-50 p-4 text-center">
+          <div className="flex items-center justify-center gap-2 text-amber-700">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">Final Recording</span>
+          </div>
+          <p className="mt-1 text-sm text-amber-600">
+            This is your last recording attempt for today. Make it count!
+          </p>
+          <button
+            onClick={() => setShowRetryWarning(false)}
+            className="mt-2 text-xs text-amber-500 hover:text-amber-700"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Timer above circle */}
+      {sessionState === 'recording' && (
+        <div className="mb-6">
+          <CountdownTimer
+            remainingSeconds={remainingTime}
+            maxSeconds={maxDuration}
+          />
+        </div>
+      )}
+
       {/* Main Circle */}
       <div className="relative mb-8">
         <PulsingCircle
@@ -449,16 +629,6 @@ function TodaySession() {
           }
           isMuted={recorderState.isMuted}
         />
-
-        {/* Timer overlay */}
-        {sessionState === 'recording' && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <CountdownTimer
-              remainingSeconds={remainingTime}
-              maxSeconds={maxDuration}
-            />
-          </div>
-        )}
       </div>
 
       {/* Audio status indicator */}

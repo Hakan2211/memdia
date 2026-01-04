@@ -74,3 +74,8 @@ export type TranscriptTurn = Prisma.TranscriptTurnModel
  * 
  */
 export type UserPreferences = Prisma.UserPreferencesModel
+/**
+ * Model DeletedSessionAttempt
+ * 
+ */
+export type DeletedSessionAttempt = Prisma.DeletedSessionAttemptModel

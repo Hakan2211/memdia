@@ -68,7 +68,7 @@ function ProfilePage() {
   // Preferences state
   const [selectedTimezone, setSelectedTimezone] = useState('UTC')
   const [selectedImageStyle, setSelectedImageStyle] =
-    useState<ImageStyle>('dreamlike')
+    useState<ImageStyle>('realistic')
   const [selectedPersonality, setSelectedPersonality] =
     useState<AIPersonality>('empathetic')
   const [prefsSuccess, setPrefsSuccess] = useState(false)
@@ -342,6 +342,11 @@ function ProfilePage() {
             <Label>Memory Image Style</Label>
             <div className="grid grid-cols-2 gap-3">
               {[
+                {
+                  value: 'realistic' as const,
+                  label: 'Realistic',
+                  description: 'Photorealistic, cinematic, hyperreal',
+                },
                 {
                   value: 'dreamlike' as const,
                   label: 'Dreamlike',

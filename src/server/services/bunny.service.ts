@@ -167,6 +167,7 @@ export async function uploadAudio(
     'audio/mp3': 'mp3',
     'audio/wav': 'wav',
     'audio/ogg': 'ogg',
+    'audio/pcm': 'pcm', // Raw 16-bit PCM
   }
   const extension = extensionMap[contentType] || 'webm'
   const path = getAudioPath(userId, sessionId, turnOrder, speaker, extension)

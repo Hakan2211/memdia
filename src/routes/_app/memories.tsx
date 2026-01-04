@@ -9,6 +9,7 @@ import {
   Outlet,
   Link,
   useNavigate,
+  redirect,
 } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
@@ -30,6 +31,12 @@ import { cn } from '../../lib/utils'
 
 export const Route = createFileRoute('/_app/memories')({
   component: MemoriesLayout,
+  beforeLoad: async ({ location }) => {
+    // Redirect /memories to /memories/today for default microphone view
+    if (location.pathname === '/memories') {
+      throw redirect({ to: '/memories/today' })
+    }
+  },
 })
 
 function MemoriesLayout() {
@@ -101,9 +108,17 @@ function MemoriesLayout() {
             year={year}
             month={month}
             sessionsByDate={sessionsByDate || {}}
-            onSelectDate={(date) =>
-              navigate({ to: '/memories/$date', params: { date } })
-            }
+            onSelectDate={(date) => {
+              const today = format(new Date(), 'yyyy-MM-dd')
+              const hasSession = !!(sessionsByDate || {})[date]
+
+              // If clicking today and no session exists, go to recording page
+              if (date === today && !hasSession) {
+                navigate({ to: '/memories/today' })
+              } else {
+                navigate({ to: '/memories/$date', params: { date } })
+              }
+            }}
           />
         </div>
 

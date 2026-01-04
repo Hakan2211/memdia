@@ -27,11 +27,13 @@ export type AggregateVoiceSession = {
 }
 
 export type VoiceSessionAvgAggregateOutputType = {
+  recordingAttempt: number | null
   totalUserSpeakingTime: number | null
   maxDuration: number | null
 }
 
 export type VoiceSessionSumAggregateOutputType = {
+  recordingAttempt: number | null
   totalUserSpeakingTime: number | null
   maxDuration: number | null
 }
@@ -41,6 +43,7 @@ export type VoiceSessionMinAggregateOutputType = {
   userId: string | null
   date: Date | null
   status: string | null
+  recordingAttempt: number | null
   totalUserSpeakingTime: number | null
   maxDuration: number | null
   summaryText: string | null
@@ -57,6 +60,7 @@ export type VoiceSessionMaxAggregateOutputType = {
   userId: string | null
   date: Date | null
   status: string | null
+  recordingAttempt: number | null
   totalUserSpeakingTime: number | null
   maxDuration: number | null
   summaryText: string | null
@@ -73,6 +77,7 @@ export type VoiceSessionCountAggregateOutputType = {
   userId: number
   date: number
   status: number
+  recordingAttempt: number
   totalUserSpeakingTime: number
   maxDuration: number
   summaryText: number
@@ -87,11 +92,13 @@ export type VoiceSessionCountAggregateOutputType = {
 
 
 export type VoiceSessionAvgAggregateInputType = {
+  recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
 }
 
 export type VoiceSessionSumAggregateInputType = {
+  recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
 }
@@ -101,6 +108,7 @@ export type VoiceSessionMinAggregateInputType = {
   userId?: true
   date?: true
   status?: true
+  recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
   summaryText?: true
@@ -117,6 +125,7 @@ export type VoiceSessionMaxAggregateInputType = {
   userId?: true
   date?: true
   status?: true
+  recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
   summaryText?: true
@@ -133,6 +142,7 @@ export type VoiceSessionCountAggregateInputType = {
   userId?: true
   date?: true
   status?: true
+  recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
   summaryText?: true
@@ -236,6 +246,7 @@ export type VoiceSessionGroupByOutputType = {
   userId: string
   date: Date
   status: string
+  recordingAttempt: number
   totalUserSpeakingTime: number
   maxDuration: number
   summaryText: string | null
@@ -275,6 +286,7 @@ export type VoiceSessionWhereInput = {
   userId?: Prisma.StringFilter<"VoiceSession"> | string
   date?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
   status?: Prisma.StringFilter<"VoiceSession"> | string
+  recordingAttempt?: Prisma.IntFilter<"VoiceSession"> | number
   totalUserSpeakingTime?: Prisma.IntFilter<"VoiceSession"> | number
   maxDuration?: Prisma.IntFilter<"VoiceSession"> | number
   summaryText?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
@@ -293,6 +305,7 @@ export type VoiceSessionOrderByWithRelationInput = {
   userId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -315,6 +328,7 @@ export type VoiceSessionWhereUniqueInput = Prisma.AtLeast<{
   userId?: Prisma.StringFilter<"VoiceSession"> | string
   date?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
   status?: Prisma.StringFilter<"VoiceSession"> | string
+  recordingAttempt?: Prisma.IntFilter<"VoiceSession"> | number
   totalUserSpeakingTime?: Prisma.IntFilter<"VoiceSession"> | number
   maxDuration?: Prisma.IntFilter<"VoiceSession"> | number
   summaryText?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
@@ -333,6 +347,7 @@ export type VoiceSessionOrderByWithAggregationInput = {
   userId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -357,6 +372,7 @@ export type VoiceSessionScalarWhereWithAggregatesInput = {
   userId?: Prisma.StringWithAggregatesFilter<"VoiceSession"> | string
   date?: Prisma.DateTimeWithAggregatesFilter<"VoiceSession"> | Date | string
   status?: Prisma.StringWithAggregatesFilter<"VoiceSession"> | string
+  recordingAttempt?: Prisma.IntWithAggregatesFilter<"VoiceSession"> | number
   totalUserSpeakingTime?: Prisma.IntWithAggregatesFilter<"VoiceSession"> | number
   maxDuration?: Prisma.IntWithAggregatesFilter<"VoiceSession"> | number
   summaryText?: Prisma.StringNullableWithAggregatesFilter<"VoiceSession"> | string | null
@@ -372,6 +388,7 @@ export type VoiceSessionCreateInput = {
   id?: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -390,6 +407,7 @@ export type VoiceSessionUncheckedCreateInput = {
   userId: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -406,6 +424,7 @@ export type VoiceSessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -424,6 +443,7 @@ export type VoiceSessionUncheckedUpdateInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -441,6 +461,7 @@ export type VoiceSessionCreateManyInput = {
   userId: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -456,6 +477,7 @@ export type VoiceSessionUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -472,6 +494,7 @@ export type VoiceSessionUncheckedUpdateManyInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -503,6 +526,7 @@ export type VoiceSessionCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
@@ -515,6 +539,7 @@ export type VoiceSessionCountOrderByAggregateInput = {
 }
 
 export type VoiceSessionAvgOrderByAggregateInput = {
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
 }
@@ -524,6 +549,7 @@ export type VoiceSessionMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
@@ -540,6 +566,7 @@ export type VoiceSessionMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   date?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
@@ -552,6 +579,7 @@ export type VoiceSessionMinOrderByAggregateInput = {
 }
 
 export type VoiceSessionSumOrderByAggregateInput = {
+  recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
 }
@@ -629,6 +657,7 @@ export type VoiceSessionCreateWithoutUserInput = {
   id?: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -645,6 +674,7 @@ export type VoiceSessionUncheckedCreateWithoutUserInput = {
   id?: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -690,6 +720,7 @@ export type VoiceSessionScalarWhereInput = {
   userId?: Prisma.StringFilter<"VoiceSession"> | string
   date?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
   status?: Prisma.StringFilter<"VoiceSession"> | string
+  recordingAttempt?: Prisma.IntFilter<"VoiceSession"> | number
   totalUserSpeakingTime?: Prisma.IntFilter<"VoiceSession"> | number
   maxDuration?: Prisma.IntFilter<"VoiceSession"> | number
   summaryText?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
@@ -705,6 +736,7 @@ export type VoiceSessionCreateWithoutTurnsInput = {
   id?: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -722,6 +754,7 @@ export type VoiceSessionUncheckedCreateWithoutTurnsInput = {
   userId: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -753,6 +786,7 @@ export type VoiceSessionUpdateWithoutTurnsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -770,6 +804,7 @@ export type VoiceSessionUncheckedUpdateWithoutTurnsInput = {
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -785,6 +820,7 @@ export type VoiceSessionCreateManyUserInput = {
   id?: string
   date: Date | string
   status?: string
+  recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
   summaryText?: string | null
@@ -800,6 +836,7 @@ export type VoiceSessionUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -816,6 +853,7 @@ export type VoiceSessionUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -832,6 +870,7 @@ export type VoiceSessionUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -879,6 +918,7 @@ export type VoiceSessionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   userId?: boolean
   date?: boolean
   status?: boolean
+  recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   summaryText?: boolean
@@ -898,6 +938,7 @@ export type VoiceSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   userId?: boolean
   date?: boolean
   status?: boolean
+  recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   summaryText?: boolean
@@ -915,6 +956,7 @@ export type VoiceSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   userId?: boolean
   date?: boolean
   status?: boolean
+  recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   summaryText?: boolean
@@ -932,6 +974,7 @@ export type VoiceSessionSelectScalar = {
   userId?: boolean
   date?: boolean
   status?: boolean
+  recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   summaryText?: boolean
@@ -943,7 +986,7 @@ export type VoiceSessionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type VoiceSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "imageStyle" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["voiceSession"]>
+export type VoiceSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "imageStyle" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["voiceSession"]>
 export type VoiceSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.VoiceSession$turnsArgs<ExtArgs>
@@ -967,6 +1010,7 @@ export type $VoiceSessionPayload<ExtArgs extends runtime.Types.Extensions.Intern
     userId: string
     date: Date
     status: string
+    recordingAttempt: number
     totalUserSpeakingTime: number
     maxDuration: number
     summaryText: string | null
@@ -1405,6 +1449,7 @@ export interface VoiceSessionFieldRefs {
   readonly userId: Prisma.FieldRef<"VoiceSession", 'String'>
   readonly date: Prisma.FieldRef<"VoiceSession", 'DateTime'>
   readonly status: Prisma.FieldRef<"VoiceSession", 'String'>
+  readonly recordingAttempt: Prisma.FieldRef<"VoiceSession", 'Int'>
   readonly totalUserSpeakingTime: Prisma.FieldRef<"VoiceSession", 'Int'>
   readonly maxDuration: Prisma.FieldRef<"VoiceSession", 'Int'>
   readonly summaryText: Prisma.FieldRef<"VoiceSession", 'String'>

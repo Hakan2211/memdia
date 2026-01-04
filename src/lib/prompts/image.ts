@@ -9,6 +9,13 @@ import type { ImageStyle } from '../../types/voice-session'
  * Style-specific prompt prefixes
  */
 const STYLE_PREFIXES: Record<ImageStyle, string> = {
+  realistic: `Create a photorealistic, hyperreal visualization of daily life activities.
+The scene should look like a high-quality cinematic photograph capturing real moments.
+Include realistic lighting, natural textures, and detailed environmental elements.
+Show the activities and settings described with editorial photography quality.
+Style: hyperrealistic digital art, cinematic lighting, detailed scene composition, 
+lifelike colors and shadows, professional photography aesthetics.`,
+
   dreamlike: `Create a dreamlike, ethereal image with soft focus and gentle pastel colors.
 The composition should be minimal and calming, with subtle symbolic elements.
 Think fine art photography with a peaceful, meditative quality.`,

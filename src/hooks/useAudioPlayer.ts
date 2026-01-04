@@ -59,6 +59,18 @@ export function useAudioPlayer(
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const animationFrameRef = useRef<number | null>(null)
 
+  // Use refs to always have the latest callbacks
+  const onPlayRef = useRef(onPlay)
+  const onEndRef = useRef(onEnd)
+  const onErrorRef = useRef(onError)
+
+  // Keep refs updated with latest callbacks
+  useEffect(() => {
+    onPlayRef.current = onPlay
+    onEndRef.current = onEnd
+    onErrorRef.current = onError
+  }, [onPlay, onEnd, onError])
+
   // Initialize audio element
   useEffect(() => {
     audioRef.current = new Audio()
@@ -66,11 +78,66 @@ export function useAudioPlayer(
 
     const audio = audioRef.current
 
-    audio.addEventListener('ended', handleEnded)
-    audio.addEventListener('error', handleError)
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
-    audio.addEventListener('canplaythrough', handleCanPlay)
-    audio.addEventListener('play', handlePlayStart)
+    const handleEndedEvent = () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+      }
+      setState((prev) => ({
+        ...prev,
+        isPlaying: false,
+        progress: 1,
+      }))
+      // Call the latest onEnd callback via ref
+      onEndRef.current?.()
+    }
+
+    const handleErrorEvent = () => {
+      const error = new Error('Failed to play audio')
+      setState((prev) => ({
+        ...prev,
+        isPlaying: false,
+        isLoading: false,
+        error: error.message,
+      }))
+      onErrorRef.current?.(error)
+    }
+
+    const handleLoadedMetadataEvent = () => {
+      if (audioRef.current) {
+        setState((prev) => ({
+          ...prev,
+          duration: audioRef.current?.duration || 0,
+        }))
+      }
+    }
+
+    const handleCanPlayEvent = () => {
+      setState((prev) => ({ ...prev, isLoading: false }))
+    }
+
+    const handlePlayStartEvent = () => {
+      setState((prev) => ({ ...prev, isPlaying: true, canAutoplay: true }))
+      onPlayRef.current?.()
+      updateProgressLoop()
+    }
+
+    const updateProgressLoop = () => {
+      if (audioRef.current && !audioRef.current.paused) {
+        const progress =
+          audioRef.current.currentTime / audioRef.current.duration
+        setState((prev) => ({
+          ...prev,
+          progress: isNaN(progress) ? 0 : progress,
+        }))
+        animationFrameRef.current = requestAnimationFrame(updateProgressLoop)
+      }
+    }
+
+    audio.addEventListener('ended', handleEndedEvent)
+    audio.addEventListener('error', handleErrorEvent)
+    audio.addEventListener('loadedmetadata', handleLoadedMetadataEvent)
+    audio.addEventListener('canplaythrough', handleCanPlayEvent)
+    audio.addEventListener('play', handlePlayStartEvent)
 
     // Check if autoplay is allowed (some browsers allow it after interaction)
     checkAutoplayAllowed()
@@ -79,11 +146,11 @@ export function useAudioPlayer(
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
-      audio.removeEventListener('ended', handleEnded)
-      audio.removeEventListener('error', handleError)
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      audio.removeEventListener('canplaythrough', handleCanPlay)
-      audio.removeEventListener('play', handlePlayStart)
+      audio.removeEventListener('ended', handleEndedEvent)
+      audio.removeEventListener('error', handleErrorEvent)
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadataEvent)
+      audio.removeEventListener('canplaythrough', handleCanPlayEvent)
+      audio.removeEventListener('play', handlePlayStartEvent)
       audio.pause()
       audio.src = ''
     }
@@ -106,107 +173,53 @@ export function useAudioPlayer(
     }
   }
 
-  const handleEnded = useCallback(() => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current)
-    }
-    setState((prev) => ({
-      ...prev,
-      isPlaying: false,
-      progress: 1,
-    }))
-    onEnd?.()
-  }, [onEnd])
-
-  const handleError = useCallback(() => {
-    const error = new Error('Failed to play audio')
-    setState((prev) => ({
-      ...prev,
-      isPlaying: false,
-      isLoading: false,
-      error: error.message,
-    }))
-    onError?.(error)
-  }, [onError])
-
-  const handleLoadedMetadata = useCallback(() => {
-    if (audioRef.current) {
-      setState((prev) => ({
-        ...prev,
-        duration: audioRef.current?.duration || 0,
-      }))
-    }
-  }, [])
-
-  const handleCanPlay = useCallback(() => {
-    setState((prev) => ({ ...prev, isLoading: false }))
-  }, [])
-
-  const handlePlayStart = useCallback(() => {
-    setState((prev) => ({ ...prev, isPlaying: true, canAutoplay: true }))
-    onPlay?.()
-    updateProgress()
-  }, [onPlay])
-
-  const updateProgress = useCallback(() => {
-    if (audioRef.current && !audioRef.current.paused) {
-      const progress = audioRef.current.currentTime / audioRef.current.duration
-      setState((prev) => ({
-        ...prev,
-        progress: isNaN(progress) ? 0 : progress,
-      }))
-      animationFrameRef.current = requestAnimationFrame(updateProgress)
-    }
-  }, [])
-
   // Play audio from URL
-  const play = useCallback(
-    async (url: string) => {
-      if (!audioRef.current || !url) {
-        console.warn('[AudioPlayer] No audio URL provided')
-        return
+  const play = useCallback(async (url: string) => {
+    if (!audioRef.current || !url) {
+      console.warn('[AudioPlayer] No audio URL provided')
+      return
+    }
+
+    setState((prev) => ({
+      ...prev,
+      isLoading: true,
+      error: null,
+      progress: 0,
+    }))
+
+    try {
+      // Stop any current playback
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+
+      // Set new source
+      audioRef.current.src = url
+
+      // Attempt to play
+      await audioRef.current.play()
+    } catch (error) {
+      console.error('[AudioPlayer] Playback error:', error)
+
+      // If autoplay was blocked, mark it
+      if (error instanceof Error && error.name === 'NotAllowedError') {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          canAutoplay: false,
+          error: 'Click to enable audio playback',
+        }))
+      } else {
+        setState((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: error instanceof Error ? error.message : 'Playback failed',
+        }))
       }
-
-      setState((prev) => ({
-        ...prev,
-        isLoading: true,
-        error: null,
-        progress: 0,
-      }))
-
-      try {
-        // Stop any current playback
-        audioRef.current.pause()
-        audioRef.current.currentTime = 0
-
-        // Set new source
-        audioRef.current.src = url
-
-        // Attempt to play
-        await audioRef.current.play()
-      } catch (error) {
-        console.error('[AudioPlayer] Playback error:', error)
-
-        // If autoplay was blocked, mark it
-        if (error instanceof Error && error.name === 'NotAllowedError') {
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-            canAutoplay: false,
-            error: 'Click to enable audio playback',
-          }))
-        } else {
-          setState((prev) => ({
-            ...prev,
-            isLoading: false,
-            error: error instanceof Error ? error.message : 'Playback failed',
-          }))
-        }
-        onError?.(error instanceof Error ? error : new Error('Playback failed'))
-      }
-    },
-    [onError],
-  )
+      onErrorRef.current?.(
+        error instanceof Error ? error : new Error('Playback failed'),
+      )
+    }
+  }, [])
 
   // Stop playback
   const stop = useCallback(() => {
