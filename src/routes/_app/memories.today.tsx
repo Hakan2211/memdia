@@ -8,13 +8,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { format } from 'date-fns'
 import { Play, AlertCircle, Volume2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '../../components/ui/button'
 import {
   getTodaySessionFn,
   startSessionFn,
   endSessionFn,
   updateSessionTimeFn,
-  deleteSessionFn,
+  cancelShortSessionFn,
 } from '../../server/session.fn'
 
 // Minimum session duration in seconds (sessions shorter than this are discarded)
@@ -305,7 +306,11 @@ function TodaySession() {
     },
     onError: (error) => {
       console.error('Failed to start session:', error)
-      alert(error instanceof Error ? error.message : 'Failed to start session')
+      toast.error('Failed to start session', {
+        description:
+          error instanceof Error ? error.message : 'Please try again.',
+        duration: 5000,
+      })
       setSessionState('idle')
     },
   })
@@ -464,7 +469,10 @@ function TodaySession() {
     // Check microphone permission first
     const hasPermission = await recorderActions.requestPermission()
     if (!hasPermission) {
-      alert('Microphone permission is required to start a session.')
+      toast.error('Microphone Required', {
+        description: 'Please allow microphone access to start a session.',
+        duration: 5000,
+      })
       return
     }
 
@@ -483,23 +491,26 @@ function TodaySession() {
       audioActions.stop()
       stopTimer()
 
-      // Delete the session without saving
+      // Cancel the short session (doesn't count as an attempt)
       try {
-        await deleteSessionFn({ data: { sessionId: session.id } })
+        await cancelShortSessionFn({ data: { sessionId: session.id } })
       } catch (error) {
-        console.error('Failed to delete short session:', error)
+        console.error('Failed to cancel short session:', error)
       }
 
       // Reset state
       queryClient.invalidateQueries({ queryKey: ['session', 'today'] })
+      queryClient.invalidateQueries({ queryKey: ['sessions'] }) // Also refresh sidebar
       setSessionState('idle')
       setElapsedTime(0)
       setShowRetryWarning(false)
 
-      // Show friendly notification
-      alert(
-        'Session too short! You need at least 1 minute to record. Come back anytime to try again.',
-      )
+      // Show friendly notification using sonner toast
+      toast.info('Session too short', {
+        description:
+          'You need at least 1 minute to record. Come back anytime to try again!',
+        duration: 5000,
+      })
       return
     }
 

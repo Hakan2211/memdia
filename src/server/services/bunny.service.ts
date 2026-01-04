@@ -264,7 +264,43 @@ export async function deleteFile(path: string): Promise<void> {
 }
 
 /**
- * Delete all files for a session
+ * Delete a folder/directory from Bunny.net
+ * Note: Bunny.net requires the path to end with a trailing slash for directories
+ */
+async function deleteFolder(directoryPath: string): Promise<void> {
+  const config = getConfig()
+  validateConfig(config)
+
+  // Ensure path ends with /
+  const folderPath = directoryPath.endsWith('/')
+    ? directoryPath
+    : `${directoryPath}/`
+  const url = `${getStorageUrl()}/${config.storageZone}/${folderPath}`
+
+  console.log(`[Bunny.net] Deleting folder: ${folderPath}`)
+
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      AccessKey: config.apiKey,
+    },
+  })
+
+  if (response.ok) {
+    console.log(`[Bunny.net] Successfully deleted folder: ${folderPath}`)
+  } else if (response.status === 404) {
+    console.log(`[Bunny.net] Folder not found (already deleted): ${folderPath}`)
+  } else {
+    const errorText = await response.text()
+    console.error(
+      `[Bunny.net] Failed to delete folder ${folderPath}: ${response.status} - ${errorText}`,
+    )
+    // Don't throw - folder deletion is best-effort
+  }
+}
+
+/**
+ * Delete all files for a session and the session folder itself
  */
 export async function deleteSessionFiles(
   userId: string,
@@ -279,13 +315,33 @@ export async function deleteSessionFiles(
     return
   }
 
+  console.log(`[Bunny.net] Deleting session files for: ${userId}/${sessionId}`)
+
   // List files in the session directory
   const directoryPath = `users/${userId}/sessions/${sessionId}/`
   const files = await listFiles(directoryPath)
 
+  console.log(`[Bunny.net] Found ${files.length} files to delete`)
+
   // Delete each file
   for (const file of files) {
+    console.log(`[Bunny.net] Deleting file: ${file.path}`)
     await deleteFile(file.path)
+  }
+
+  // Delete the session folder itself
+  await deleteFolder(directoryPath)
+
+  // Also try to clean up the parent sessions folder if empty
+  // (This is best-effort and won't fail if there are other sessions)
+  try {
+    const sessionsPath = `users/${userId}/sessions/`
+    const remainingSessions = await listFiles(sessionsPath)
+    if (remainingSessions.length === 0) {
+      await deleteFolder(sessionsPath)
+    }
+  } catch {
+    // Ignore errors when cleaning up parent folder
   }
 }
 

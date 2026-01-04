@@ -401,6 +401,48 @@ export const deleteSessionFn = createServerFn({ method: 'POST' })
   })
 
 // ==========================================
+// Cancel Short Session (doesn't count as attempt)
+// ==========================================
+
+/**
+ * Cancel a session that was too short (< 60 seconds)
+ * This doesn't count as a used attempt - the user can try again
+ */
+export const cancelShortSessionFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .inputValidator(sessionIdSchema)
+  .handler(async ({ data, context }) => {
+    const session = await prisma.voiceSession.findFirst({
+      where: {
+        id: data.sessionId,
+        userId: context.user.id,
+        status: 'active', // Can only cancel active sessions
+      },
+    })
+
+    if (!session) {
+      throw new Error('Active session not found')
+    }
+
+    // Delete from Bunny.net (audio files if any)
+    try {
+      const { deleteSessionFiles } = await import('./services/bunny.service')
+      await deleteSessionFiles(context.user.id, session.id)
+    } catch (error) {
+      console.error('Failed to delete session files from CDN:', error)
+      // Continue with database deletion even if CDN deletion fails
+    }
+
+    // Delete from database (cascade will delete turns)
+    // Note: We don't track this as a deleted attempt since it was too short
+    await prisma.voiceSession.delete({
+      where: { id: session.id },
+    })
+
+    return { success: true, cancelled: true }
+  })
+
+// ==========================================
 // Update Session Time
 // ==========================================
 
