@@ -43,6 +43,139 @@ const processSessionSchema = z.object({
   sessionId: z.string(),
 })
 
+const savePreloadedGreetingSchema = z.object({
+  sessionId: z.string(),
+  text: z.string(),
+  audioUrl: z.string().nullable(),
+})
+
+// ==========================================
+// Pre-Generate AI Greeting (Before Session Starts)
+// ==========================================
+
+export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const startTime = Date.now()
+    console.log('[PreGreeting] Starting pre-generation')
+
+    // Get user preferences (optional - for future personality customization)
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId: context.user.id },
+    })
+
+    // personality is stored for potential future use
+    void (preferences?.aiPersonality || 'empathetic')
+
+    // Get a random greeting
+    const greeting = getRandomGreeting()
+
+    // Generate TTS for the greeting
+    let audioUrl: string | null = null
+    let audioBase64: string | null = null
+    try {
+      const ttsResult = await generateSpeech(greeting)
+
+      // Fetch the audio and convert to base64 for immediate playback
+      if (ttsResult.audioUrl && ttsResult.audioUrl.length > 0) {
+        const response = await fetch(ttsResult.audioUrl)
+        if (response.ok) {
+          const audioBuffer = await response.arrayBuffer()
+          // Store original URL for later upload to Bunny
+          audioUrl = ttsResult.audioUrl
+          // Convert to base64 for immediate playback
+          const uint8Array = new Uint8Array(audioBuffer)
+          let binary = ''
+          for (let i = 0; i < uint8Array.length; i++) {
+            binary += String.fromCharCode(uint8Array[i])
+          }
+          audioBase64 = Buffer.from(binary, 'binary').toString('base64')
+        }
+      }
+    } catch (error) {
+      console.error('[PreGreeting] Failed to generate TTS:', error)
+      // Continue without audio
+    }
+
+    const latency = Date.now() - startTime
+    console.log(
+      `[PreGreeting] Complete (${latency}ms), audioUrl: ${audioUrl ? 'yes' : 'no'}`,
+    )
+
+    return {
+      text: greeting,
+      audioUrl,
+      audioBase64,
+      contentType: 'audio/mpeg',
+    }
+  })
+
+// ==========================================
+// Save Pre-Generated Greeting to Session
+// ==========================================
+
+export const savePreloadedGreetingFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .inputValidator(savePreloadedGreetingSchema)
+  .handler(async ({ data, context }) => {
+    console.log('[SaveGreeting] Saving preloaded greeting to session')
+
+    // Verify session belongs to user
+    const session = await prisma.voiceSession.findFirst({
+      where: {
+        id: data.sessionId,
+        userId: context.user.id,
+      },
+    })
+
+    if (!session) {
+      throw new Error('Session not found')
+    }
+
+    // Upload audio to Bunny if we have a URL
+    let permanentAudioUrl: string | null = null
+    if (data.audioUrl) {
+      try {
+        const response = await fetch(data.audioUrl)
+        if (response.ok) {
+          const audioBuffer = await response.arrayBuffer()
+          const uploadResult = await uploadAudio(
+            context.user.id,
+            session.id,
+            0,
+            'ai',
+            audioBuffer,
+            'audio/mpeg',
+          )
+          permanentAudioUrl = uploadResult.url
+        }
+      } catch (error) {
+        console.error('[SaveGreeting] Failed to upload audio:', error)
+        // Continue without permanent audio URL
+      }
+    }
+
+    // Save the greeting as the first turn
+    const turn = await prisma.transcriptTurn.create({
+      data: {
+        sessionId: session.id,
+        speaker: 'ai',
+        text: data.text,
+        audioUrl: permanentAudioUrl,
+        startTime: 0,
+        duration: 2, // Approximate
+        order: 0,
+      },
+    })
+
+    console.log('[SaveGreeting] Greeting saved as turn:', turn.id)
+
+    return {
+      turn,
+      audioUrl: permanentAudioUrl,
+    }
+  })
+
 // ==========================================
 // Generate AI Greeting (First Message)
 // ==========================================

@@ -25,6 +25,8 @@ const MIN_SESSION_DURATION = 60
 import {
   generateGreetingFn,
   processSessionFn,
+  preGenerateGreetingFn,
+  savePreloadedGreetingFn,
 } from '../../server/conversation.fn'
 import { streamMessageFn } from '../../server/streaming.fn'
 import { PulsingCircle } from '../../components/memories/PulsingCircle'
@@ -82,6 +84,17 @@ function TodaySession() {
 
   // Accumulate audio chunks for uploading user audio
   const audioChunksRef = useRef<Int16Array[]>([])
+
+  // Preloaded greeting for instant playback on session start
+  const preloadedGreetingRef = useRef<{
+    text: string
+    audioUrl: string | null
+    audioBase64: string | null
+    contentType: string
+  } | null>(null)
+  const isPreloadingRef = useRef(false)
+  // Track if we've already attempted preloading this mount (prevent duplicate calls)
+  const hasPreloadedOnceRef = useRef(false)
 
   // Helper to create a WAV file from PCM data
   const createWavFromPcm = useCallback(
@@ -501,8 +514,45 @@ function TodaySession() {
       // Start timer
       startTimer()
 
-      // Generate AI greeting
-      generateGreeting(newSession.id)
+      // Use preloaded greeting if available, otherwise generate fresh
+      console.log(
+        '[Session] Checking preloaded greeting:',
+        preloadedGreetingRef.current ? 'EXISTS' : 'NULL',
+      )
+      if (preloadedGreetingRef.current) {
+        console.log('[Session] Using preloaded greeting for instant playback')
+        const preloaded = preloadedGreetingRef.current
+        preloadedGreetingRef.current = null // Clear after use
+
+        // Play audio immediately using base64 for lowest latency
+        if (preloaded.audioBase64) {
+          streamingAudioActions.queueAudioChunk(
+            preloaded.audioBase64,
+            preloaded.contentType,
+          )
+        } else if (preloaded.audioUrl) {
+          playAudio(preloaded.audioUrl)
+        }
+
+        // Save the greeting to the session in the background
+        savePreloadedGreetingFn({
+          data: {
+            sessionId: newSession.id,
+            text: preloaded.text,
+            audioUrl: preloaded.audioUrl,
+          },
+        })
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['session', 'today'] })
+          })
+          .catch((error) => {
+            console.error('[Session] Failed to save preloaded greeting:', error)
+          })
+      } else {
+        // Fallback: generate greeting if preload not ready
+        console.log('[Session] No preloaded greeting, generating fresh')
+        generateGreeting(newSession.id)
+      }
     },
     onError: (error) => {
       console.error('Failed to start session:', error)
@@ -665,6 +715,55 @@ function TodaySession() {
       }
     }
   }, [session, sessionState])
+
+  // Pre-generate greeting when user lands on the page (idle state)
+  // This effect should only trigger preloading ONCE per component mount
+  useEffect(() => {
+    // Only preload if:
+    // 1. Session state is idle (user hasn't started yet)
+    // 2. Not already preloading
+    // 3. No existing preloaded greeting
+    // 4. Haven't already attempted preloading this mount
+    // 5. No completed session (don't preload if viewing completed session)
+    const shouldPreload =
+      sessionState === 'idle' &&
+      !isPreloadingRef.current &&
+      !preloadedGreetingRef.current &&
+      !hasPreloadedOnceRef.current &&
+      (!session || session.status !== 'completed')
+
+    if (shouldPreload) {
+      hasPreloadedOnceRef.current = true // Mark as attempted - prevents duplicate calls
+      isPreloadingRef.current = true
+      console.log('[Preload] Starting greeting pre-generation (once per mount)')
+
+      preGenerateGreetingFn()
+        .then((result) => {
+          preloadedGreetingRef.current = result
+          isPreloadingRef.current = false
+          console.log(
+            '[Preload] Greeting ready:',
+            result.text.substring(0, 30) + '...',
+          )
+        })
+        .catch((error) => {
+          console.error('[Preload] Failed to pre-generate greeting:', error)
+          isPreloadingRef.current = false
+          // Silently fail - will fall back to normal generation
+        })
+    }
+    // NOTE: No cleanup here - we don't want to clear the preloaded greeting on re-renders
+    // Cleanup happens in the separate unmount effect below
+  }, [sessionState, session])
+
+  // Cleanup preloaded greeting only on actual component unmount
+  useEffect(() => {
+    return () => {
+      preloadedGreetingRef.current = null
+      isPreloadingRef.current = false
+      hasPreloadedOnceRef.current = false
+    }
+  }, []) // Empty deps = only runs on unmount
 
   // Timer logic
   const startTimer = useCallback(() => {

@@ -17,6 +17,7 @@ import {
   Square,
 } from 'lucide-react'
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { Button } from '../../components/ui/button'
 import { getSessionByDateFn, deleteSessionFn } from '../../server/session.fn'
 import { useAudioPlayer } from '../../hooks/useAudioPlayer'
@@ -70,7 +71,17 @@ function SessionByDate() {
     mutationFn: (sessionId: string) => deleteSessionFn({ data: { sessionId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sessions'] })
+      toast.success('Session deleted', {
+        description: 'Your memory has been permanently deleted.',
+      })
       navigate({ to: '/memories' })
+    },
+    onError: (error) => {
+      console.error('Failed to delete session:', error)
+      toast.error('Failed to delete session', {
+        description:
+          error instanceof Error ? error.message : 'Please try again.',
+      })
     },
   })
 

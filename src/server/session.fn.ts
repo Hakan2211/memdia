@@ -349,6 +349,8 @@ export const deleteSessionFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .inputValidator(sessionIdSchema)
   .handler(async ({ data, context }) => {
+    console.log('[Delete Session] Starting deletion for:', data.sessionId)
+
     const session = await prisma.voiceSession.findFirst({
       where: {
         id: data.sessionId,
@@ -357,38 +359,55 @@ export const deleteSessionFn = createServerFn({ method: 'POST' })
     })
 
     if (!session) {
+      console.error('[Delete Session] Session not found:', data.sessionId)
       throw new Error('Session not found')
     }
 
-    // Check if this is already attempt 2 - if so, block deletion (no more retries)
-    if (session.recordingAttempt >= 2) {
+    console.log('[Delete Session] Found session:', {
+      id: session.id,
+      status: session.status,
+      recordingAttempt: session.recordingAttempt,
+      date: session.date,
+    })
+
+    // For completed sessions, always allow deletion (users should be able to delete their memories)
+    // For active/processing sessions on attempt 2, still block to prevent gaming
+    const isCompleted = session.status === 'completed'
+    const isSecondAttempt = session.recordingAttempt >= 2
+
+    if (!isCompleted && isSecondAttempt) {
+      console.error('[Delete Session] Blocked - active second attempt')
       throw new Error(
-        'You cannot delete this session. You have used all recording attempts for today.',
+        'You cannot delete an in-progress session on your final attempt.',
       )
     }
 
-    // Track that this user has deleted a session for this date (uses one attempt)
-    const sessionDate = getStartOfDay(session.date)
-    await prisma.deletedSessionAttempt.upsert({
-      where: {
-        userId_date: {
+    // Track deleted attempt only for non-completed sessions (to prevent re-recording abuse)
+    // Completed sessions can be deleted freely
+    if (!isCompleted) {
+      const sessionDate = getStartOfDay(session.date)
+      await prisma.deletedSessionAttempt.upsert({
+        where: {
+          userId_date: {
+            userId: context.user.id,
+            date: sessionDate,
+          },
+        },
+        create: {
           userId: context.user.id,
           date: sessionDate,
         },
-      },
-      create: {
-        userId: context.user.id,
-        date: sessionDate,
-      },
-      update: {}, // No update needed, just ensure the record exists
-    })
+        update: {}, // No update needed, just ensure the record exists
+      })
+    }
 
     // Delete from Bunny.net (audio files and image)
     try {
       const { deleteSessionFiles } = await import('./services/bunny.service')
       await deleteSessionFiles(context.user.id, session.id)
+      console.log('[Delete Session] CDN files deleted')
     } catch (error) {
-      console.error('Failed to delete session files from CDN:', error)
+      console.error('[Delete Session] Failed to delete CDN files:', error)
       // Continue with database deletion even if CDN deletion fails
     }
 
@@ -397,7 +416,8 @@ export const deleteSessionFn = createServerFn({ method: 'POST' })
       where: { id: session.id },
     })
 
-    return { success: true, wasLastAttempt: false }
+    console.log('[Delete Session] Session deleted successfully')
+    return { success: true, wasLastAttempt: isSecondAttempt }
   })
 
 // ==========================================
