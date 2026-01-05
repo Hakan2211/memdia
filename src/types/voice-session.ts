@@ -10,6 +10,12 @@
 export type SessionStatus = 'active' | 'paused' | 'processing' | 'completed'
 
 // ==========================================
+// Archival Status
+// ==========================================
+
+export type ArchivalStatus = 'pending' | 'processing' | 'completed' | 'failed'
+
+// ==========================================
 // Speaker Types
 // ==========================================
 
@@ -94,6 +100,7 @@ export interface VoiceSession {
   summaryText: string | null
   imageUrl: string | null
   imageStyle: ImageStyle
+  archivalStatus: ArchivalStatus
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date

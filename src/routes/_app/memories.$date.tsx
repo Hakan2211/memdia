@@ -46,6 +46,23 @@ function SessionByDate() {
   } = useQuery({
     queryKey: ['session', 'date', date],
     queryFn: () => getSessionByDateFn({ data: { date } }),
+    // Poll every 2 seconds while session is processing or missing image/audio
+    refetchInterval: (query) => {
+      const data = query.state.data
+      if (!data) return false
+      // Keep polling if processing or missing image
+      if (data.status === 'processing') return 2000
+      if (data.status === 'completed' && !data.imageUrl) return 2000
+      // Keep polling if archival not complete (check if any AI turns missing audio)
+      if (
+        data.status === 'completed' &&
+        data.archivalStatus !== 'completed' &&
+        data.archivalStatus !== 'failed'
+      ) {
+        return 3000
+      }
+      return false
+    },
   })
 
   // Delete mutation
@@ -138,37 +155,76 @@ function SessionByDate() {
         </div>
       </div>
 
-      {/* Daily Image */}
-      {session.imageUrl && (
-        <div className="mb-8">
+      {/* Daily Image - with skeleton while processing */}
+      <div className="mb-8">
+        {session.imageUrl ? (
           <img
             src={session.imageUrl}
             alt="Daily memory"
             className="w-full rounded-xl shadow-lg"
           />
-        </div>
-      )}
+        ) : session.status === 'processing' ||
+          (session.status === 'completed' && !session.imageUrl) ? (
+          <div className="aspect-square bg-muted animate-pulse rounded-xl flex flex-col items-center justify-center">
+            <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
+            <span className="text-muted-foreground text-sm">
+              Creating your memory image...
+            </span>
+          </div>
+        ) : null}
+      </div>
 
-      {/* Summary */}
-      {session.summaryText && (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Reflection</h2>
+      {/* Summary - with skeleton while processing */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold mb-3">Reflection</h2>
+        {session.summaryText ? (
           <div className="prose prose-sm prose-zinc">
             {session.summaryText.split('\n\n').map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
             ))}
           </div>
-        </div>
-      )}
+        ) : session.status === 'processing' ? (
+          <div className="space-y-3">
+            <div className="h-4 bg-muted animate-pulse rounded w-full" />
+            <div className="h-4 bg-muted animate-pulse rounded w-11/12" />
+            <div className="h-4 bg-muted animate-pulse rounded w-4/5" />
+            <div className="h-4 bg-muted animate-pulse rounded w-full" />
+            <div className="h-4 bg-muted animate-pulse rounded w-3/4" />
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            No reflection available for this session.
+          </p>
+        )}
+      </div>
 
-      {/* Audio Player */}
+      {/* Audio Player - with skeleton while archiving */}
       {session.turns && session.turns.length > 0 && (
         <div className="mb-8">
-          <AudioPlayer
-            session={session}
-            onTurnChange={setActiveTurnIndex}
-            onPlayTurnReady={(fn) => setPlayTurnFn(() => fn)}
-          />
+          {session.archivalStatus === 'pending' ||
+          session.archivalStatus === 'processing' ? (
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-muted animate-pulse" />
+                <div className="flex-1">
+                  <div className="h-2 bg-muted animate-pulse rounded-full" />
+                  <div className="flex justify-between mt-2">
+                    <div className="h-3 w-10 bg-muted animate-pulse rounded" />
+                    <div className="h-3 w-10 bg-muted animate-pulse rounded" />
+                  </div>
+                </div>
+              </div>
+              <p className="text-center text-sm text-muted-foreground mt-3">
+                Processing audio for replay...
+              </p>
+            </div>
+          ) : (
+            <AudioPlayer
+              session={session}
+              onTurnChange={setActiveTurnIndex}
+              onPlayTurnReady={(fn) => setPlayTurnFn(() => fn)}
+            />
+          )}
         </div>
       )}
 
@@ -181,19 +237,6 @@ function SessionByDate() {
             activeTurnIndex={activeTurnIndex}
             onPlayTurn={(index) => playTurnFn?.(index)}
           />
-        </div>
-      )}
-
-      {/* Processing state */}
-      {session.status === 'processing' && (
-        <div className="text-center py-8 border rounded-lg bg-muted/20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">
-            Your memory is being processed...
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Summary and image will appear shortly
-          </p>
         </div>
       )}
 

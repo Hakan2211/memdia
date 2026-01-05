@@ -11,6 +11,7 @@ import { chatCompletion, type ChatMessage } from './services/openrouter.service'
 import { generateSpeech } from './services/falai.service'
 import { generateImage } from './services/falai.service'
 import { uploadAudio, uploadImageFromUrl } from './services/bunny.service'
+import { archiveSession } from './services/archival.service'
 import {
   buildConversationSystemPrompt,
   buildConversationContext,
@@ -50,6 +51,9 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .inputValidator(generateGreetingSchema)
   .handler(async ({ data, context }) => {
+    const startTime = Date.now()
+    console.log('[Greeting] Starting greeting generation')
+
     // Get session and user preferences
     const session = await prisma.voiceSession.findFirst({
       where: {
@@ -111,6 +115,11 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
         order: 0,
       },
     })
+
+    const latency = Date.now() - startTime
+    console.log(
+      `[Greeting] Complete (${latency}ms), audioUrl: ${audioUrl ? 'yes' : 'no'}`,
+    )
 
     return {
       text: greeting,
@@ -368,8 +377,31 @@ export const processSessionFn = createServerFn({ method: 'POST' })
         status: 'completed',
         summaryText,
         imageUrl,
+        archivalStatus: 'processing',
       },
     })
+
+    // Start archival in background (don't await - runs in parallel)
+    // This regenerates AI audio and uploads to Bunny.net for replay
+    archiveSession(session.id)
+      .then(async (result) => {
+        console.log(
+          `[Archival] Completed for session ${session.id}: ${result.turnsArchived} turns archived`,
+        )
+        await prisma.voiceSession.update({
+          where: { id: session.id },
+          data: {
+            archivalStatus: result.success ? 'completed' : 'failed',
+          },
+        })
+      })
+      .catch(async (error) => {
+        console.error(`[Archival] Failed for session ${session.id}:`, error)
+        await prisma.voiceSession.update({
+          where: { id: session.id },
+          data: { archivalStatus: 'failed' },
+        })
+      })
 
     return {
       session: updatedSession,

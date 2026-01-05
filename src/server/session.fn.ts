@@ -649,7 +649,7 @@ export const getUserPreferencesFn = createServerFn({ method: 'GET' })
         data: {
           userId: context.user.id,
           timezone: 'UTC',
-          imageStyle: 'dreamlike',
+          imageStyle: 'realistic',
           aiPersonality: 'empathetic',
         },
       })
@@ -673,7 +673,7 @@ export const updateUserPreferencesFn = createServerFn({ method: 'POST' })
       create: {
         userId: context.user.id,
         timezone: data.timezone || 'UTC',
-        imageStyle: data.imageStyle || 'dreamlike',
+        imageStyle: data.imageStyle || 'realistic',
         aiPersonality: data.aiPersonality || 'empathetic',
       },
     })

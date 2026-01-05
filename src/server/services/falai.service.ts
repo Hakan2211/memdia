@@ -5,7 +5,7 @@
  * Uses the official @fal-ai/client
  *
  * Models:
- * - TTS: fal-ai/elevenlabs/tts/eleven-v3
+ * - TTS: fal-ai/elevenlabs/tts/turbo-v2.5 (faster than eleven-v3)
  * - Image: imagineart/imagineart-1.5-preview/text-to-image
  */
 
@@ -50,7 +50,7 @@ const MOCK_FAL = process.env.MOCK_FAL === 'true'
 
 /**
  * Generate speech from text using ElevenLabs via fal.ai
- * Model: fal-ai/elevenlabs/tts/eleven-v3
+ * Model: fal-ai/elevenlabs/tts/turbo-v2.5 (faster, optimized for low latency)
  */
 export async function generateSpeech(
   text: string,
@@ -66,10 +66,11 @@ export async function generateSpeech(
     throw new Error('FAL_KEY is required')
   }
 
+  const startTime = Date.now()
   console.log('[fal.ai TTS] Generating speech for:', text.slice(0, 50) + '...')
 
   try {
-    const result = await fal.subscribe('fal-ai/elevenlabs/tts/eleven-v3', {
+    const result = await fal.subscribe('fal-ai/elevenlabs/tts/turbo-v2.5', {
       input: {
         text,
         // Use a warm, friendly voice - Rachel is the default
@@ -80,7 +81,11 @@ export async function generateSpeech(
       },
     })
 
-    console.log('[fal.ai TTS] Raw result:', JSON.stringify(result, null, 2))
+    const ttsLatency = Date.now() - startTime
+    console.log(
+      `[fal.ai TTS] Raw result (took ${ttsLatency}ms):`,
+      JSON.stringify(result, null, 2),
+    )
 
     const data = result.data as {
       audio: { url: string; content_type?: string; file_size?: number }
@@ -94,7 +99,9 @@ export async function generateSpeech(
     // Estimate duration based on text length
     const estimatedDuration = estimateDuration(text)
 
-    console.log('[fal.ai TTS] Success! Audio URL:', data.audio.url)
+    console.log(
+      `[fal.ai TTS] Success! Audio URL: ${data.audio.url} (latency: ${ttsLatency}ms)`,
+    )
 
     return {
       audioUrl: data.audio.url,
@@ -158,6 +165,20 @@ const STYLE_PROMPTS: Record<ImageStyle, string> = {
     delicate details, hand-drawn aesthetic, monochromatic with hints of color`,
 }
 
+/** Style-specific endings to reinforce the visual style */
+const STYLE_ENDINGS: Record<ImageStyle, string> = {
+  realistic:
+    'Capture a photorealistic, cinematic scene with natural lighting, realistic details, and lifelike representation.',
+  dreamlike:
+    'Create an ethereal, dreamlike atmosphere with soft symbolism and abstract, flowing elements.',
+  watercolor:
+    'Express through flowing watercolor washes, organic shapes, and artistic painterly strokes.',
+  geometric:
+    'Compose with clean geometric forms, balanced abstract elements, and modern minimalist design.',
+  sketch:
+    'Render as an elegant pencil sketch with fine artistic line work and subtle hand-drawn details.',
+}
+
 /**
  * Generate an image based on a summary and style using ImagineArt 1.5
  * Model: imagineart/imagineart-1.5-preview/text-to-image
@@ -177,15 +198,16 @@ export async function generateImage(
   }
 
   const stylePrompt = STYLE_PROMPTS[config.style]
+  const styleEnding = STYLE_ENDINGS[config.style]
 
-  // Build the full prompt
-  const prompt = `Create a symbolic, artistic image representing the emotional themes of this reflection:
+  // Build the full prompt - style ending reinforces the visual style
+  const prompt = `Create an image representing the emotional themes of this reflection:
 
 ${summary.slice(0, 500)}
 
 ${stylePrompt}
 
-Important: No text, no words, no letters in the image. Pure visual art only. Abstract and symbolic.`
+Important: No text, no words, no letters in the image. Pure visual art only. ${styleEnding}`
 
   console.log(
     '[fal.ai Image] Generating image with prompt:',

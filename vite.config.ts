@@ -5,6 +5,7 @@ import { nitroV2Plugin } from '@tanstack/nitro-v2-vite-plugin'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 // Vite configuration for TanStack Start with Nitro
 const config = defineConfig({
@@ -15,6 +16,23 @@ const config = defineConfig({
       projects: ['./tsconfig.json'],
     }),
     tailwindcss(),
+    // Copy ONNX and WASM files for @ricky0123/vad-react (Voice Activity Detection)
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'node_modules/@ricky0123/vad-web/dist/vad.worklet.bundle.min.js',
+          dest: '',
+        },
+        {
+          src: 'node_modules/@ricky0123/vad-web/dist/*.onnx',
+          dest: '',
+        },
+        {
+          src: 'node_modules/onnxruntime-web/dist/*.wasm',
+          dest: '',
+        },
+      ],
+    }),
     tanstackStart(),
     nitroV2Plugin(),
     viteReact(),

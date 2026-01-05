@@ -49,6 +49,7 @@ export type VoiceSessionMinAggregateOutputType = {
   summaryText: string | null
   imageUrl: string | null
   imageStyle: string | null
+  archivalStatus: string | null
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date | null
@@ -66,6 +67,7 @@ export type VoiceSessionMaxAggregateOutputType = {
   summaryText: string | null
   imageUrl: string | null
   imageStyle: string | null
+  archivalStatus: string | null
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date | null
@@ -83,6 +85,7 @@ export type VoiceSessionCountAggregateOutputType = {
   summaryText: number
   imageUrl: number
   imageStyle: number
+  archivalStatus: number
   pausedAt: number
   completedAt: number
   createdAt: number
@@ -114,6 +117,7 @@ export type VoiceSessionMinAggregateInputType = {
   summaryText?: true
   imageUrl?: true
   imageStyle?: true
+  archivalStatus?: true
   pausedAt?: true
   completedAt?: true
   createdAt?: true
@@ -131,6 +135,7 @@ export type VoiceSessionMaxAggregateInputType = {
   summaryText?: true
   imageUrl?: true
   imageStyle?: true
+  archivalStatus?: true
   pausedAt?: true
   completedAt?: true
   createdAt?: true
@@ -148,6 +153,7 @@ export type VoiceSessionCountAggregateInputType = {
   summaryText?: true
   imageUrl?: true
   imageStyle?: true
+  archivalStatus?: true
   pausedAt?: true
   completedAt?: true
   createdAt?: true
@@ -252,6 +258,7 @@ export type VoiceSessionGroupByOutputType = {
   summaryText: string | null
   imageUrl: string | null
   imageStyle: string
+  archivalStatus: string
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date
@@ -292,6 +299,7 @@ export type VoiceSessionWhereInput = {
   summaryText?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
   imageStyle?: Prisma.StringFilter<"VoiceSession"> | string
+  archivalStatus?: Prisma.StringFilter<"VoiceSession"> | string
   pausedAt?: Prisma.DateTimeNullableFilter<"VoiceSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"VoiceSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
@@ -311,6 +319,7 @@ export type VoiceSessionOrderByWithRelationInput = {
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStyle?: Prisma.SortOrder
+  archivalStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -334,6 +343,7 @@ export type VoiceSessionWhereUniqueInput = Prisma.AtLeast<{
   summaryText?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
   imageStyle?: Prisma.StringFilter<"VoiceSession"> | string
+  archivalStatus?: Prisma.StringFilter<"VoiceSession"> | string
   pausedAt?: Prisma.DateTimeNullableFilter<"VoiceSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"VoiceSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
@@ -353,6 +363,7 @@ export type VoiceSessionOrderByWithAggregationInput = {
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStyle?: Prisma.SortOrder
+  archivalStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -378,6 +389,7 @@ export type VoiceSessionScalarWhereWithAggregatesInput = {
   summaryText?: Prisma.StringNullableWithAggregatesFilter<"VoiceSession"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"VoiceSession"> | string | null
   imageStyle?: Prisma.StringWithAggregatesFilter<"VoiceSession"> | string
+  archivalStatus?: Prisma.StringWithAggregatesFilter<"VoiceSession"> | string
   pausedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VoiceSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"VoiceSession"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"VoiceSession"> | Date | string
@@ -394,6 +406,7 @@ export type VoiceSessionCreateInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -413,6 +426,7 @@ export type VoiceSessionUncheckedCreateInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -430,6 +444,7 @@ export type VoiceSessionUpdateInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -449,6 +464,7 @@ export type VoiceSessionUncheckedUpdateInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -467,6 +483,7 @@ export type VoiceSessionCreateManyInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -483,6 +500,7 @@ export type VoiceSessionUpdateManyMutationInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -500,6 +518,7 @@ export type VoiceSessionUncheckedUpdateManyInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -532,6 +551,7 @@ export type VoiceSessionCountOrderByAggregateInput = {
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStyle?: Prisma.SortOrder
+  archivalStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -555,6 +575,7 @@ export type VoiceSessionMaxOrderByAggregateInput = {
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStyle?: Prisma.SortOrder
+  archivalStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -572,6 +593,7 @@ export type VoiceSessionMinOrderByAggregateInput = {
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStyle?: Prisma.SortOrder
+  archivalStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -663,6 +685,7 @@ export type VoiceSessionCreateWithoutUserInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -680,6 +703,7 @@ export type VoiceSessionUncheckedCreateWithoutUserInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -726,6 +750,7 @@ export type VoiceSessionScalarWhereInput = {
   summaryText?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"VoiceSession"> | string | null
   imageStyle?: Prisma.StringFilter<"VoiceSession"> | string
+  archivalStatus?: Prisma.StringFilter<"VoiceSession"> | string
   pausedAt?: Prisma.DateTimeNullableFilter<"VoiceSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"VoiceSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
@@ -742,6 +767,7 @@ export type VoiceSessionCreateWithoutTurnsInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -760,6 +786,7 @@ export type VoiceSessionUncheckedCreateWithoutTurnsInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -792,6 +819,7 @@ export type VoiceSessionUpdateWithoutTurnsInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -810,6 +838,7 @@ export type VoiceSessionUncheckedUpdateWithoutTurnsInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -826,6 +855,7 @@ export type VoiceSessionCreateManyUserInput = {
   summaryText?: string | null
   imageUrl?: string | null
   imageStyle?: string
+  archivalStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -842,6 +872,7 @@ export type VoiceSessionUpdateWithoutUserInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -859,6 +890,7 @@ export type VoiceSessionUncheckedUpdateWithoutUserInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -876,6 +908,7 @@ export type VoiceSessionUncheckedUpdateManyWithoutUserInput = {
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -924,6 +957,7 @@ export type VoiceSessionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   summaryText?: boolean
   imageUrl?: boolean
   imageStyle?: boolean
+  archivalStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -944,6 +978,7 @@ export type VoiceSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   summaryText?: boolean
   imageUrl?: boolean
   imageStyle?: boolean
+  archivalStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -962,6 +997,7 @@ export type VoiceSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   summaryText?: boolean
   imageUrl?: boolean
   imageStyle?: boolean
+  archivalStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -980,13 +1016,14 @@ export type VoiceSessionSelectScalar = {
   summaryText?: boolean
   imageUrl?: boolean
   imageStyle?: boolean
+  archivalStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type VoiceSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "imageStyle" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["voiceSession"]>
+export type VoiceSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "imageStyle" | "archivalStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["voiceSession"]>
 export type VoiceSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.VoiceSession$turnsArgs<ExtArgs>
@@ -1016,6 +1053,7 @@ export type $VoiceSessionPayload<ExtArgs extends runtime.Types.Extensions.Intern
     summaryText: string | null
     imageUrl: string | null
     imageStyle: string
+    archivalStatus: string
     pausedAt: Date | null
     completedAt: Date | null
     createdAt: Date
@@ -1455,6 +1493,7 @@ export interface VoiceSessionFieldRefs {
   readonly summaryText: Prisma.FieldRef<"VoiceSession", 'String'>
   readonly imageUrl: Prisma.FieldRef<"VoiceSession", 'String'>
   readonly imageStyle: Prisma.FieldRef<"VoiceSession", 'String'>
+  readonly archivalStatus: Prisma.FieldRef<"VoiceSession", 'String'>
   readonly pausedAt: Prisma.FieldRef<"VoiceSession", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"VoiceSession", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"VoiceSession", 'DateTime'>

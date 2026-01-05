@@ -20,6 +20,7 @@ import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
 import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as ApiStreamConversationRouteImport } from './routes/api/stream/conversation'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppMemoriesTodayRouteImport } from './routes/_app/memories.today'
 import { Route as AppMemoriesDateRouteImport } from './routes/_app/memories.$date'
@@ -77,6 +78,11 @@ const AppAdminRoute = AppAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiStreamConversationRoute = ApiStreamConversationRouteImport.update({
+  id: '/api/stream/conversation',
+  path: '/api/stream/conversation',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stream/conversation': typeof ApiStreamConversationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stream/conversation': typeof ApiStreamConversationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/_app/memories/$date': typeof AppMemoriesDateRoute
   '/_app/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stream/conversation': typeof ApiStreamConversationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/memories/$date'
     | '/memories/today'
     | '/api/auth/$'
+    | '/api/stream/conversation'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/memories/$date'
     | '/memories/today'
     | '/api/auth/$'
+    | '/api/stream/conversation'
   id:
     | '__root__'
     | '/'
@@ -183,6 +194,7 @@ export interface FileRouteTypes {
     | '/_app/memories/$date'
     | '/_app/memories/today'
     | '/api/auth/$'
+    | '/api/stream/conversation'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -191,6 +203,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   PricingRoute: typeof PricingRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiStreamConversationRoute: typeof ApiStreamConversationRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -272,6 +285,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/stream/conversation': {
+      id: '/api/stream/conversation'
+      path: '/api/stream/conversation'
+      fullPath: '/api/stream/conversation'
+      preLoaderRoute: typeof ApiStreamConversationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -346,6 +366,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   PricingRoute: PricingRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiStreamConversationRoute: ApiStreamConversationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

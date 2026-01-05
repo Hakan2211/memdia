@@ -73,6 +73,7 @@ export async function streamChatCompletion(
   callbacks: StreamCallbacks,
   config?: OpenRouterConfig,
 ): Promise<void> {
+  const startTime = Date.now()
   const apiKey = config?.apiKey || process.env.OPENROUTER_API_KEY
 
   if (!apiKey && !MOCK_OPENROUTER) {
@@ -85,6 +86,7 @@ export async function streamChatCompletion(
   }
 
   const mergedConfig = { ...DEFAULT_CONFIG, ...config }
+  console.log(`[OpenRouter] Starting stream with model: ${mergedConfig.model}`)
 
   try {
     const response = await fetch(OPENROUTER_API_URL, {
@@ -130,6 +132,10 @@ export async function streamChatCompletion(
           const data = line.slice(6)
 
           if (data === '[DONE]') {
+            const latency = Date.now() - startTime
+            console.log(
+              `[OpenRouter] Stream complete (${latency}ms), ${fullText.length} chars`,
+            )
             callbacks.onComplete(fullText)
             return
           }
@@ -149,8 +155,14 @@ export async function streamChatCompletion(
       }
     }
 
+    const latency = Date.now() - startTime
+    console.log(
+      `[OpenRouter] Stream ended (${latency}ms), ${fullText.length} chars`,
+    )
     callbacks.onComplete(fullText)
   } catch (error) {
+    const latency = Date.now() - startTime
+    console.error(`[OpenRouter] Stream error after ${latency}ms:`, error)
     callbacks.onError(
       error instanceof Error ? error : new Error('Unknown error'),
     )

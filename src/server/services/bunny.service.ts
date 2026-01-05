@@ -69,6 +69,7 @@ function validateConfig(config: BunnyConfig): void {
 
 /**
  * Generate storage path for user audio
+ * @param sentenceIndex - Optional sentence index for AI responses with multiple sentences
  */
 export function getAudioPath(
   userId: string,
@@ -76,8 +77,10 @@ export function getAudioPath(
   turnOrder: number,
   speaker: 'user' | 'ai',
   extension: string = 'webm',
+  sentenceIndex?: number,
 ): string {
-  return `users/${userId}/sessions/${sessionId}/${speaker}_${String(turnOrder).padStart(3, '0')}.${extension}`
+  const suffix = sentenceIndex !== undefined ? `_s${sentenceIndex}` : ''
+  return `users/${userId}/sessions/${sessionId}/${speaker}_${String(turnOrder).padStart(3, '0')}${suffix}.${extension}`
 }
 
 /**
@@ -151,6 +154,7 @@ export async function uploadFile(
 /**
  * Upload audio data
  * @param contentType - The MIME type (e.g., 'audio/webm', 'audio/mpeg')
+ * @param sentenceIndex - Optional sentence index for AI responses with multiple sentences
  */
 export async function uploadAudio(
   userId: string,
@@ -159,6 +163,7 @@ export async function uploadAudio(
   speaker: 'user' | 'ai',
   audioData: Buffer | ArrayBuffer,
   contentType: string = 'audio/webm',
+  sentenceIndex?: number,
 ): Promise<UploadResult> {
   // Determine file extension from content type
   const extensionMap: Record<string, string> = {
@@ -170,7 +175,14 @@ export async function uploadAudio(
     'audio/pcm': 'pcm', // Raw 16-bit PCM
   }
   const extension = extensionMap[contentType] || 'webm'
-  const path = getAudioPath(userId, sessionId, turnOrder, speaker, extension)
+  const path = getAudioPath(
+    userId,
+    sessionId,
+    turnOrder,
+    speaker,
+    extension,
+    sentenceIndex,
+  )
   return uploadFile(path, audioData, contentType)
 }
 

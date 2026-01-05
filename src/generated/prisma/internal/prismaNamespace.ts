@@ -1112,6 +1112,7 @@ export const VoiceSessionScalarFieldEnum = {
   summaryText: 'summaryText',
   imageUrl: 'imageUrl',
   imageStyle: 'imageStyle',
+  archivalStatus: 'archivalStatus',
   pausedAt: 'pausedAt',
   completedAt: 'completedAt',
   createdAt: 'createdAt',

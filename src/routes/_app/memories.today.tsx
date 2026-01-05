@@ -1,9 +1,11 @@
 /**
  * Today's Session Route
  * Main recording interface for today's voice session
+ *
+ * Uses SSE streaming for AI responses with real-time audio playback
  */
 
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { format } from 'date-fns'
@@ -22,16 +24,25 @@ import {
 const MIN_SESSION_DURATION = 60
 import {
   generateGreetingFn,
-  sendMessageFn,
   processSessionFn,
 } from '../../server/conversation.fn'
+import { streamMessageFn } from '../../server/streaming.fn'
 import { PulsingCircle } from '../../components/memories/PulsingCircle'
 import { CountdownTimer } from '../../components/memories/CountdownTimer'
 import { SessionControls } from '../../components/memories/SessionControls'
 import { useAudioRecorder, useAudioSupport } from '../../hooks/useAudioRecorder'
 import { useAudioPlayer } from '../../hooks/useAudioPlayer'
 import { useDeepgramSTT } from '../../hooks/useDeepgramSTT'
+// New streaming hooks for improved latency
+import { useStreamingAudioPlayer } from '../../hooks/useStreamingAudioPlayer'
+import { useConversationStream } from '../../hooks/useConversationStream'
+import { useVAD } from '../../hooks/useVAD'
 import type { VoiceSession, TranscriptTurn } from '../../types/voice-session'
+
+// Feature flag: Use new SSE streaming architecture for lower latency
+const USE_SSE_STREAMING = true
+// Feature flag: Use VAD for improved speech detection and barge-in
+const USE_VAD = true
 
 export const Route = createFileRoute('/_app/memories/today')({
   component: TodaySession,
@@ -47,6 +58,7 @@ type SessionState =
 
 function TodaySession() {
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [sessionState, setSessionState] = useState<SessionState>('idle')
   const [currentSpeaker, setCurrentSpeaker] = useState<'user' | 'ai' | null>(
     null,
@@ -57,6 +69,16 @@ function TodaySession() {
   const [useVoiceInput, setUseVoiceInput] = useState(true)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const pendingTranscriptRef = useRef('')
+  // Prevent duplicate processing of speech end events
+  const isProcessingRef = useRef(false)
+  // Track if session should end when AI finishes speaking
+  const sessionEndPendingRef = useRef(false)
+  // Track if we've shown the 30-second warning
+  const warningShownRef = useRef(false)
+  // Hard cutoff timer - forces session end 30 seconds after maxDuration
+  const hardCutoffTimerRef = useRef<NodeJS.Timeout | null>(null)
+  // Grace period in seconds after maxDuration before forcing session end
+  const HARD_CUTOFF_GRACE_SECONDS = 30
 
   // Accumulate audio chunks for uploading user audio
   const audioChunksRef = useRef<Int16Array[]>([])
@@ -156,14 +178,33 @@ function TodaySession() {
       audioChunksRef.current = []
     },
     onSpeechEnd: () => {
+      // Prevent duplicate processing - check and set atomically
+      if (isProcessingRef.current) {
+        console.log('[STT] Ignoring duplicate onSpeechEnd - already processing')
+        return
+      }
+
       // Send accumulated transcript when user stops speaking
       if (pendingTranscriptRef.current.trim() && session) {
-        // Get accumulated audio and convert to base64
-        const audioBase64 = getAccumulatedAudioBase64()
-        handleUserSpeechEnd(pendingTranscriptRef.current.trim(), audioBase64)
-        pendingTranscriptRef.current = ''
+        isProcessingRef.current = true
+        // Capture transcript immediately to avoid race conditions
+        const transcript = pendingTranscriptRef.current.trim()
+        pendingTranscriptRef.current = '' // Clear immediately
         setLiveTranscript('')
-        audioChunksRef.current = [] // Clear after sending
+
+        // Delay audio capture by 150ms to ensure final audio chunks arrive
+        // This prevents the audio cutoff issue where the last part of speech is missing
+        setTimeout(() => {
+          // Get accumulated audio and convert to base64
+          const audioBase64 = getAccumulatedAudioBase64()
+          handleUserSpeechEnd(transcript, audioBase64)
+          audioChunksRef.current = [] // Clear after sending
+
+          // Reset processing flag after sending
+          setTimeout(() => {
+            isProcessingRef.current = false
+          }, 100)
+        }, 150)
       }
     },
     onError: (error) => {
@@ -171,20 +212,159 @@ function TodaySession() {
     },
   })
 
-  // Audio player hook with better browser compatibility
-  const [audioState, audioActions] = useAudioPlayer({
-    onPlay: () => {
+  // ==========================================
+  // Voice Activity Detection (VAD) for Barge-In
+  // ==========================================
+
+  // VAD for accurate speech detection and barge-in
+  const [vadState, vadActions] = useVAD({
+    enabled: USE_VAD && sessionState === 'recording',
+    onSpeechStart: () => {
+      console.log('[VAD] Speech detected')
+      setCurrentSpeaker('user')
+      audioChunksRef.current = []
+
+      // BARGE-IN: Stop AI if it's currently speaking
+      if (isAISpeaking) {
+        console.log('[Barge-in] User started speaking, interrupting AI')
+        streamingAudioActions.stop()
+        audioActions.stop()
+        conversationStreamActions.cancel()
+        setIsAISpeaking(false)
+      }
+    },
+    onSpeechEnd: (_audio, duration) => {
+      console.log(`[VAD] Speech ended after ${duration.toFixed(2)}s`)
+      // Note: We don't trigger send here - Deepgram's onSpeechEnd handles that
+      // VAD is primarily for barge-in detection, Deepgram handles transcription timing
+    },
+  })
+
+  // ==========================================
+  // Audio Playback - SSE Streaming vs Legacy
+  // ==========================================
+
+  // Legacy: Audio queue for URL-based playback
+  const audioQueueRef = useRef<string[]>([])
+  const isPlayingQueueRef = useRef(false)
+  const playNextInQueueRef = useRef<(() => void) | null>(null)
+
+  // NEW: Streaming audio player for base64 chunks (lower latency)
+  const [streamingAudioState, streamingAudioActions] = useStreamingAudioPlayer({
+    onStart: () => {
       setIsAISpeaking(true)
       setCurrentSpeaker('ai')
     },
     onEnd: () => {
       setIsAISpeaking(false)
       setCurrentSpeaker(null)
+
+      // If session end was pending, end now
+      if (sessionEndPendingRef.current) {
+        sessionEndPendingRef.current = false
+        console.log('[Timer] AI finished speaking, ending session now')
+        setTimeout(() => {
+          handleEndSession()
+        }, 100)
+      }
+    },
+    onError: (error) => {
+      console.error('[StreamingAudio] Playback error:', error)
+      setIsAISpeaking(false)
+      setCurrentSpeaker(null)
+
+      if (sessionEndPendingRef.current) {
+        sessionEndPendingRef.current = false
+        setTimeout(() => {
+          handleEndSession()
+        }, 100)
+      }
+    },
+  })
+
+  // NEW: SSE conversation stream for lower latency responses
+  const [conversationStreamState, conversationStreamActions] =
+    useConversationStream({
+      onStart: (userTurnId) => {
+        console.log('[ConversationStream] Started, userTurnId:', userTurnId)
+      },
+      onText: (_token, _accumulated) => {
+        // Optionally show AI text as it streams
+      },
+      onAudio: (audioBase64, audioUrl, contentType, _sentenceIndex, _text) => {
+        if (USE_SSE_STREAMING && audioBase64) {
+          // Use streaming audio player for base64 chunks
+          streamingAudioActions.queueAudioChunk(audioBase64, contentType)
+        } else if (audioUrl) {
+          // Fallback to URL-based playback
+          audioQueueRef.current.push(audioUrl)
+          if (!isPlayingQueueRef.current) {
+            playNextInQueueRef.current?.()
+          }
+        }
+      },
+      onDone: (fullText, totalSentences, _aiTurnId) => {
+        console.log(
+          `[ConversationStream] Done: ${totalSentences} sentences, text: "${fullText.slice(0, 50)}..."`,
+        )
+        queryClient.invalidateQueries({ queryKey: ['session', 'today'] })
+      },
+      onError: (error) => {
+        console.error('[ConversationStream] Error:', error)
+        toast.error('AI response failed', { description: error })
+        setIsAISpeaking(false)
+        setCurrentSpeaker(null)
+      },
+    })
+
+  // Legacy: Audio player hook for URL-based playback
+  const [audioState, audioActions] = useAudioPlayer({
+    onPlay: () => {
+      setIsAISpeaking(true)
+      setCurrentSpeaker('ai')
+    },
+    onEnd: () => {
+      // Check if there are more audio chunks in the queue
+      if (audioQueueRef.current.length > 0) {
+        // Play next chunk without resetting speaking state
+        playNextInQueueRef.current?.()
+        return
+      }
+
+      setIsAISpeaking(false)
+      setCurrentSpeaker(null)
+      isPlayingQueueRef.current = false
+
+      // If session end was pending (timer expired while AI was speaking), end now
+      if (sessionEndPendingRef.current) {
+        sessionEndPendingRef.current = false
+        console.log('[Timer] AI finished speaking, ending session now')
+        // Small delay to ensure state is updated
+        setTimeout(() => {
+          handleEndSession()
+        }, 100)
+      }
     },
     onError: (error) => {
       console.error('[Audio] Playback error:', error)
+
+      // Try to play next in queue on error
+      if (audioQueueRef.current.length > 0) {
+        playNextInQueueRef.current?.()
+        return
+      }
+
       setIsAISpeaking(false)
       setCurrentSpeaker(null)
+      isPlayingQueueRef.current = false
+
+      // Also check pending session end on error
+      if (sessionEndPendingRef.current) {
+        sessionEndPendingRef.current = false
+        setTimeout(() => {
+          handleEndSession()
+        }, 100)
+      }
     },
   })
 
@@ -207,17 +387,36 @@ function TodaySession() {
     onSpeechEnd: () => {
       // When Deepgram is not connected, use recorder's VAD for speech detection
       // If we have accumulated transcript (typed or from failed STT), send it
+      if (isProcessingRef.current) {
+        console.log(
+          '[Recorder VAD] Ignoring duplicate onSpeechEnd - already processing',
+        )
+        return
+      }
+
       if (
         !sttState.isConnected &&
         pendingTranscriptRef.current.trim() &&
         session
       ) {
+        isProcessingRef.current = true
         console.log('[Recorder VAD] Speech ended, sending pending transcript')
-        const audioBase64 = getAccumulatedAudioBase64()
-        handleUserSpeechEnd(pendingTranscriptRef.current.trim(), audioBase64)
+
+        // Capture transcript immediately
+        const transcript = pendingTranscriptRef.current.trim()
         pendingTranscriptRef.current = ''
         setLiveTranscript('')
-        audioChunksRef.current = [] // Clear after sending
+
+        // Delay audio capture by 150ms to ensure final audio chunks arrive
+        setTimeout(() => {
+          const audioBase64 = getAccumulatedAudioBase64()
+          handleUserSpeechEnd(transcript, audioBase64)
+          audioChunksRef.current = [] // Clear after sending
+
+          setTimeout(() => {
+            isProcessingRef.current = false
+          }, 100)
+        }, 150)
       }
     },
     onPCMData: (pcmData) => {
@@ -289,6 +488,7 @@ function TodaySession() {
 
       // Enable audio autoplay on user interaction
       audioActions.enableAutoplay()
+      streamingAudioActions.enablePlayback()
 
       // Connect to Deepgram for STT (if voice input enabled)
       if (useVoiceInput) {
@@ -332,18 +532,26 @@ function TodaySession() {
       recorderActions.stopRecording()
       sttActions.disconnect()
       audioActions.stop()
+      streamingAudioActions.stop()
+      conversationStreamActions.cancel()
       stopTimer()
 
       queryClient.setQueryData(['session', 'today'], updatedSession)
-      setSessionState('processing')
 
-      // Trigger processing
+      // Trigger background processing (don't await - runs in parallel)
       if (updatedSession) {
         processSession(updatedSession.id)
       }
+
+      // Immediately redirect to detail page - processing continues in background
+      const dateStr = format(new Date(updatedSession.date), 'yyyy-MM-dd')
+      navigate({ to: '/memories/$date', params: { date: dateStr } })
     },
     onError: (error) => {
       console.error('Failed to end session:', error)
+      toast.error('Failed to end session', {
+        description: 'Please try again.',
+      })
     },
   })
 
@@ -360,17 +568,62 @@ function TodaySession() {
     },
   })
 
-  // Send message mutation
+  // Play next audio in queue
+  const playNextInQueue = useCallback(async () => {
+    if (audioQueueRef.current.length === 0) {
+      isPlayingQueueRef.current = false
+      return
+    }
+
+    isPlayingQueueRef.current = true
+    const nextUrl = audioQueueRef.current.shift()
+    if (nextUrl) {
+      try {
+        await audioActions.play(nextUrl)
+      } catch (error) {
+        console.error('[AudioQueue] Failed to play:', error)
+        // Try next in queue
+        playNextInQueue()
+      }
+    }
+  }, [audioActions])
+
+  // Wire up the ref for use in the audio player callback
+  useEffect(() => {
+    playNextInQueueRef.current = playNextInQueue
+  }, [playNextInQueue])
+
+  // Send message mutation using streaming endpoint
   const sendMessageMutation = useMutation({
     mutationFn: (params: {
       sessionId: string
       userMessage: string
       userAudioBase64?: string
       userAudioContentType?: string
-    }) => sendMessageFn({ data: params }),
+    }) => streamMessageFn({ data: params }),
     onSuccess: (result) => {
-      // Play AI audio using our hook
-      playAudio(result.aiAudioUrl)
+      console.log(
+        `[Streaming] Response received in ${result.latencyMs}ms, ${result.totalSentences} sentences`,
+      )
+
+      // Queue all audio chunks for playback
+      if (result.audioChunks && result.audioChunks.length > 0) {
+        // Clear any existing queue
+        audioQueueRef.current = []
+
+        // Add all audio URLs to the queue in order
+        for (const chunk of result.audioChunks) {
+          audioQueueRef.current.push(chunk.audioUrl)
+        }
+
+        // Start playing if not already
+        if (!isPlayingQueueRef.current) {
+          playNextInQueue()
+        }
+      } else if (result.firstAudioUrl) {
+        // Fallback: play just the first audio
+        playAudio(result.firstAudioUrl)
+      }
 
       queryClient.invalidateQueries({ queryKey: ['session', 'today'] })
     },
@@ -415,32 +668,89 @@ function TodaySession() {
 
   // Timer logic
   const startTimer = useCallback(() => {
+    // Reset warning flag when starting
+    warningShownRef.current = false
+    sessionEndPendingRef.current = false
+
     timerRef.current = setInterval(() => {
       setElapsedTime((prev) => {
         const newTime = prev + 1
+        const maxDuration = session?.maxDuration ?? 180
+        const remainingTime = maxDuration - newTime
+
+        // Show warning at 30 seconds remaining
+        if (remainingTime === 30 && !warningShownRef.current) {
+          warningShownRef.current = true
+          toast.warning('30 seconds remaining', {
+            description: 'Your session will end soon. Wrap up your thoughts!',
+            duration: 5000,
+          })
+        }
+
         // Check if time limit reached
         if (session && newTime >= session.maxDuration) {
-          handleEndSession()
+          // If AI is currently speaking, set pending flag and let it finish
+          if (isAISpeaking) {
+            // Only set pending if not already set
+            if (!sessionEndPendingRef.current) {
+              sessionEndPendingRef.current = true
+              toast.info('Session time reached', {
+                description: 'Waiting for AI to finish speaking...',
+                duration: 3000,
+              })
+
+              // Start hard cutoff timer - force end after grace period
+              if (!hardCutoffTimerRef.current) {
+                hardCutoffTimerRef.current = setTimeout(() => {
+                  console.log(
+                    '[Timer] Hard cutoff reached - forcing session end',
+                  )
+                  toast.info('Session ending', {
+                    description: 'Saving your memory...',
+                    duration: 2000,
+                  })
+                  handleEndSession()
+                }, HARD_CUTOFF_GRACE_SECONDS * 1000)
+              }
+            }
+          } else {
+            handleEndSession()
+          }
         }
         return newTime
       })
     }, 1000)
-  }, [session])
+  }, [session, isAISpeaking])
 
   const stopTimer = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
     }
+    // Also clear hard cutoff timer
+    if (hardCutoffTimerRef.current) {
+      clearTimeout(hardCutoffTimerRef.current)
+      hardCutoffTimerRef.current = null
+    }
   }, [])
 
-  // Cleanup
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopTimer()
+      if (hardCutoffTimerRef.current) {
+        clearTimeout(hardCutoffTimerRef.current)
+        hardCutoffTimerRef.current = null
+      }
       recorderActions.stopRecording()
       sttActions.disconnect()
       audioActions.stop()
+      streamingAudioActions.stop()
+      conversationStreamActions.cancel()
+      // Pause VAD on unmount
+      if (USE_VAD) {
+        vadActions.pause()
+      }
     }
   }, [])
 
@@ -453,15 +763,41 @@ function TodaySession() {
     processSessionMutation.mutate(sessionId)
   }
 
-  const handleUserSpeechEnd = (transcript: string, audioBase64?: string) => {
+  // Track last sent message to prevent duplicates
+  const lastSentMessageRef = useRef<string>('')
+  const lastSentTimeRef = useRef<number>(0)
+
+  const handleUserSpeechEnd = (transcript: string, _audioBase64?: string) => {
     if (session && transcript.trim()) {
+      // Deduplication: prevent sending the same message within 2 seconds
+      const now = Date.now()
+      const trimmedTranscript = transcript.trim()
+      if (
+        trimmedTranscript === lastSentMessageRef.current &&
+        now - lastSentTimeRef.current < 2000
+      ) {
+        console.log(
+          '[handleUserSpeechEnd] Ignoring duplicate message within 2 seconds',
+        )
+        return
+      }
+
+      lastSentMessageRef.current = trimmedTranscript
+      lastSentTimeRef.current = now
       setCurrentSpeaker(null)
-      sendMessageMutation.mutate({
-        sessionId: session.id,
-        userMessage: transcript,
-        userAudioBase64: audioBase64,
-        userAudioContentType: 'audio/wav', // WAV format (playable in browsers)
-      })
+
+      if (USE_SSE_STREAMING) {
+        // NEW: Use SSE streaming for lower latency
+        console.log('[SSE] Sending message via streaming endpoint')
+        conversationStreamActions.sendMessage(session.id, trimmedTranscript)
+      } else {
+        // Legacy: Use mutation-based approach
+        sendMessageMutation.mutate({
+          sessionId: session.id,
+          userMessage: trimmedTranscript,
+          // Note: User audio upload can be done separately for archival
+        })
+      }
     }
   }
 
@@ -489,6 +825,8 @@ function TodaySession() {
       recorderActions.stopRecording()
       sttActions.disconnect()
       audioActions.stop()
+      streamingAudioActions.stop()
+      conversationStreamActions.cancel()
       stopTimer()
 
       // Cancel the short session (doesn't count as an attempt)
@@ -522,6 +860,8 @@ function TodaySession() {
     recorderActions,
     sttActions,
     audioActions,
+    streamingAudioActions,
+    conversationStreamActions,
     stopTimer,
     queryClient,
   ])
@@ -643,17 +983,29 @@ function TodaySession() {
       </div>
 
       {/* Audio status indicator */}
-      {sessionState === 'recording' && !audioState.canAutoplay && (
-        <div className="mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => audioActions.enableAutoplay()}
-            className="flex items-center gap-2"
-          >
-            <Volume2 className="h-4 w-4" />
-            Click to enable audio
-          </Button>
+      {sessionState === 'recording' &&
+        !audioState.canAutoplay &&
+        !streamingAudioState.isReady && (
+          <div className="mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                audioActions.enableAutoplay()
+                streamingAudioActions.enablePlayback()
+              }}
+              className="flex items-center gap-2"
+            >
+              <Volume2 className="h-4 w-4" />
+              Click to enable audio
+            </Button>
+          </div>
+        )}
+
+      {/* Streaming status indicator */}
+      {sessionState === 'recording' && conversationStreamState.isStreaming && (
+        <div className="mb-2 text-xs text-muted-foreground">
+          AI is responding...
         </div>
       )}
 
@@ -688,6 +1040,9 @@ function TodaySession() {
         <SessionControls
           isMuted={recorderState.isMuted}
           isPaused={sessionState === 'paused'}
+          isEnding={endMutation.isPending}
+          elapsedTime={elapsedTime}
+          minDuration={MIN_SESSION_DURATION}
           onToggleMute={handleToggleMute}
           onEndSession={handleEndSession}
         />
@@ -699,11 +1054,19 @@ function TodaySession() {
           <p className="text-sm text-muted-foreground italic">
             {isAISpeaking
               ? 'AI is speaking...'
-              : recorderState.audioLevel > 0.1
+              : USE_VAD && vadState.isSpeaking
                 ? 'Listening...'
-                : "Speak whenever you're ready"}
+                : recorderState.audioLevel > 0.1
+                  ? 'Listening...'
+                  : "Speak whenever you're ready"}
           </p>
           {liveTranscript && <p className="mt-2 text-sm">{liveTranscript}</p>}
+          {/* VAD loading indicator */}
+          {USE_VAD && vadState.isLoading && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Loading speech detection...
+            </p>
+          )}
         </div>
       )}
 

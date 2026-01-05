@@ -118,6 +118,9 @@ model VoiceSession {
   imageUrl    String?
   imageStyle  String  @default("realistic") // realistic | dreamlike | watercolor | geometric | sketch
 
+  // Audio archival status: pending | processing | completed | failed
+  archivalStatus String @default("pending")
+
   // Timestamps
   pausedAt    DateTime?
   completedAt DateTime?
