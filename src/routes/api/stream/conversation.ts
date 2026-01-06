@@ -16,6 +16,7 @@ import {
   buildConversationContext,
 } from '../../../lib/prompts/conversation'
 import type { AIPersonality } from '../../../types/voice-session'
+import { getGeneration, setGeneration } from './cancel'
 
 // ==========================================
 // Sentence Detection
@@ -176,6 +177,13 @@ export const Route = createFileRoute('/api/stream/conversation')({
                 `[SSE Stream] Starting for session ${sessionId}, message: "${userMessage.slice(0, 50)}..."`,
               )
 
+              // Set generation ID for this stream (for barge-in cancellation)
+              const currentGeneration = getGeneration(sessionId) + 1
+              setGeneration(sessionId, currentGeneration)
+              console.log(
+                `[SSE Stream] Set generation to ${currentGeneration} for session ${sessionId}`,
+              )
+
               send('started', {
                 userTurnId: userTurn.id,
                 timestamp: Date.now(),
@@ -186,11 +194,23 @@ export const Route = createFileRoute('/api/stream/conversation')({
               let fullText = ''
               const audioPromises: Promise<void>[] = []
 
+              // Check if this stream has been cancelled (barge-in)
+              const isCancelled = () =>
+                getGeneration(sessionId) !== currentGeneration
+
               // Process a complete sentence - generate TTS and stream audio
               const processSentence = async (
                 sentence: string,
                 index: number,
               ) => {
+                // Check for cancellation before starting TTS
+                if (isCancelled()) {
+                  console.log(
+                    `[SSE Stream] Sentence ${index} skipped - cancelled by barge-in`,
+                  )
+                  return
+                }
+
                 const sentenceStart = Date.now()
                 console.log(
                   `[SSE Stream] Processing sentence ${index}: "${sentence.slice(0, 40)}..."`,
@@ -199,6 +219,14 @@ export const Route = createFileRoute('/api/stream/conversation')({
                 try {
                   // Stream TTS for this sentence
                   for await (const chunk of streamSpeech(sentence)) {
+                    // Check for cancellation during TTS streaming
+                    if (isCancelled()) {
+                      console.log(
+                        `[SSE Stream] Sentence ${index} TTS cancelled by barge-in`,
+                      )
+                      break
+                    }
+
                     if (chunk.type === 'audio_chunk') {
                       send('audio', {
                         sentenceIndex: index,

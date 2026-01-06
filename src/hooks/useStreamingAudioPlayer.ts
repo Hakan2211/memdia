@@ -69,6 +69,9 @@ export function useStreamingAudioPlayer(
   const chunkIndexRef = useRef<number>(0)
   const hasStartedRef = useRef<boolean>(false)
   const queueRef = useRef<Array<{ buffer: AudioBuffer; index: number }>>([])
+  // Flag to prevent new audio from being scheduled after stop() is called
+  // This handles race conditions where audio chunks arrive after barge-in
+  const stoppedRef = useRef<boolean>(false)
 
   // Callback refs to avoid stale closures
   const onStartRef = useRef(onStart)
@@ -109,6 +112,14 @@ export function useStreamingAudioPlayer(
   // Schedule an audio buffer for playback
   const scheduleBuffer = useCallback(
     (buffer: AudioBuffer, chunkIndex: number) => {
+      // Ignore chunks if playback was stopped (barge-in protection)
+      if (stoppedRef.current) {
+        console.log(
+          `[StreamingAudio] Ignoring chunk ${chunkIndex} - playback stopped`,
+        )
+        return
+      }
+
       const ctx = getAudioContext()
 
       // Create source node
@@ -181,6 +192,10 @@ export function useStreamingAudioPlayer(
         console.warn('[StreamingAudio] Empty audio chunk received')
         return
       }
+
+      // Reset stopped flag when intentionally queueing new audio
+      // This allows playback to resume after a barge-in
+      stoppedRef.current = false
 
       try {
         const ctx = getAudioContext()
@@ -256,37 +271,49 @@ export function useStreamingAudioPlayer(
     [queueAudioChunk],
   )
 
-  // Stop all playback
+  // Stop all playback (used for barge-in and session end)
   const stop = useCallback(() => {
-    // Stop all active sources
+    console.log(
+      '[StreamingAudio] stop() - sources:',
+      activeSourcesRef.current.size,
+      'queue:',
+      queueRef.current.length,
+    )
+
+    // Set stopped flag to reject any incoming chunks
+    stoppedRef.current = true
+
+    // Stop all active sources immediately
     activeSourcesRef.current.forEach((source) => {
       try {
         source.stop()
         source.disconnect()
       } catch {
-        // Ignore errors on stop
+        // Ignore errors on stop (source may already be stopped)
       }
     })
     activeSourcesRef.current.clear()
 
-    // Clear queue
+    // Clear queue completely
     queueRef.current = []
 
-    // Reset timing
+    // Reset timing to current time (prevents any scheduled audio from playing)
     if (audioContextRef.current) {
       nextStartTimeRef.current = audioContextRef.current.currentTime
     }
 
-    // Reset state
+    // Reset all tracking state
     chunkIndexRef.current = 0
     hasStartedRef.current = false
 
-    setState((prev) => ({
-      ...prev,
+    // Update state - keep isReady true so we can play again
+    setState({
       isPlaying: false,
       isPending: false,
       queueLength: 0,
-    }))
+      isReady: true,
+      error: null,
+    })
   }, [])
 
   // Clear error

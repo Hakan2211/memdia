@@ -44,6 +44,8 @@ import type { VoiceSession, TranscriptTurn } from '../../types/voice-session'
 // Feature flag: Use new SSE streaming architecture for lower latency
 const USE_SSE_STREAMING = true
 // Feature flag: Use VAD for improved speech detection and barge-in
+// VAD provides faster barge-in detection than Deepgram SpeechStarted
+// Deepgram SpeechStarted serves as a fallback if VAD fails to load
 const USE_VAD = true
 
 export const Route = createFileRoute('/_app/memories/today')({
@@ -69,6 +71,10 @@ function TodaySession() {
   const [liveTranscript, setLiveTranscript] = useState('')
   const [isAISpeaking, setIsAISpeaking] = useState(false)
   const [useVoiceInput, setUseVoiceInput] = useState(true)
+  // Loading state for ending session (covers both normal and short session cancellation)
+  const [isEndingSession, setIsEndingSession] = useState(false)
+  // Separate state for automatic hard cutoff - shows fullscreen overlay
+  const [isAutoEnding, setIsAutoEnding] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const pendingTranscriptRef = useRef('')
   // Prevent duplicate processing of speech end events
@@ -81,6 +87,11 @@ function TodaySession() {
   const hardCutoffTimerRef = useRef<NodeJS.Timeout | null>(null)
   // Grace period in seconds after maxDuration before forcing session end
   const HARD_CUTOFF_GRACE_SECONDS = 30
+  // Ref to track elapsed time for accurate comparison in callbacks
+  const elapsedTimeRef = useRef(0)
+  // Ref for barge-in function - allows callbacks defined early to trigger barge-in
+  // This is populated after all hooks are initialized
+  const triggerBargeInRef = useRef<(() => void) | null>(null)
 
   // Accumulate audio chunks for uploading user audio
   const audioChunksRef = useRef<Int16Array[]>([])
@@ -186,9 +197,18 @@ function TodaySession() {
         (pendingTranscriptRef.current ? ' ' : '') + transcript
     },
     onSpeechStart: () => {
+      console.log(
+        '[Deepgram] SpeechStarted, isAISpeakingRef:',
+        isAISpeakingRef.current,
+      )
       setCurrentSpeaker('user')
       // Clear accumulated audio when new speech starts
       audioChunksRef.current = []
+
+      // NOTE: We no longer trigger barge-in here because Deepgram's SpeechStarted
+      // picks up the AI's TTS audio playing through speakers (acoustic echo).
+      // VAD is much better at distinguishing human speech from TTS audio,
+      // so we rely solely on VAD's onSpeechStart for barge-in detection.
     },
     onSpeechEnd: () => {
       // Prevent duplicate processing - check and set atomically
@@ -233,23 +253,22 @@ function TodaySession() {
   const [vadState, vadActions] = useVAD({
     enabled: USE_VAD && sessionState === 'recording',
     onSpeechStart: () => {
-      console.log('[VAD] Speech detected')
+      console.log(
+        '[VAD] Speech detected, isAISpeakingRef:',
+        isAISpeakingRef.current,
+      )
       setCurrentSpeaker('user')
       audioChunksRef.current = []
 
       // BARGE-IN: Stop AI if it's currently speaking
-      if (isAISpeaking) {
-        console.log('[Barge-in] User started speaking, interrupting AI')
-        streamingAudioActions.stop()
-        audioActions.stop()
-        conversationStreamActions.cancel()
-        setIsAISpeaking(false)
+      // Use REF to avoid stale closure issue
+      if (isAISpeakingRef.current) {
+        console.log('[Barge-in] TRIGGERED via VAD')
+        triggerBargeInRef.current?.()
       }
     },
     onSpeechEnd: (_audio, duration) => {
-      console.log(`[VAD] Speech ended after ${duration.toFixed(2)}s`)
-      // Note: We don't trigger send here - Deepgram's onSpeechEnd handles that
-      // VAD is primarily for barge-in detection, Deepgram handles transcription timing
+      console.log(`[VAD] Speech ended (${duration.toFixed(2)}s)`)
     },
   })
 
@@ -265,10 +284,12 @@ function TodaySession() {
   // NEW: Streaming audio player for base64 chunks (lower latency)
   const [streamingAudioState, streamingAudioActions] = useStreamingAudioPlayer({
     onStart: () => {
+      console.log('[StreamingAudio] onStart - Setting isAISpeaking = true')
       setIsAISpeaking(true)
       setCurrentSpeaker('ai')
     },
     onEnd: () => {
+      console.log('[StreamingAudio] onEnd - Setting isAISpeaking = false')
       setIsAISpeaking(false)
       setCurrentSpeaker(null)
 
@@ -765,15 +786,112 @@ function TodaySession() {
     }
   }, []) // Empty deps = only runs on unmount
 
+  // Ref to track if we're currently speaking (avoids stale closure in timer)
+  const isAISpeakingRef = useRef(false)
+  useEffect(() => {
+    isAISpeakingRef.current = isAISpeaking
+  }, [isAISpeaking])
+
+  // Barge-in helper function - stops AI audio and cancels stream
+  // Used by both VAD and Deepgram SpeechStarted handlers
+  const triggerBargeIn = useCallback(() => {
+    console.log('[Barge-in] Executing - stopping AI audio')
+
+    // 1. Stop all client-side audio playback immediately
+    streamingAudioActions.stop()
+    audioActions.stop()
+
+    // 2. Cancel client-side stream processing (ignores future audio chunks)
+    conversationStreamActions.cancel()
+
+    // 3. Signal server to stop TTS generation
+    if (session?.id) {
+      fetch('/api/stream/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: session.id }),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log('[Barge-in] Server response:', data))
+        .catch((error) => console.error('[Barge-in] Server error:', error))
+    }
+
+    setIsAISpeaking(false)
+  }, [
+    session?.id,
+    streamingAudioActions,
+    audioActions,
+    conversationStreamActions,
+  ])
+
+  // Populate the ref so early callbacks (Deepgram) can trigger barge-in
+  useEffect(() => {
+    triggerBargeInRef.current = triggerBargeIn
+  }, [triggerBargeIn])
+
+  // Stop timer helper - defined first as it's used by other callbacks
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+    // Also clear hard cutoff timer
+    if (hardCutoffTimerRef.current) {
+      clearTimeout(hardCutoffTimerRef.current)
+      hardCutoffTimerRef.current = null
+    }
+  }, [])
+
+  // Force end session helper - used by hard cutoff for automatic session end
+  const forceEndSession = useCallback(() => {
+    console.log('[Timer] Force ending session (automatic)')
+
+    // Stop all audio and recording immediately
+    streamingAudioActions.stop()
+    audioActions.stop()
+    conversationStreamActions.cancel()
+    recorderActions.stopRecording()
+    sttActions.disconnect()
+    stopTimer()
+
+    // Show fullscreen overlay for automatic ending
+    setIsAutoEnding(true)
+    setIsEndingSession(true)
+
+    // Call end mutation if we have a session
+    if (session) {
+      endMutation.mutate(session.id)
+
+      // Fallback: force navigate after 3 seconds if mutation doesn't complete
+      setTimeout(() => {
+        const dateStr = format(new Date(), 'yyyy-MM-dd')
+        console.log('[Timer] Fallback navigation to:', dateStr)
+        navigate({ to: '/memories/$date', params: { date: dateStr } })
+      }, 3000)
+    }
+  }, [
+    session,
+    endMutation,
+    navigate,
+    streamingAudioActions,
+    audioActions,
+    conversationStreamActions,
+    recorderActions,
+    sttActions,
+    stopTimer,
+  ])
+
   // Timer logic
   const startTimer = useCallback(() => {
     // Reset warning flag when starting
     warningShownRef.current = false
     sessionEndPendingRef.current = false
+    elapsedTimeRef.current = 0
 
     timerRef.current = setInterval(() => {
       setElapsedTime((prev) => {
         const newTime = prev + 1
+        elapsedTimeRef.current = newTime // Keep ref in sync
         const maxDuration = session?.maxDuration ?? 180
         const remainingTime = maxDuration - newTime
 
@@ -786,10 +904,10 @@ function TodaySession() {
           })
         }
 
-        // Check if time limit reached
+        // Check if time limit reached (3 minutes)
         if (session && newTime >= session.maxDuration) {
           // If AI is currently speaking, set pending flag and let it finish
-          if (isAISpeaking) {
+          if (isAISpeakingRef.current) {
             // Only set pending if not already set
             if (!sessionEndPendingRef.current) {
               sessionEndPendingRef.current = true
@@ -798,40 +916,30 @@ function TodaySession() {
                 duration: 3000,
               })
 
-              // Start hard cutoff timer - force end after grace period
+              // Start hard cutoff timer - force end after grace period (3:30 total)
               if (!hardCutoffTimerRef.current) {
                 hardCutoffTimerRef.current = setTimeout(() => {
                   console.log(
-                    '[Timer] Hard cutoff reached - forcing session end',
+                    '[Timer] Hard cutoff at 3:30 - forcing session end',
                   )
                   toast.info('Session ending', {
                     description: 'Saving your memory...',
                     duration: 2000,
                   })
-                  handleEndSession()
+                  forceEndSession()
                 }, HARD_CUTOFF_GRACE_SECONDS * 1000)
               }
             }
           } else {
-            handleEndSession()
+            // AI not speaking, end immediately
+            console.log('[Timer] Time limit reached, ending session')
+            forceEndSession()
           }
         }
         return newTime
       })
     }, 1000)
-  }, [session, isAISpeaking])
-
-  const stopTimer = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-    // Also clear hard cutoff timer
-    if (hardCutoffTimerRef.current) {
-      clearTimeout(hardCutoffTimerRef.current)
-      hardCutoffTimerRef.current = null
-    }
-  }, [])
+  }, [session, forceEndSession])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -918,6 +1026,9 @@ function TodaySession() {
   const handleEndSession = useCallback(async () => {
     if (!session) return
 
+    // Set loading state immediately for all cases
+    setIsEndingSession(true)
+
     // Check if session is too short (less than 60 seconds)
     if (elapsedTime < MIN_SESSION_DURATION) {
       // Stop recording and cleanup
@@ -941,6 +1052,7 @@ function TodaySession() {
       setSessionState('idle')
       setElapsedTime(0)
       setShowRetryWarning(false)
+      setIsEndingSession(false) // Reset loading state after cancel
 
       // Show friendly notification using sonner toast
       toast.info('Session too short', {
@@ -1027,6 +1139,17 @@ function TodaySession() {
 
   return (
     <div className="flex h-full flex-col items-center justify-center p-8">
+      {/* Session Ending Overlay - shown only during automatic hard cutoff (not manual end) */}
+      {isAutoEnding && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+            <h2 className="mt-4 text-xl font-semibold">Ending session...</h2>
+            <p className="mt-2 text-muted-foreground">Saving your memory</p>
+          </div>
+        </div>
+      )}
+
       {/* Date Header */}
       <div className="text-center mb-8">
         <p className="text-sm text-muted-foreground uppercase tracking-wider">
@@ -1139,7 +1262,7 @@ function TodaySession() {
         <SessionControls
           isMuted={recorderState.isMuted}
           isPaused={sessionState === 'paused'}
-          isEnding={endMutation.isPending}
+          isEnding={isEndingSession || endMutation.isPending}
           elapsedTime={elapsedTime}
           minDuration={MIN_SESSION_DURATION}
           onToggleMute={handleToggleMute}

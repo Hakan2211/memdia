@@ -21,6 +21,7 @@ import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as ApiStreamConversationRouteImport } from './routes/api/stream/conversation'
+import { Route as ApiStreamCancelRouteImport } from './routes/api/stream/cancel'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AppMemoriesTodayRouteImport } from './routes/_app/memories.today'
 import { Route as AppMemoriesDateRouteImport } from './routes/_app/memories.$date'
@@ -83,6 +84,11 @@ const ApiStreamConversationRoute = ApiStreamConversationRouteImport.update({
   path: '/api/stream/conversation',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStreamCancelRoute = ApiStreamCancelRouteImport.update({
+  id: '/api/stream/cancel',
+  path: '/api/stream/cancel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
 }
 export interface FileRoutesByTo {
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
 }
 export interface FileRoutesById {
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/_app/memories/$date': typeof AppMemoriesDateRoute
   '/_app/memories/today': typeof AppMemoriesTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
 }
 export interface FileRouteTypes {
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/memories/$date'
     | '/memories/today'
     | '/api/auth/$'
+    | '/api/stream/cancel'
     | '/api/stream/conversation'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/memories/$date'
     | '/memories/today'
     | '/api/auth/$'
+    | '/api/stream/cancel'
     | '/api/stream/conversation'
   id:
     | '__root__'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/_app/memories/$date'
     | '/_app/memories/today'
     | '/api/auth/$'
+    | '/api/stream/cancel'
     | '/api/stream/conversation'
   fileRoutesById: FileRoutesById
 }
@@ -203,6 +215,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   PricingRoute: typeof PricingRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiStreamCancelRoute: typeof ApiStreamCancelRoute
   ApiStreamConversationRoute: typeof ApiStreamConversationRoute
 }
 
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStreamConversationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stream/cancel': {
+      id: '/api/stream/cancel'
+      path: '/api/stream/cancel'
+      fullPath: '/api/stream/cancel'
+      preLoaderRoute: typeof ApiStreamCancelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -366,6 +386,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   PricingRoute: PricingRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiStreamCancelRoute: ApiStreamCancelRoute,
   ApiStreamConversationRoute: ApiStreamConversationRoute,
 }
 export const routeTree = rootRouteImport

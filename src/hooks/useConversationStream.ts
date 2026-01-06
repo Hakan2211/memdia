@@ -66,6 +66,9 @@ export function useConversationStream(
   // Deduplication guard to prevent double-sends
   const isSendingRef = useRef<boolean>(false)
   const lastMessageRef = useRef<string>('')
+  // Generation ID to track and ignore stale audio after barge-in/cancellation
+  const generationIdRef = useRef<number>(0)
+  const currentGenerationRef = useRef<number>(0)
 
   // Send message and stream response
   const sendMessage = useCallback(
@@ -85,6 +88,11 @@ export function useConversationStream(
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
+
+      // Increment generation ID for this new request
+      generationIdRef.current++
+      const thisGeneration = generationIdRef.current
+      currentGenerationRef.current = thisGeneration
 
       // Reset state
       accumulatedTextRef.current = ''
@@ -168,8 +176,15 @@ export function useConversationStream(
                     break
 
                   case 'audio':
+                    // Ignore stale audio from cancelled/old generations (barge-in protection)
+                    if (thisGeneration !== currentGenerationRef.current) {
+                      console.log(
+                        `[ConversationStream] BLOCKING stale audio chunk ${data.sentenceIndex} - generation ${thisGeneration} vs current ${currentGenerationRef.current}`,
+                      )
+                      break
+                    }
                     console.log(
-                      `[ConversationStream] Audio chunk ${data.sentenceIndex} received`,
+                      `[ConversationStream] Audio chunk ${data.sentenceIndex} received (gen ${thisGeneration})`,
                     )
                     onAudio?.(
                       data.audioBase64,
@@ -246,12 +261,24 @@ export function useConversationStream(
     [onText, onAudio, onDone, onError, onStart],
   )
 
-  // Cancel current stream
+  // Cancel current stream (used for barge-in)
   const cancel = useCallback(() => {
+    console.log(
+      '[ConversationStream] cancel() - gen:',
+      generationIdRef.current,
+      '-> ',
+      generationIdRef.current + 1,
+    )
+
+    // Increment generation to invalidate any pending audio from this stream
+    generationIdRef.current++
+    currentGenerationRef.current = generationIdRef.current
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
       abortControllerRef.current = null
     }
+
     setState((prev) => ({ ...prev, isStreaming: false }))
   }, [])
 

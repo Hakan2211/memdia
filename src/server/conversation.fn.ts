@@ -10,8 +10,7 @@ import { prisma } from '../db'
 import { chatCompletion, type ChatMessage } from './services/openrouter.service'
 import { generateSpeech } from './services/falai.service'
 import { generateImage } from './services/falai.service'
-import { uploadAudio, uploadImageFromUrl } from './services/bunny.service'
-import { archiveSession } from './services/archival.service'
+import { uploadImageFromUrl } from './services/bunny.service'
 import {
   buildConversationSystemPrompt,
   buildConversationContext,
@@ -132,36 +131,13 @@ export const savePreloadedGreetingFn = createServerFn({ method: 'POST' })
       throw new Error('Session not found')
     }
 
-    // Upload audio to Bunny if we have a URL
-    let permanentAudioUrl: string | null = null
-    if (data.audioUrl) {
-      try {
-        const response = await fetch(data.audioUrl)
-        if (response.ok) {
-          const audioBuffer = await response.arrayBuffer()
-          const uploadResult = await uploadAudio(
-            context.user.id,
-            session.id,
-            0,
-            'ai',
-            audioBuffer,
-            'audio/mpeg',
-          )
-          permanentAudioUrl = uploadResult.url
-        }
-      } catch (error) {
-        console.error('[SaveGreeting] Failed to upload audio:', error)
-        // Continue without permanent audio URL
-      }
-    }
-
-    // Save the greeting as the first turn
+    // Save the greeting as the first turn (no audio upload - replay feature removed)
     const turn = await prisma.transcriptTurn.create({
       data: {
         sessionId: session.id,
         speaker: 'ai',
         text: data.text,
-        audioUrl: permanentAudioUrl,
+        audioUrl: null, // Audio replay removed
         startTime: 0,
         duration: 2, // Approximate
         order: 0,
@@ -172,7 +148,7 @@ export const savePreloadedGreetingFn = createServerFn({ method: 'POST' })
 
     return {
       turn,
-      audioUrl: permanentAudioUrl,
+      audioUrl: null,
     }
   })
 
@@ -209,40 +185,23 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
     // Get a greeting
     const greeting = getRandomGreeting()
 
-    // Generate TTS for the greeting
+    // Generate TTS for the greeting (for live playback only, no permanent storage)
     let audioUrl: string | null = null
     try {
       const ttsResult = await generateSpeech(greeting)
-
-      // Only upload if we got a real audio URL
-      if (ttsResult.audioUrl && ttsResult.audioUrl.length > 0) {
-        const response = await fetch(ttsResult.audioUrl)
-        if (response.ok) {
-          const audioBuffer = await response.arrayBuffer()
-
-          const uploadResult = await uploadAudio(
-            context.user.id,
-            session.id,
-            0,
-            'ai',
-            audioBuffer,
-            ttsResult.contentType,
-          )
-          audioUrl = uploadResult.url
-        }
-      }
+      audioUrl = ttsResult.audioUrl // Temporary URL for immediate playback
     } catch (error) {
       console.error('Failed to generate TTS for greeting:', error)
       // Continue without audio
     }
 
-    // Save the greeting as the first turn
+    // Save the greeting as the first turn (no audio URL - replay feature removed)
     const turn = await prisma.transcriptTurn.create({
       data: {
         sessionId: session.id,
         speaker: 'ai',
         text: greeting,
-        audioUrl,
+        audioUrl: null, // Audio replay removed
         startTime: 0,
         duration: 2, // Approximate
         order: 0,
@@ -251,12 +210,12 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
 
     const latency = Date.now() - startTime
     console.log(
-      `[Greeting] Complete (${latency}ms), audioUrl: ${audioUrl ? 'yes' : 'no'}`,
+      `[Greeting] Complete (${latency}ms), audioUrl for playback: ${audioUrl ? 'yes' : 'no'}`,
     )
 
     return {
       text: greeting,
-      audioUrl,
+      audioUrl, // Still return for immediate playback
       turn,
     }
   })
@@ -320,37 +279,13 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
       ? lastTurn.startTime + lastTurn.duration + 0.5
       : 0
 
-    // Upload user audio if provided
-    let userAudioUrl: string | null = null
-    if (data.userAudioBase64 && data.userAudioBase64.length > 0) {
-      try {
-        // Decode base64 to buffer
-        const audioBuffer = Buffer.from(data.userAudioBase64, 'base64')
-        const contentType = data.userAudioContentType || 'audio/webm'
-
-        const uploadResult = await uploadAudio(
-          context.user.id,
-          session.id,
-          session.turns.length, // Use current turn count as order
-          'user',
-          audioBuffer,
-          contentType,
-        )
-        userAudioUrl = uploadResult.url
-        console.log('[Conversation] Uploaded user audio:', userAudioUrl)
-      } catch (error) {
-        console.error('[Conversation] Failed to upload user audio:', error)
-        // Continue without user audio - don't fail the whole request
-      }
-    }
-
-    // Save user's message as a turn
+    // Save user's message as a turn (no audio upload - replay feature removed)
     const userTurn = await prisma.transcriptTurn.create({
       data: {
         sessionId: session.id,
         speaker: 'user',
         text: data.userMessage,
-        audioUrl: userAudioUrl,
+        audioUrl: null, // Audio replay removed
         startTime,
         duration: Math.ceil(data.userMessage.split(' ').length / 2.5), // Rough estimate
         order: session.turns.length,
@@ -360,41 +295,24 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
     // Generate AI response (non-streaming for simplicity in this endpoint)
     const aiResponse = await chatCompletion(messages)
 
-    // Generate TTS
+    // Generate TTS for immediate playback (no permanent storage)
     let audioUrl: string | null = null
     let audioDuration = 2
     try {
       const ttsResult = await generateSpeech(aiResponse)
       audioDuration = ttsResult.durationSeconds
-
-      // Only upload if we got a real audio URL
-      if (ttsResult.audioUrl && ttsResult.audioUrl.length > 0) {
-        const response = await fetch(ttsResult.audioUrl)
-        if (response.ok) {
-          const audioBuffer = await response.arrayBuffer()
-
-          const uploadResult = await uploadAudio(
-            context.user.id,
-            session.id,
-            session.turns.length + 1,
-            'ai',
-            audioBuffer,
-            ttsResult.contentType,
-          )
-          audioUrl = uploadResult.url
-        }
-      }
+      audioUrl = ttsResult.audioUrl // Temporary URL for immediate playback
     } catch (error) {
       console.error('Failed to generate TTS:', error)
     }
 
-    // Save AI response as a turn
+    // Save AI response as a turn (no audio URL stored - replay feature removed)
     const aiTurn = await prisma.transcriptTurn.create({
       data: {
         sessionId: session.id,
         speaker: 'ai',
         text: aiResponse,
-        audioUrl,
+        audioUrl: null, // Audio replay removed
         startTime: startTime + userTurn.duration + 0.5,
         duration: audioDuration,
         order: session.turns.length + 1,
@@ -405,7 +323,7 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
       userTurn,
       aiTurn,
       aiText: aiResponse,
-      aiAudioUrl: audioUrl,
+      aiAudioUrl: audioUrl, // Still return for immediate playback
     }
   })
 
@@ -503,38 +421,15 @@ export const processSessionFn = createServerFn({ method: 'POST' })
       }
     }
 
-    // Update session with results
+    // Update session with results (no archival needed - audio replay removed)
     const updatedSession = await prisma.voiceSession.update({
       where: { id: session.id },
       data: {
         status: 'completed',
         summaryText,
         imageUrl,
-        archivalStatus: 'processing',
       },
     })
-
-    // Start archival in background (don't await - runs in parallel)
-    // This regenerates AI audio and uploads to Bunny.net for replay
-    archiveSession(session.id)
-      .then(async (result) => {
-        console.log(
-          `[Archival] Completed for session ${session.id}: ${result.turnsArchived} turns archived`,
-        )
-        await prisma.voiceSession.update({
-          where: { id: session.id },
-          data: {
-            archivalStatus: result.success ? 'completed' : 'failed',
-          },
-        })
-      })
-      .catch(async (error) => {
-        console.error(`[Archival] Failed for session ${session.id}:`, error)
-        await prisma.voiceSession.update({
-          where: { id: session.id },
-          data: { archivalStatus: 'failed' },
-        })
-      })
 
     return {
       session: updatedSession,
