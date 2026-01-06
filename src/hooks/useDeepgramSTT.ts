@@ -47,7 +47,12 @@ export interface UseDeepgramSTTOptions {
   apiKey?: string
   /** Model to use (default: nova-3) */
   model?: string
-  /** Language (default: en) */
+  /**
+   * Language code for speech recognition (default: 'multi')
+   * - 'multi': Automatic language detection with code-switching support
+   *   Supports: en, es, fr, de, hi, ru, pt, ja, it, nl
+   * - Or use a specific ISO 639-1 code like 'en', 'es', etc.
+   */
   language?: string
 }
 
@@ -64,7 +69,9 @@ export function useDeepgramSTT(
     onError,
     apiKey,
     model = 'nova-3',
-    language = 'en',
+    // Use 'multi' for automatic language detection and code-switching
+    // Supports: English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, Dutch
+    language = 'multi',
   } = options
 
   const [state, setState] = useState<DeepgramSTTState>({

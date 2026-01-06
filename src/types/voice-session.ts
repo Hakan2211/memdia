@@ -52,6 +52,55 @@ export const AI_PERSONALITY_LABELS: Record<AIPersonality, string> = {
 }
 
 // ==========================================
+// Language (Multilingual Support)
+// ==========================================
+
+/**
+ * Supported languages for the voice AI companion
+ * These are the 10 languages supported by Deepgram Nova 3's multilingual mode
+ */
+export type Language =
+  | 'en'
+  | 'es'
+  | 'fr'
+  | 'de'
+  | 'it'
+  | 'pt'
+  | 'nl'
+  | 'ja'
+  | 'ru'
+  | 'hi'
+
+export const SUPPORTED_LANGUAGES: Language[] = [
+  'en',
+  'es',
+  'fr',
+  'de',
+  'it',
+  'pt',
+  'nl',
+  'ja',
+  'ru',
+  'hi',
+]
+
+export const LANGUAGE_LABELS: Record<
+  Language,
+  { name: string; native: string }
+> = {
+  en: { name: 'English', native: 'English' },
+  es: { name: 'Spanish', native: 'Español' },
+  fr: { name: 'French', native: 'Français' },
+  de: { name: 'German', native: 'Deutsch' },
+  it: { name: 'Italian', native: 'Italiano' },
+  pt: { name: 'Portuguese', native: 'Português' },
+  nl: { name: 'Dutch', native: 'Nederlands' },
+  ja: { name: 'Japanese', native: '日本語' },
+  ru: { name: 'Russian', native: 'Русский' },
+  hi: { name: 'Hindi', native: 'हिन्दी' },
+}
+
+// ==========================================
 // Session Configuration
 // ==========================================
 
@@ -118,6 +167,7 @@ export interface UserPreferences {
   timezone: string
   imageStyle: ImageStyle
   aiPersonality: AIPersonality
+  language: Language
   createdAt: Date
   updatedAt: Date
 }

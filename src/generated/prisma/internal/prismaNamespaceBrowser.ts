@@ -179,6 +179,7 @@ export const UserPreferencesScalarFieldEnum = {
   timezone: 'timezone',
   imageStyle: 'imageStyle',
   aiPersonality: 'aiPersonality',
+  language: 'language',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -200,6 +201,7 @@ export const DailyGreetingScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   date: 'date',
+  language: 'language',
   text: 'text',
   audioBase64: 'audioBase64',
   contentType: 'contentType',

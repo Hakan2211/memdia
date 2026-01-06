@@ -20,7 +20,12 @@ import {
   getUserPreferencesFn,
   updateUserPreferencesFn,
 } from '../../server/session.fn'
-import type { AIPersonality, ImageStyle } from '../../types/voice-session'
+import type {
+  AIPersonality,
+  ImageStyle,
+  Language,
+} from '../../types/voice-session'
+import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../../types/voice-session'
 
 export const Route = createFileRoute('/_app/onboarding')({
   component: OnboardingPage,
@@ -28,10 +33,35 @@ export const Route = createFileRoute('/_app/onboarding')({
 
 type OnboardingStep =
   | 'welcome'
+  | 'language'
   | 'microphone'
   | 'timezone'
   | 'preferences'
   | 'complete'
+
+/**
+ * Detect the user's browser language and map it to a supported language
+ */
+function detectBrowserLanguage(): Language {
+  if (typeof navigator === 'undefined') return 'en'
+
+  // Get the browser's language (e.g., "en-US", "es", "fr-FR")
+  const browserLang =
+    navigator.language ||
+    (navigator as { userLanguage?: string }).userLanguage ||
+    'en'
+
+  // Extract the primary language code (e.g., "en" from "en-US")
+  const primaryLang = browserLang.split('-')[0]?.toLowerCase() as Language
+
+  // Check if it's a supported language
+  if (primaryLang && SUPPORTED_LANGUAGES.includes(primaryLang)) {
+    return primaryLang
+  }
+
+  // Default to English
+  return 'en'
+}
 
 const IMAGE_STYLES: {
   value: ImageStyle
@@ -94,6 +124,9 @@ function OnboardingPage() {
     useState<ImageStyle>('realistic')
   const [selectedPersonality, setSelectedPersonality] =
     useState<AIPersonality>('empathetic')
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>(() =>
+    detectBrowserLanguage(),
+  )
 
   // Get existing preferences (if any)
   const { data: existingPrefs } = useQuery({
@@ -107,6 +140,9 @@ function OnboardingPage() {
       setSelectedTimezone(existingPrefs.timezone)
       setSelectedImageStyle(existingPrefs.imageStyle as ImageStyle)
       setSelectedPersonality(existingPrefs.aiPersonality as AIPersonality)
+      if (existingPrefs.language) {
+        setSelectedLanguage(existingPrefs.language as Language)
+      }
     }
   })
 
@@ -143,6 +179,13 @@ function OnboardingPage() {
   const handleNext = async () => {
     switch (step) {
       case 'welcome':
+        setStep('language')
+        break
+
+      case 'language':
+        await updatePrefsMutation.mutateAsync({
+          data: { language: selectedLanguage },
+        })
         setStep('microphone')
         break
 
@@ -205,6 +248,7 @@ function OnboardingPage() {
           {(
             [
               'welcome',
+              'language',
               'microphone',
               'timezone',
               'preferences',
@@ -219,6 +263,7 @@ function OnboardingPage() {
                   : i <
                       [
                         'welcome',
+                        'language',
                         'microphone',
                         'timezone',
                         'preferences',
@@ -244,6 +289,50 @@ function OnboardingPage() {
             </p>
             <Button onClick={handleNext} size="lg" className="w-full">
               Get Started
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Language Step */}
+        {step === 'language' && (
+          <div className="text-center">
+            <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+              <Globe className="h-10 w-10 text-primary" />
+            </div>
+            <h1 className="text-2xl font-semibold mb-2">
+              Choose Your Language
+            </h1>
+            <p className="text-muted-foreground mb-6">
+              Select your preferred language for conversations. You can speak in
+              any of these languages, and the AI will adapt.
+            </p>
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              {SUPPORTED_LANGUAGES.map((lang) => {
+                const { name, native } = LANGUAGE_LABELS[lang]
+                return (
+                  <button
+                    key={lang}
+                    onClick={() => setSelectedLanguage(lang)}
+                    className={`p-4 rounded-lg border text-left transition-colors ${
+                      selectedLanguage === lang
+                        ? 'border-primary bg-primary/5'
+                        : 'border-muted hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{native}</div>
+                    <div className="text-xs text-muted-foreground">{name}</div>
+                  </button>
+                )
+              })}
+            </div>
+            <Button
+              onClick={handleNext}
+              size="lg"
+              className="w-full"
+              disabled={updatePrefsMutation.isPending}
+            >
+              {updatePrefsMutation.isPending ? 'Saving...' : 'Continue'}
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>

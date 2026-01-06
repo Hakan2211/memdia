@@ -17,7 +17,12 @@ import { useSession } from '../../lib/auth-client'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
-import type { AIPersonality, ImageStyle } from '../../types/voice-session'
+import type {
+  AIPersonality,
+  ImageStyle,
+  Language,
+} from '../../types/voice-session'
+import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../../types/voice-session'
 
 // Type for user
 interface ProfileUser {
@@ -71,6 +76,7 @@ function ProfilePage() {
     useState<ImageStyle>('realistic')
   const [selectedPersonality, setSelectedPersonality] =
     useState<AIPersonality>('empathetic')
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>('en')
   const [prefsSuccess, setPrefsSuccess] = useState(false)
 
   // Update local state when preferences load
@@ -79,6 +85,7 @@ function ProfilePage() {
       setSelectedTimezone(preferences.timezone)
       setSelectedImageStyle(preferences.imageStyle as ImageStyle)
       setSelectedPersonality(preferences.aiPersonality as AIPersonality)
+      setSelectedLanguage((preferences.language as Language) || 'en')
     }
   }, [preferences])
 
@@ -302,6 +309,35 @@ function ProfilePage() {
             </p>
           </div>
 
+          {/* Language */}
+          <div className="space-y-2">
+            <Label>Conversation Language</Label>
+            <div className="grid grid-cols-2 gap-3">
+              {SUPPORTED_LANGUAGES.map((lang) => {
+                const { name, native } = LANGUAGE_LABELS[lang]
+                return (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => setSelectedLanguage(lang)}
+                    className={`p-3 rounded-lg border text-left transition-colors ${
+                      selectedLanguage === lang
+                        ? 'border-primary bg-primary/5'
+                        : 'border-muted hover:border-muted-foreground/30'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{native}</div>
+                    <div className="text-xs text-muted-foreground">{name}</div>
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Your preferred language for greetings and conversations. The AI
+              will adapt if you switch languages.
+            </p>
+          </div>
+
           {/* AI Personality */}
           <div className="space-y-2">
             <Label>AI Personality</Label>
@@ -394,6 +430,7 @@ function ProfilePage() {
                   timezone: selectedTimezone,
                   imageStyle: selectedImageStyle,
                   aiPersonality: selectedPersonality,
+                  language: selectedLanguage,
                 },
               })
             }

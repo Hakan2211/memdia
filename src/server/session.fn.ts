@@ -47,6 +47,7 @@ const updatePreferencesSchema = z.object({
   timezone: z.string().optional(),
   imageStyle: z.string().optional(),
   aiPersonality: z.string().optional(),
+  language: z.string().optional(),
 })
 const updateTimeSchema = z.object({
   sessionId: z.string(),
@@ -671,6 +672,7 @@ export const getUserPreferencesFn = createServerFn({ method: 'GET' })
           timezone: 'UTC',
           imageStyle: 'realistic',
           aiPersonality: 'empathetic',
+          language: 'en',
         },
       })
     }
@@ -686,6 +688,7 @@ export const updateUserPreferencesFn = createServerFn({ method: 'POST' })
     if (data.timezone) updateData.timezone = data.timezone
     if (data.imageStyle) updateData.imageStyle = data.imageStyle
     if (data.aiPersonality) updateData.aiPersonality = data.aiPersonality
+    if (data.language) updateData.language = data.language
 
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: context.user.id },
@@ -695,6 +698,7 @@ export const updateUserPreferencesFn = createServerFn({ method: 'POST' })
         timezone: data.timezone || 'UTC',
         imageStyle: data.imageStyle || 'realistic',
         aiPersonality: data.aiPersonality || 'empathetic',
+        language: data.language || 'en',
       },
     })
 

@@ -16,6 +16,7 @@ import {
   buildConversationContext,
   getRandomGreeting,
 } from '../lib/prompts/conversation'
+import type { Language } from '../types/voice-session'
 import {
   buildSummaryMessages,
   formatTranscriptForSummary,
@@ -63,7 +64,18 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
     const today = new Date()
     today.setUTCHours(0, 0, 0, 0)
 
-    console.log('[PreGreeting] Checking cache for user:', userId)
+    // Get user preferences to determine language
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId },
+    })
+    const language = (preferences?.language || 'en') as Language
+
+    console.log(
+      '[PreGreeting] Checking cache for user:',
+      userId,
+      'language:',
+      language,
+    )
 
     // 1. Lazy cleanup: Delete greetings older than 24 hours
     try {
@@ -82,17 +94,17 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
       console.warn('[PreGreeting] Cleanup error:', cleanupError)
     }
 
-    // 2. Check if we already have a cached greeting for today
+    // 2. Check if we already have a cached greeting for today + language
     const existingGreeting = await prisma.dailyGreeting.findUnique({
       where: {
-        userId_date: { userId, date: today },
+        userId_date_language: { userId, date: today, language },
       },
     })
 
     if (existingGreeting && existingGreeting.audioBase64) {
       const latency = Date.now() - startTime
       console.log(
-        `[PreGreeting] Cache HIT (${latency}ms) - returning cached greeting`,
+        `[PreGreeting] Cache HIT (${latency}ms) - returning cached greeting in ${language}`,
       )
       return {
         text: existingGreeting.text,
@@ -102,21 +114,17 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
       }
     }
 
-    // 3. Cache MISS - generate new greeting
-    console.log('[PreGreeting] Cache MISS - generating new greeting')
+    // 3. Cache MISS - generate new greeting in user's language
+    console.log(
+      '[PreGreeting] Cache MISS - generating new greeting in',
+      language,
+    )
 
-    // Get user preferences (optional - for future personality customization)
-    const preferences = await prisma.userPreferences.findUnique({
-      where: { userId },
-    })
-
-    // personality is stored for potential future use
-    void (preferences?.aiPersonality || 'empathetic')
-
-    // Get a random greeting
-    const greeting = getRandomGreeting()
+    // Get a random greeting in the user's preferred language
+    const greeting = getRandomGreeting(language)
 
     // Generate TTS for the greeting
+    // ElevenLabs Turbo 2.5 auto-detects language from text
     let audioBase64: string | null = null
     try {
       const ttsResult = await generateSpeech(greeting)
@@ -135,16 +143,17 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
       // Continue without audio
     }
 
-    // 4. Cache the greeting for subsequent visits today
+    // 4. Cache the greeting for subsequent visits today (keyed by userId + date + language)
     if (audioBase64) {
       try {
         await prisma.dailyGreeting.upsert({
           where: {
-            userId_date: { userId, date: today },
+            userId_date_language: { userId, date: today, language },
           },
           create: {
             userId,
             date: today,
+            language,
             text: greeting,
             audioBase64,
             contentType: 'audio/mpeg',
@@ -155,7 +164,7 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
             contentType: 'audio/mpeg',
           },
         })
-        console.log('[PreGreeting] Cached new greeting for today')
+        console.log('[PreGreeting] Cached new greeting for today in', language)
       } catch (cacheError) {
         // Non-critical - greeting still works, just won't be cached
         console.warn('[PreGreeting] Failed to cache greeting:', cacheError)
@@ -164,7 +173,7 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
 
     const latency = Date.now() - startTime
     console.log(
-      `[PreGreeting] Complete (${latency}ms), audio: ${audioBase64 ? 'yes' : 'no'}`,
+      `[PreGreeting] Complete (${latency}ms), language: ${language}, audio: ${audioBase64 ? 'yes' : 'no'}`,
     )
 
     return {
@@ -245,13 +254,13 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
       where: { userId: context.user.id },
     })
 
-    // personality is stored for potential future use
-    void (preferences?.aiPersonality || 'empathetic')
+    const language = (preferences?.language || 'en') as Language
 
-    // Get a greeting
-    const greeting = getRandomGreeting()
+    // Get a greeting in the user's language
+    const greeting = getRandomGreeting(language)
 
     // Generate TTS for the greeting (for live playback only, no permanent storage)
+    // ElevenLabs Turbo 2.5 auto-detects language from text
     let audioUrl: string | null = null
     try {
       const ttsResult = await generateSpeech(greeting)
@@ -276,7 +285,7 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
 
     const latency = Date.now() - startTime
     console.log(
-      `[Greeting] Complete (${latency}ms), audioUrl for playback: ${audioUrl ? 'yes' : 'no'}`,
+      `[Greeting] Complete (${latency}ms), language: ${language}, audioUrl: ${audioUrl ? 'yes' : 'no'}`,
     )
 
     return {
@@ -319,11 +328,13 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
 
     const personality = (preferences?.aiPersonality ||
       'empathetic') as AIPersonality
+    const language = (preferences?.language || 'en') as Language
 
-    // Build conversation context
+    // Build conversation context with language support
     const systemPrompt = buildConversationSystemPrompt(
       personality,
       context.user.name || undefined,
+      language,
     )
 
     const conversationHistory = buildConversationContext(

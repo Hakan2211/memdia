@@ -169,6 +169,10 @@ model UserPreferences {
   imageStyle    String @default("realistic") // realistic | dreamlike | watercolor | geometric | sketch
   aiPersonality String @default("empathetic") // empathetic | curious
 
+  // Language preference (ISO 639-1 code)
+  // Supported: en, es, fr, de, it, pt, nl, ja, ru, hi
+  language String @default("en")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -194,6 +198,9 @@ model DailyGreeting {
   userId String
   date   DateTime // Start of day (UTC)
 
+  // Language of the greeting (ISO 639-1 code)
+  language String @default("en")
+
   // Greeting content
   text        String
   audioBase64 String? // Base64 encoded audio for instant playback
@@ -201,7 +208,7 @@ model DailyGreeting {
 
   createdAt DateTime @default(now())
 
-  // One greeting per user per day
-  @@unique([userId, date])
+  // One greeting per user per day per language
+  @@unique([userId, date, language])
   @@map("daily_greeting")
 }
