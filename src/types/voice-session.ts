@@ -56,22 +56,11 @@ export const AI_PERSONALITY_LABELS: Record<AIPersonality, string> = {
 // ==========================================
 
 /**
- * Supported languages for the voice AI companion
- * These are the 10 languages supported by Deepgram Nova 3's multilingual mode
+ * Multilingual languages supported by Deepgram Nova 3's code-switching mode
+ * These languages use `language=multi` parameter and support automatic
+ * language detection with seamless switching between languages
  */
-export type Language =
-  | 'en'
-  | 'es'
-  | 'fr'
-  | 'de'
-  | 'it'
-  | 'pt'
-  | 'nl'
-  | 'ja'
-  | 'ru'
-  | 'hi'
-
-export const SUPPORTED_LANGUAGES: Language[] = [
+export const MULTILINGUAL_LANGUAGES = [
   'en',
   'es',
   'fr',
@@ -82,10 +71,100 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   'ja',
   'ru',
   'hi',
+] as const
+
+export type MultilingualLanguage = (typeof MULTILINGUAL_LANGUAGES)[number]
+
+/**
+ * Monolingual languages supported by Deepgram Nova 3
+ * These languages require a specific language code and do not support code-switching
+ */
+export const MONOLINGUAL_LANGUAGES = [
+  'bg', // Bulgarian
+  'ca', // Catalan
+  'cs', // Czech
+  'da', // Danish
+  'et', // Estonian
+  'fi', // Finnish
+  'nl-BE', // Flemish
+  'el', // Greek
+  'hu', // Hungarian
+  'id', // Indonesian
+  'ko', // Korean
+  'lv', // Latvian
+  'lt', // Lithuanian
+  'ms', // Malay
+  'no', // Norwegian
+  'pl', // Polish
+  'ro', // Romanian
+  'sk', // Slovak
+  'sv', // Swedish
+  'tr', // Turkish
+  'uk', // Ukrainian
+  'vi', // Vietnamese
+  'zh', // Chinese (Simplified) - requires Nova-2
+  'zh-TW', // Chinese (Traditional) - requires Nova-2
+] as const
+
+export type MonolingualLanguage = (typeof MONOLINGUAL_LANGUAGES)[number]
+
+/**
+ * Languages that require Nova-2 model (not supported on Nova-3)
+ * These languages will automatically use the Nova-2 model for transcription
+ */
+export const NOVA2_ONLY_LANGUAGES = ['zh', 'zh-TW'] as const
+
+export type Nova2OnlyLanguage = (typeof NOVA2_ONLY_LANGUAGES)[number]
+
+/**
+ * All supported languages (multilingual + monolingual)
+ */
+export type Language = MultilingualLanguage | MonolingualLanguage
+
+export const SUPPORTED_LANGUAGES: Language[] = [
+  ...MULTILINGUAL_LANGUAGES,
+  ...MONOLINGUAL_LANGUAGES,
 ]
 
-export const LANGUAGE_LABELS: Record<
-  Language,
+/**
+ * Check if a language supports multilingual code-switching mode
+ */
+export function isMultilingualLanguage(
+  lang: string,
+): lang is MultilingualLanguage {
+  return MULTILINGUAL_LANGUAGES.includes(lang as MultilingualLanguage)
+}
+
+/**
+ * Get the Deepgram language parameter for a given user language
+ * - Multilingual languages use 'multi' for code-switching support
+ * - Monolingual languages use their specific language code
+ */
+export function getDeepgramLanguageParam(userLanguage: Language): string {
+  return isMultilingualLanguage(userLanguage) ? 'multi' : userLanguage
+}
+
+/**
+ * Check if a language requires Nova-2 model
+ */
+export function requiresNova2Model(lang: string): lang is Nova2OnlyLanguage {
+  return NOVA2_ONLY_LANGUAGES.includes(lang as Nova2OnlyLanguage)
+}
+
+/**
+ * Get the Deepgram model for a given language
+ * - Chinese requires Nova-2
+ * - All other languages use Nova-3
+ */
+export function getDeepgramModel(userLanguage: Language): 'nova-2' | 'nova-3' {
+  return requiresNova2Model(userLanguage) ? 'nova-2' : 'nova-3'
+}
+
+/**
+ * Labels for multilingual languages (code-switching supported)
+ */
+export const MULTILINGUAL_LANGUAGE_LABELS: Record<
+  MultilingualLanguage,
   { name: string; native: string }
 > = {
   en: { name: 'English', native: 'English' },
@@ -98,6 +177,50 @@ export const LANGUAGE_LABELS: Record<
   ja: { name: 'Japanese', native: '日本語' },
   ru: { name: 'Russian', native: 'Русский' },
   hi: { name: 'Hindi', native: 'हिन्दी' },
+}
+
+/**
+ * Labels for monolingual languages
+ */
+export const MONOLINGUAL_LANGUAGE_LABELS: Record<
+  MonolingualLanguage,
+  { name: string; native: string }
+> = {
+  bg: { name: 'Bulgarian', native: 'Български' },
+  ca: { name: 'Catalan', native: 'Català' },
+  cs: { name: 'Czech', native: 'Čeština' },
+  da: { name: 'Danish', native: 'Dansk' },
+  et: { name: 'Estonian', native: 'Eesti' },
+  fi: { name: 'Finnish', native: 'Suomi' },
+  'nl-BE': { name: 'Flemish', native: 'Vlaams' },
+  el: { name: 'Greek', native: 'Ελληνικά' },
+  hu: { name: 'Hungarian', native: 'Magyar' },
+  id: { name: 'Indonesian', native: 'Bahasa Indonesia' },
+  ko: { name: 'Korean', native: '한국어' },
+  lv: { name: 'Latvian', native: 'Latviešu' },
+  lt: { name: 'Lithuanian', native: 'Lietuvių' },
+  ms: { name: 'Malay', native: 'Bahasa Melayu' },
+  no: { name: 'Norwegian', native: 'Norsk' },
+  pl: { name: 'Polish', native: 'Polski' },
+  ro: { name: 'Romanian', native: 'Română' },
+  sk: { name: 'Slovak', native: 'Slovenčina' },
+  sv: { name: 'Swedish', native: 'Svenska' },
+  tr: { name: 'Turkish', native: 'Türkçe' },
+  uk: { name: 'Ukrainian', native: 'Українська' },
+  vi: { name: 'Vietnamese', native: 'Tiếng Việt' },
+  zh: { name: 'Chinese (Simplified)', native: '简体中文' },
+  'zh-TW': { name: 'Chinese (Traditional)', native: '繁體中文' },
+}
+
+/**
+ * Combined language labels for all supported languages
+ */
+export const LANGUAGE_LABELS: Record<
+  Language,
+  { name: string; native: string }
+> = {
+  ...MULTILINGUAL_LANGUAGE_LABELS,
+  ...MONOLINGUAL_LANGUAGE_LABELS,
 }
 
 // ==========================================

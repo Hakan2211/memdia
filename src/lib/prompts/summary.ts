@@ -58,3 +58,28 @@ export function formatTranscriptForSummary(
     })
     .join('\n\n')
 }
+
+// ==========================================
+// Translation (for Image Generation)
+// ==========================================
+
+/**
+ * System prompt for translating summary to English
+ * Used for image generation which works best with English prompts
+ */
+export const TRANSLATION_SYSTEM_PROMPT = `You are a translator. Translate the following text to English.
+Keep the emotional tone and meaning intact.
+Only output the translated text, nothing else.`
+
+/**
+ * Build messages for translating a summary to English
+ * Used before image generation since image models work best with English
+ */
+export function buildTranslationMessages(
+  summary: string,
+): Array<{ role: 'system' | 'user'; content: string }> {
+  return [
+    { role: 'system', content: TRANSLATION_SYSTEM_PROMPT },
+    { role: 'user', content: summary },
+  ]
+}

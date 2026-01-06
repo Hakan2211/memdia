@@ -25,7 +25,14 @@ import type {
   ImageStyle,
   Language,
 } from '../../types/voice-session'
-import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../../types/voice-session'
+import {
+  MULTILINGUAL_LANGUAGES,
+  MONOLINGUAL_LANGUAGES,
+  MULTILINGUAL_LANGUAGE_LABELS,
+  MONOLINGUAL_LANGUAGE_LABELS,
+  isMultilingualLanguage,
+  requiresNova2Model,
+} from '../../types/voice-session'
 
 export const Route = createFileRoute('/_app/onboarding')({
   component: OnboardingPage,
@@ -38,6 +45,12 @@ type OnboardingStep =
   | 'timezone'
   | 'preferences'
   | 'complete'
+
+// All supported languages (multilingual + monolingual)
+const ALL_SUPPORTED_LANGUAGES: Language[] = [
+  ...MULTILINGUAL_LANGUAGES,
+  ...MONOLINGUAL_LANGUAGES,
+]
 
 /**
  * Detect the user's browser language and map it to a supported language
@@ -54,8 +67,8 @@ function detectBrowserLanguage(): Language {
   // Extract the primary language code (e.g., "en" from "en-US")
   const primaryLang = browserLang.split('-')[0]?.toLowerCase() as Language
 
-  // Check if it's a supported language
-  if (primaryLang && SUPPORTED_LANGUAGES.includes(primaryLang)) {
+  // Check if it's a supported language (multilingual or monolingual)
+  if (primaryLang && ALL_SUPPORTED_LANGUAGES.includes(primaryLang)) {
     return primaryLang
   }
 
@@ -304,28 +317,110 @@ function OnboardingPage() {
               Choose Your Language
             </h1>
             <p className="text-muted-foreground mb-6">
-              Select your preferred language for conversations. You can speak in
-              any of these languages, and the AI will adapt.
+              Select your preferred language for conversations.
             </p>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {SUPPORTED_LANGUAGES.map((lang) => {
-                const { name, native } = LANGUAGE_LABELS[lang]
-                return (
-                  <button
-                    key={lang}
-                    onClick={() => setSelectedLanguage(lang)}
-                    className={`p-4 rounded-lg border text-left transition-colors ${
-                      selectedLanguage === lang
-                        ? 'border-primary bg-primary/5'
-                        : 'border-muted hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">{native}</div>
-                    <div className="text-xs text-muted-foreground">{name}</div>
-                  </button>
-                )
-              })}
+
+            {/* Scrollable language container */}
+            <div className="max-h-[400px] overflow-y-auto pr-1 mb-6">
+              {/* Multilingual Section */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-left">
+                    Multilingual
+                  </span>
+                  <span className="text-xs text-muted-foreground bg-primary/10 px-2 py-0.5 rounded-full">
+                    Auto-detect
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground text-left mb-3">
+                  Supports switching between languages mid-conversation
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {MULTILINGUAL_LANGUAGES.map((lang) => {
+                    const { name, native } = MULTILINGUAL_LANGUAGE_LABELS[lang]
+                    return (
+                      <button
+                        key={lang}
+                        onClick={() => setSelectedLanguage(lang)}
+                        className={`p-3 rounded-lg border text-left transition-colors ${
+                          selectedLanguage === lang
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:border-muted-foreground/30'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{native}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {name}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-muted my-4" />
+
+              {/* Monolingual Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm font-medium text-left">
+                    Single Language
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground text-left mb-3">
+                  Optimized for single-language conversations
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {MONOLINGUAL_LANGUAGES.map((lang) => {
+                    const { name, native } = MONOLINGUAL_LANGUAGE_LABELS[lang]
+                    const isNova2 = requiresNova2Model(lang)
+                    return (
+                      <button
+                        key={lang}
+                        onClick={() => setSelectedLanguage(lang)}
+                        className={`p-3 rounded-lg border text-left transition-colors ${
+                          selectedLanguage === lang
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:border-muted-foreground/30'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{native}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {name}
+                        </div>
+                        {isNova2 && (
+                          <div className="text-xs text-amber-600 mt-1">
+                            Nova-2 model
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
+
+            {/* Selected language indicator */}
+            {selectedLanguage && (
+              <div className="text-sm text-muted-foreground mb-4">
+                Selected:{' '}
+                <span className="font-medium text-foreground">
+                  {isMultilingualLanguage(selectedLanguage)
+                    ? MULTILINGUAL_LANGUAGE_LABELS[selectedLanguage].native
+                    : MONOLINGUAL_LANGUAGE_LABELS[selectedLanguage].native}
+                </span>
+                {isMultilingualLanguage(selectedLanguage) && (
+                  <span className="text-xs ml-1">(multilingual)</span>
+                )}
+                {requiresNova2Model(selectedLanguage) && (
+                  <div className="text-xs text-amber-600 mt-1">
+                    Uses Nova-2 model. Nova-3 support coming soon.
+                  </div>
+                )}
+              </div>
+            )}
+
             <Button
               onClick={handleNext}
               size="lg"

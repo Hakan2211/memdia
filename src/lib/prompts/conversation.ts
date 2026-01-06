@@ -130,10 +130,14 @@ export const OPENING_GREETINGS = [
 ]
 
 /**
- * Multilingual greetings for all supported languages
+ * Greetings for all supported languages
  * Each language has 8 natural, conversational greetings
  */
 export const GREETINGS_BY_LANGUAGE: Record<Language, string[]> = {
+  // ==========================================
+  // Multilingual Languages (code-switching supported)
+  // ==========================================
+
   // English
   en: OPENING_GREETINGS,
 
@@ -244,11 +248,302 @@ export const GREETINGS_BY_LANGUAGE: Record<Language, string[]> = {
     'हाय! आज कैसे हो?',
     'नमस्ते! बताओ, आज का दिन कैसा रहा?',
   ],
+
+  // ==========================================
+  // Monolingual Languages (single language mode)
+  // ==========================================
+
+  // Bulgarian (Български)
+  bg: [
+    'Здравей! Как мина денят ти досега?',
+    'Здрасти! За какво си мислеше днес?',
+    'Здравей! Как се чувстваш днес?',
+    'Хей! Случи ли се нещо интересно днес?',
+    'Здрасти! Как върви всичко?',
+    'Здравей! Кое беше най-хубавото от деня ти досега?',
+    'Хей! Как си днес?',
+    'Здрасти! Разкажи ми, как мина денят ти?',
+  ],
+
+  // Catalan (Català)
+  ca: [
+    'Hola! Com ha anat el teu dia fins ara?',
+    'Ei! En què has estat pensant avui?',
+    'Hola! Com et sents avui?',
+    'Ei! Ha passat alguna cosa interessant avui?',
+    'Hola! Com va tot?',
+    'Hola! Quin ha estat el millor moment del teu dia fins ara?',
+    'Ei! Com estàs avui?',
+    "Hola! Explica'm, com ha anat el teu dia?",
+  ],
+
+  // Czech (Čeština)
+  cs: [
+    'Ahoj! Jaký byl tvůj den zatím?',
+    'Čau! Na co jsi dnes myslel?',
+    'Ahoj! Jak se dnes cítíš?',
+    'Hej! Stalo se dnes něco zajímavého?',
+    'Čau! Jak to jde?',
+    'Ahoj! Co bylo nejlepší na tvém dni zatím?',
+    'Hej! Jak se máš dnes?',
+    'Čau! Pověz, jaký byl tvůj den?',
+  ],
+
+  // Danish (Dansk)
+  da: [
+    'Hej! Hvordan har din dag været indtil nu?',
+    'Hej! Hvad har du tænkt på i dag?',
+    'Hej! Hvordan har du det i dag?',
+    'Hey! Er der sket noget interessant i dag?',
+    'Hej! Hvordan går det?',
+    'Hej! Hvad har været højdepunktet på din dag indtil nu?',
+    'Hey! Hvordan går det med dig i dag?',
+    'Hej! Fortæl mig, hvordan har din dag været?',
+  ],
+
+  // Estonian (Eesti)
+  et: [
+    'Tere! Kuidas su päev siiani on läinud?',
+    'Hei! Millele sa täna mõtlesid?',
+    'Tere! Kuidas sa end täna tunned?',
+    'Hei! Kas täna juhtus midagi huvitavat?',
+    'Tere! Kuidas läheb?',
+    'Hei! Mis oli su päeva parim hetk siiani?',
+    'Tere! Kuidas sul täna läheb?',
+    'Hei! Räägi mulle, kuidas su päev on läinud?',
+  ],
+
+  // Finnish (Suomi)
+  fi: [
+    'Hei! Miten päiväsi on mennyt tähän mennessä?',
+    'Moi! Mitä olet ajatellut tänään?',
+    'Hei! Miltä sinusta tuntuu tänään?',
+    'Hei! Onko tänään tapahtunut mitään mielenkiintoista?',
+    'Moi! Miten menee?',
+    'Hei! Mikä on ollut päiväsi kohokohta tähän mennessä?',
+    'Moi! Mitä kuuluu tänään?',
+    'Hei! Kerro, miten päiväsi on sujunut?',
+  ],
+
+  // Flemish (Vlaams)
+  'nl-BE': [
+    'Hey! Hoe is uw dag tot nu toe geweest?',
+    'Hallo! Waar hebt ge vandaag aan gedacht?',
+    'Hey! Hoe voelt ge u vandaag?',
+    'Hé! Is er iets interessants gebeurd vandaag?',
+    'Hallo! Hoe gaat het allemaal?',
+    'Hey! Wat was het hoogtepunt van uw dag tot nu toe?',
+    'Hé! Hoe gaat het met u vandaag?',
+    'Hallo! Vertel, hoe was uw dag?',
+  ],
+
+  // Greek (Ελληνικά)
+  el: [
+    'Γεια! Πώς ήταν η μέρα σου μέχρι τώρα;',
+    'Γεια σου! Τι σκεφτόσουν σήμερα;',
+    'Γεια! Πώς νιώθεις σήμερα;',
+    'Χέι! Έγινε κάτι ενδιαφέρον σήμερα;',
+    'Γεια! Πώς πάνε όλα;',
+    'Γεια σου! Ποιο ήταν το καλύτερο σημείο της μέρας σου;',
+    'Χέι! Πώς είσαι σήμερα;',
+    'Γεια! Πες μου, πώς πήγε η μέρα σου;',
+  ],
+
+  // Hungarian (Magyar)
+  hu: [
+    'Szia! Milyen volt a napod eddig?',
+    'Helló! Min gondolkodtál ma?',
+    'Szia! Hogy érzed magad ma?',
+    'Hé! Történt valami érdekes ma?',
+    'Helló! Hogy megy minden?',
+    'Szia! Mi volt a napod legjobb része eddig?',
+    'Hé! Hogy vagy ma?',
+    'Helló! Mesélj, milyen volt a napod?',
+  ],
+
+  // Indonesian (Bahasa Indonesia)
+  id: [
+    'Hai! Bagaimana harimu sejauh ini?',
+    'Halo! Apa yang kamu pikirkan hari ini?',
+    'Hai! Bagaimana perasaanmu hari ini?',
+    'Hei! Ada yang menarik terjadi hari ini?',
+    'Halo! Bagaimana kabarmu?',
+    'Hai! Apa momen terbaik harimu sejauh ini?',
+    'Hei! Apa kabar hari ini?',
+    'Halo! Ceritakan, bagaimana harimu?',
+  ],
+
+  // Korean (한국어)
+  ko: [
+    '안녕! 오늘 하루 어땠어?',
+    '안녕! 오늘 무슨 생각했어?',
+    '안녕! 오늘 기분이 어때?',
+    '야! 오늘 재미있는 일 있었어?',
+    '안녕! 어떻게 지내?',
+    '안녕! 오늘 하루 중 제일 좋았던 게 뭐야?',
+    '야! 오늘 어때?',
+    '안녕! 오늘 하루 어땠는지 말해줘!',
+  ],
+
+  // Latvian (Latviešu)
+  lv: [
+    'Sveiki! Kā tev šodien ir gājis līdz šim?',
+    'Čau! Par ko tu šodien domāji?',
+    'Sveiki! Kā tu šodien jūties?',
+    'Hei! Vai šodien notika kaut kas interesants?',
+    'Čau! Kā iet?',
+    'Sveiki! Kas bija labākais tavā dienā līdz šim?',
+    'Hei! Kā tev šodien klājas?',
+    'Čau! Pastāsti, kā pagāja tava diena?',
+  ],
+
+  // Lithuanian (Lietuvių)
+  lt: [
+    'Sveiki! Kaip tavo diena iki šiol?',
+    'Labas! Apie ką šiandien galvojai?',
+    'Sveiki! Kaip jautiesi šiandien?',
+    'Ei! Ar šiandien nutiko kas nors įdomaus?',
+    'Labas! Kaip sekasi?',
+    'Sveiki! Kas buvo geriausia tavo dienoje iki šiol?',
+    'Ei! Kaip tau šiandien sekasi?',
+    'Labas! Papasakok, kaip praėjo tavo diena?',
+  ],
+
+  // Malay (Bahasa Melayu)
+  ms: [
+    'Hai! Macam mana hari kamu setakat ini?',
+    'Hello! Apa yang kamu fikirkan hari ini?',
+    'Hai! Macam mana perasaan kamu hari ini?',
+    'Hei! Ada apa-apa yang menarik berlaku hari ini?',
+    'Hello! Apa khabar?',
+    'Hai! Apa momen terbaik hari kamu setakat ini?',
+    'Hei! Apa khabar hari ini?',
+    'Hello! Ceritakan, macam mana hari kamu?',
+  ],
+
+  // Norwegian (Norsk)
+  no: [
+    'Hei! Hvordan har dagen din vært så langt?',
+    'Hei! Hva har du tenkt på i dag?',
+    'Hei! Hvordan føler du deg i dag?',
+    'Hey! Har det skjedd noe interessant i dag?',
+    'Hei! Hvordan går det?',
+    'Hei! Hva har vært høydepunktet i dagen din så langt?',
+    'Hey! Hvordan har du det i dag?',
+    'Hei! Fortell meg, hvordan har dagen din vært?',
+  ],
+
+  // Polish (Polski)
+  pl: [
+    'Cześć! Jak minął ci dzień do tej pory?',
+    'Hej! O czym dzisiaj myślałeś?',
+    'Cześć! Jak się dzisiaj czujesz?',
+    'Hej! Czy dzisiaj wydarzyło się coś ciekawego?',
+    'Cześć! Jak leci?',
+    'Hej! Co było najlepsze w twoim dniu do tej pory?',
+    'Cześć! Jak się masz dzisiaj?',
+    'Hej! Opowiedz, jak minął ci dzień?',
+  ],
+
+  // Romanian (Română)
+  ro: [
+    'Salut! Cum a fost ziua ta până acum?',
+    'Bună! La ce te-ai gândit azi?',
+    'Salut! Cum te simți azi?',
+    'Hei! S-a întâmplat ceva interesant azi?',
+    'Bună! Cum merge totul?',
+    'Salut! Care a fost cel mai bun moment din ziua ta până acum?',
+    'Hei! Ce mai faci azi?',
+    'Bună! Povestește-mi, cum a fost ziua ta?',
+  ],
+
+  // Slovak (Slovenčina)
+  sk: [
+    'Ahoj! Aký bol tvoj deň doteraz?',
+    'Čau! Na čo si dnes myslel?',
+    'Ahoj! Ako sa dnes cítiš?',
+    'Hej! Stalo sa dnes niečo zaujímavé?',
+    'Čau! Ako to ide?',
+    'Ahoj! Čo bolo najlepšie na tvojom dni doteraz?',
+    'Hej! Ako sa máš dnes?',
+    'Čau! Povedz, aký bol tvoj deň?',
+  ],
+
+  // Swedish (Svenska)
+  sv: [
+    'Hej! Hur har din dag varit hittills?',
+    'Tjena! Vad har du tänkt på idag?',
+    'Hej! Hur mår du idag?',
+    'Hallå! Har det hänt något intressant idag?',
+    'Tjena! Hur går det?',
+    'Hej! Vad har varit höjdpunkten på din dag hittills?',
+    'Hallå! Hur är det med dig idag?',
+    'Tjena! Berätta, hur har din dag varit?',
+  ],
+
+  // Turkish (Türkçe)
+  tr: [
+    'Selam! Bugün günün nasıl geçti şimdiye kadar?',
+    'Merhaba! Bugün aklından neler geçti?',
+    'Selam! Bugün kendini nasıl hissediyorsun?',
+    'Hey! Bugün ilginç bir şey oldu mu?',
+    'Merhaba! Nasıl gidiyor?',
+    'Selam! Bugünün en güzel anı ne oldu şimdiye kadar?',
+    'Hey! Bugün nasılsın?',
+    'Merhaba! Anlat bakalım, günün nasıl geçti?',
+  ],
+
+  // Ukrainian (Українська)
+  uk: [
+    'Привіт! Як пройшов твій день досі?',
+    'Привіт! Про що ти сьогодні думав?',
+    'Привіт! Як ти себе почуваєш сьогодні?',
+    'Гей! Сьогодні сталося щось цікаве?',
+    'Привіт! Як справи?',
+    'Привіт! Що було найкращим у твоєму дні досі?',
+    'Гей! Як ти сьогодні?',
+    'Привіт! Розкажи, як пройшов твій день?',
+  ],
+
+  // Vietnamese (Tiếng Việt)
+  vi: [
+    'Chào! Ngày của bạn thế nào rồi?',
+    'Xin chào! Hôm nay bạn đang nghĩ gì?',
+    'Chào! Hôm nay bạn cảm thấy thế nào?',
+    'Này! Hôm nay có chuyện gì thú vị không?',
+    'Xin chào! Mọi thứ thế nào rồi?',
+    'Chào! Điều tuyệt nhất trong ngày của bạn là gì?',
+    'Này! Hôm nay bạn khỏe không?',
+    'Xin chào! Kể cho mình nghe, ngày của bạn thế nào?',
+  ],
+
+  // Chinese Simplified (简体中文) - requires Nova-2 model
+  zh: [
+    '嗨！今天过得怎么样？',
+    '你好！今天在想什么呢？',
+    '嗨！今天感觉怎么样？',
+    '嘿！今天有什么有趣的事吗？',
+    '你好！一切都好吗？',
+    '嗨！今天最开心的事是什么？',
+    '嘿！今天怎么样？',
+    '你好！跟我说说，今天过得如何？',
+  ],
+
+  // Chinese Traditional (繁體中文) - requires Nova-2 model
+  'zh-TW': [
+    '嗨！今天過得怎麼樣？',
+    '你好！今天在想什麼呢？',
+    '嗨！今天感覺怎麼樣？',
+    '嘿！今天有什麼有趣的事嗎？',
+    '你好！一切都好嗎？',
+    '嗨！今天最開心的事是什麼？',
+    '嘿！今天怎麼樣？',
+    '你好！跟我說說，今天過得如何？',
+  ],
 }
 
 /**
  * Get a random opening greeting in the specified language
- * Falls back to English if language not found
  */
 export function getRandomGreeting(language: Language = 'en'): string {
   const greetings = GREETINGS_BY_LANGUAGE[language] ?? GREETINGS_BY_LANGUAGE.en

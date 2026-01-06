@@ -48,10 +48,20 @@ export interface UseDeepgramSTTOptions {
   /** Model to use (default: nova-3) */
   model?: string
   /**
-   * Language code for speech recognition (default: 'multi')
-   * - 'multi': Automatic language detection with code-switching support
-   *   Supports: en, es, fr, de, hi, ru, pt, ja, it, nl
-   * - Or use a specific ISO 639-1 code like 'en', 'es', etc.
+   * Language parameter for Deepgram speech recognition
+   *
+   * This should be pre-processed using getDeepgramLanguageParam():
+   * - 'multi': For multilingual languages (en, es, fr, de, it, pt, nl, ja, ru, hi)
+   *   Enables automatic language detection with code-switching support
+   * - Specific language code (e.g., 'tr', 'ko', 'pl'): For monolingual transcription
+   *   Used for languages that don't support code-switching
+   *
+   * @example
+   * // For multilingual languages (e.g., user selected 'en', 'es', 'fr')
+   * language: 'multi'
+   *
+   * // For monolingual languages (e.g., user selected 'tr', 'ko', 'pl')
+   * language: 'tr'
    */
   language?: string
 }

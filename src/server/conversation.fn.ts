@@ -20,6 +20,7 @@ import type { Language } from '../types/voice-session'
 import {
   buildSummaryMessages,
   formatTranscriptForSummary,
+  buildTranslationMessages,
 } from '../lib/prompts/summary'
 import { buildImagePrompt } from '../lib/prompts/image'
 import type { AIPersonality, ImageStyle } from '../types/voice-session'
@@ -430,6 +431,12 @@ export const processSessionFn = createServerFn({ method: 'POST' })
       throw new Error('Session not found or not in processing state')
     }
 
+    // Get user preferences to determine language for translation
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId: context.user.id },
+    })
+    const userLanguage = preferences?.language || 'en'
+
     // Check if there are any user turns (actual conversation happened)
     const userTurns = session.turns.filter((t) => t.speaker === 'user')
 
@@ -480,9 +487,34 @@ export const processSessionFn = createServerFn({ method: 'POST' })
     let imageUrl: string | null = null
     if (summaryText && summaryText.length > 50) {
       try {
-        // Build prompt and generate image
-        void buildImagePrompt(summaryText, session.imageStyle as ImageStyle)
-        const imageResult = await generateImage(summaryText, {
+        // Translate summary to English for image generation if not already English
+        // Image generation models work best with English prompts
+        let imagePromptText = summaryText
+        if (userLanguage !== 'en') {
+          try {
+            const translationMessages = buildTranslationMessages(summaryText)
+            const translatedSummary = await chatCompletion(
+              translationMessages as ChatMessage[],
+              { maxTokens: 1000 },
+            )
+            if (translatedSummary) {
+              imagePromptText = translatedSummary
+              console.log(
+                '[Process Session] Translated summary for image generation',
+              )
+            }
+          } catch (translationError) {
+            console.error(
+              'Failed to translate summary, using original:',
+              translationError,
+            )
+            // Fall back to original summary if translation fails
+          }
+        }
+
+        // Build prompt and generate image with English text
+        void buildImagePrompt(imagePromptText, session.imageStyle as ImageStyle)
+        const imageResult = await generateImage(imagePromptText, {
           style: session.imageStyle as ImageStyle,
         })
 

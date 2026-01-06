@@ -18,6 +18,7 @@ import {
   endSessionFn,
   updateSessionTimeFn,
   cancelShortSessionFn,
+  getUserPreferencesFn,
 } from '../../server/session.fn'
 
 // Minimum session duration in seconds (sessions shorter than this are discarded)
@@ -39,7 +40,15 @@ import { useDeepgramSTT } from '../../hooks/useDeepgramSTT'
 import { useStreamingAudioPlayer } from '../../hooks/useStreamingAudioPlayer'
 import { useConversationStream } from '../../hooks/useConversationStream'
 import { useVAD } from '../../hooks/useVAD'
-import type { VoiceSession, TranscriptTurn } from '../../types/voice-session'
+import type {
+  VoiceSession,
+  TranscriptTurn,
+  Language,
+} from '../../types/voice-session'
+import {
+  getDeepgramLanguageParam,
+  getDeepgramModel,
+} from '../../types/voice-session'
 
 // Feature flag: Use new SSE streaming architecture for lower latency
 const USE_SSE_STREAMING = true
@@ -106,6 +115,25 @@ function TodaySession() {
   const isPreloadingRef = useRef(false)
   // Track if we've already attempted preloading this mount (prevent duplicate calls)
   const hasPreloadedOnceRef = useRef(false)
+
+  // Fetch user preferences for language setting (needed early for Deepgram hook)
+  const { data: userPreferences } = useQuery({
+    queryKey: ['preferences'],
+    queryFn: () => getUserPreferencesFn(),
+  })
+
+  // Get the Deepgram language parameter based on user's language preference
+  // Multilingual languages (en, es, fr, de, it, pt, nl, ja, ru, hi) use 'multi' for code-switching
+  // Monolingual languages (tr, ko, pl, etc.) use their specific language code
+  const deepgramLanguage = userPreferences?.language
+    ? getDeepgramLanguageParam(userPreferences.language as Language)
+    : 'multi'
+
+  // Get the Deepgram model based on user's language preference
+  // Chinese requires Nova-2, all other languages use Nova-3
+  const deepgramModel = userPreferences?.language
+    ? getDeepgramModel(userPreferences.language as Language)
+    : 'nova-3'
 
   // Helper to create a WAV file from PCM data
   const createWavFromPcm = useCallback(
@@ -189,7 +217,14 @@ function TodaySession() {
   }, [createWavFromPcm])
 
   // Deepgram STT hook for real-time transcription
+  // Language is determined by user preferences:
+  // - Multilingual languages use 'multi' for code-switching support
+  // - Monolingual languages use their specific language code
+  // Model is determined by language:
+  // - Chinese requires Nova-2, all other languages use Nova-3
   const [sttState, sttActions] = useDeepgramSTT({
+    language: deepgramLanguage,
+    model: deepgramModel,
     onFinalTranscript: (transcript) => {
       console.log('[STT] Final transcript:', transcript)
       // Accumulate transcripts until silence

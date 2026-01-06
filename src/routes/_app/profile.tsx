@@ -22,7 +22,14 @@ import type {
   ImageStyle,
   Language,
 } from '../../types/voice-session'
-import { SUPPORTED_LANGUAGES, LANGUAGE_LABELS } from '../../types/voice-session'
+import {
+  MULTILINGUAL_LANGUAGES,
+  MONOLINGUAL_LANGUAGES,
+  MULTILINGUAL_LANGUAGE_LABELS,
+  MONOLINGUAL_LANGUAGE_LABELS,
+  isMultilingualLanguage,
+  requiresNova2Model,
+} from '../../types/voice-session'
 
 // Type for user
 interface ProfileUser {
@@ -312,30 +319,105 @@ function ProfilePage() {
           {/* Language */}
           <div className="space-y-2">
             <Label>Conversation Language</Label>
-            <div className="grid grid-cols-2 gap-3">
-              {SUPPORTED_LANGUAGES.map((lang) => {
-                const { name, native } = LANGUAGE_LABELS[lang]
-                return (
-                  <button
-                    key={lang}
-                    type="button"
-                    onClick={() => setSelectedLanguage(lang)}
-                    className={`p-3 rounded-lg border text-left transition-colors ${
-                      selectedLanguage === lang
-                        ? 'border-primary bg-primary/5'
-                        : 'border-muted hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">{native}</div>
-                    <div className="text-xs text-muted-foreground">{name}</div>
-                  </button>
-                )
-              })}
+
+            {/* Scrollable language container */}
+            <div className="max-h-[350px] overflow-y-auto pr-1 border rounded-lg p-3">
+              {/* Multilingual Section */}
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium">Multilingual</span>
+                  <span className="text-xs text-muted-foreground bg-primary/10 px-2 py-0.5 rounded-full">
+                    Auto-detect
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Supports switching between languages mid-conversation
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {MULTILINGUAL_LANGUAGES.map((lang) => {
+                    const { name, native } = MULTILINGUAL_LANGUAGE_LABELS[lang]
+                    return (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setSelectedLanguage(lang)}
+                        className={`p-2.5 rounded-lg border text-left transition-colors ${
+                          selectedLanguage === lang
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:border-muted-foreground/30'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{native}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {name}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-muted my-3" />
+
+              {/* Monolingual Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium">Single Language</span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Optimized for single-language conversations
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {MONOLINGUAL_LANGUAGES.map((lang) => {
+                    const { name, native } = MONOLINGUAL_LANGUAGE_LABELS[lang]
+                    const isNova2 = requiresNova2Model(lang)
+                    return (
+                      <button
+                        key={lang}
+                        type="button"
+                        onClick={() => setSelectedLanguage(lang)}
+                        className={`p-2.5 rounded-lg border text-left transition-colors ${
+                          selectedLanguage === lang
+                            ? 'border-primary bg-primary/5'
+                            : 'border-muted hover:border-muted-foreground/30'
+                        }`}
+                      >
+                        <div className="font-medium text-sm">{native}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {name}
+                        </div>
+                        {isNova2 && (
+                          <div className="text-xs text-amber-600 mt-1">
+                            Nova-2
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Your preferred language for greetings and conversations. The AI
-              will adapt if you switch languages.
-            </p>
+
+            {/* Selected language indicator */}
+            <div className="text-sm text-muted-foreground">
+              Selected:{' '}
+              <span className="font-medium text-foreground">
+                {isMultilingualLanguage(selectedLanguage)
+                  ? MULTILINGUAL_LANGUAGE_LABELS[selectedLanguage].native
+                  : MONOLINGUAL_LANGUAGE_LABELS[selectedLanguage].native}
+              </span>
+              {isMultilingualLanguage(selectedLanguage) ? (
+                <span className="text-xs ml-1">(multilingual)</span>
+              ) : (
+                <span className="text-xs ml-1">(single language)</span>
+              )}
+              {requiresNova2Model(selectedLanguage) && (
+                <div className="text-xs text-amber-600 mt-1">
+                  Uses Nova-2 model. Nova-3 support coming soon.
+                </div>
+              )}
+            </div>
           </div>
 
           {/* AI Personality */}
