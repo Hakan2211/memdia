@@ -827,6 +827,12 @@ function TodaySession() {
     isAISpeakingRef.current = isAISpeaking
   }, [isAISpeaking])
 
+  // Ref to track session for timer callback (avoids stale closure)
+  const sessionRef = useRef(session)
+  useEffect(() => {
+    sessionRef.current = session
+  }, [session])
+
   // Barge-in helper function - stops AI audio and cancels stream
   // Used by both VAD and Deepgram SpeechStarted handlers
   const triggerBargeIn = useCallback(() => {
@@ -927,7 +933,8 @@ function TodaySession() {
       setElapsedTime((prev) => {
         const newTime = prev + 1
         elapsedTimeRef.current = newTime // Keep ref in sync
-        const maxDuration = session?.maxDuration ?? 180
+        const currentSession = sessionRef.current // Use ref to avoid stale closure
+        const maxDuration = currentSession?.maxDuration ?? 180
         const remainingTime = maxDuration - newTime
 
         // Show warning at 30 seconds remaining
@@ -940,7 +947,7 @@ function TodaySession() {
         }
 
         // Check if time limit reached (3 minutes)
-        if (session && newTime >= session.maxDuration) {
+        if (currentSession && newTime >= currentSession.maxDuration) {
           // If AI is currently speaking, set pending flag and let it finish
           if (isAISpeakingRef.current) {
             // Only set pending if not already set
@@ -974,7 +981,7 @@ function TodaySession() {
         return newTime
       })
     }, 1000)
-  }, [session, forceEndSession])
+  }, [forceEndSession])
 
   // Cleanup on unmount
   useEffect(() => {
