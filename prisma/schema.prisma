@@ -187,3 +187,21 @@ model DeletedSessionAttempt {
   @@unique([userId, date])
   @@map("deleted_session_attempt")
 }
+
+// Cache daily AI greeting to avoid regenerating TTS on every page visit
+model DailyGreeting {
+  id     String   @id @default(cuid())
+  userId String
+  date   DateTime // Start of day (UTC)
+
+  // Greeting content
+  text        String
+  audioBase64 String? // Base64 encoded audio for instant playback
+  contentType String  @default("audio/mpeg")
+
+  createdAt DateTime @default(now())
+
+  // One greeting per user per day
+  @@unique([userId, date])
+  @@map("daily_greeting")
+}

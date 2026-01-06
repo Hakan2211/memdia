@@ -391,7 +391,8 @@ export const ModelName = {
   VoiceSession: 'VoiceSession',
   TranscriptTurn: 'TranscriptTurn',
   UserPreferences: 'UserPreferences',
-  DeletedSessionAttempt: 'DeletedSessionAttempt'
+  DeletedSessionAttempt: 'DeletedSessionAttempt',
+  DailyGreeting: 'DailyGreeting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt"
+    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1003,6 +1004,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    DailyGreeting: {
+      payload: Prisma.$DailyGreetingPayload<ExtArgs>
+      fields: Prisma.DailyGreetingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyGreetingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyGreetingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>
+        }
+        findFirst: {
+          args: Prisma.DailyGreetingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyGreetingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>
+        }
+        findMany: {
+          args: Prisma.DailyGreetingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>[]
+        }
+        create: {
+          args: Prisma.DailyGreetingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>
+        }
+        createMany: {
+          args: Prisma.DailyGreetingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyGreetingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>[]
+        }
+        delete: {
+          args: Prisma.DailyGreetingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>
+        }
+        update: {
+          args: Prisma.DailyGreetingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyGreetingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyGreetingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyGreetingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyGreetingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyGreetingPayload>
+        }
+        aggregate: {
+          args: Prisma.DailyGreetingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyGreeting>
+        }
+        groupBy: {
+          args: Prisma.DailyGreetingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyGreetingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyGreetingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyGreetingCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1158,6 +1233,19 @@ export const DeletedSessionAttemptScalarFieldEnum = {
 } as const
 
 export type DeletedSessionAttemptScalarFieldEnum = (typeof DeletedSessionAttemptScalarFieldEnum)[keyof typeof DeletedSessionAttemptScalarFieldEnum]
+
+
+export const DailyGreetingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  text: 'text',
+  audioBase64: 'audioBase64',
+  contentType: 'contentType',
+  createdAt: 'createdAt'
+} as const
+
+export type DailyGreetingScalarFieldEnum = (typeof DailyGreetingScalarFieldEnum)[keyof typeof DailyGreetingScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1319,6 +1407,7 @@ export type GlobalOmitConfig = {
   transcriptTurn?: Prisma.TranscriptTurnOmit
   userPreferences?: Prisma.UserPreferencesOmit
   deletedSessionAttempt?: Prisma.DeletedSessionAttemptOmit
+  dailyGreeting?: Prisma.DailyGreetingOmit
 }
 
 /* Types for Logging */

@@ -58,7 +58,8 @@ export const ModelName = {
   VoiceSession: 'VoiceSession',
   TranscriptTurn: 'TranscriptTurn',
   UserPreferences: 'UserPreferences',
-  DeletedSessionAttempt: 'DeletedSessionAttempt'
+  DeletedSessionAttempt: 'DeletedSessionAttempt',
+  DailyGreeting: 'DailyGreeting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -193,6 +194,19 @@ export const DeletedSessionAttemptScalarFieldEnum = {
 } as const
 
 export type DeletedSessionAttemptScalarFieldEnum = (typeof DeletedSessionAttemptScalarFieldEnum)[keyof typeof DeletedSessionAttemptScalarFieldEnum]
+
+
+export const DailyGreetingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  text: 'text',
+  audioBase64: 'audioBase64',
+  contentType: 'contentType',
+  createdAt: 'createdAt'
+} as const
+
+export type DailyGreetingScalarFieldEnum = (typeof DailyGreetingScalarFieldEnum)[keyof typeof DailyGreetingScalarFieldEnum]
 
 
 export const SortOrder = {

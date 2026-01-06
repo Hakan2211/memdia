@@ -79,3 +79,8 @@ export type UserPreferences = Prisma.UserPreferencesModel
  * 
  */
 export type DeletedSessionAttempt = Prisma.DeletedSessionAttemptModel
+/**
+ * Model DailyGreeting
+ * 
+ */
+export type DailyGreeting = Prisma.DailyGreetingModel

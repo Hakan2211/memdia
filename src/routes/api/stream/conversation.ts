@@ -304,18 +304,49 @@ export const Route = createFileRoute('/api/stream/conversation')({
                     // Wait for all TTS to complete
                     await Promise.all(audioPromises)
 
-                    // Save AI turn to database
-                    const aiTurn = await prisma.transcriptTurn.create({
-                      data: {
-                        sessionId: voiceSession.id,
-                        speaker: 'ai',
-                        text: fullText,
-                        audioUrl: null, // Will be set during archival
-                        startTime: userStartTime + userTurn.duration + 0.5,
-                        duration: Math.ceil(fullText.split(' ').length / 2.5),
-                        order: voiceSession.turns.length + 1,
-                      },
-                    })
+                    // Save AI turn to database (with session existence check)
+                    // The session may have been ended/deleted while streaming
+                    let aiTurnId: string | null = null
+                    try {
+                      // Verify session still exists and is active before saving
+                      const sessionStillExists =
+                        await prisma.voiceSession.findUnique({
+                          where: { id: voiceSession.id },
+                          select: { id: true, status: true },
+                        })
+
+                      if (
+                        sessionStillExists &&
+                        sessionStillExists.status === 'active'
+                      ) {
+                        const aiTurn = await prisma.transcriptTurn.create({
+                          data: {
+                            sessionId: voiceSession.id,
+                            speaker: 'ai',
+                            text: fullText,
+                            audioUrl: null, // Will be set during archival
+                            startTime: userStartTime + userTurn.duration + 0.5,
+                            duration: Math.ceil(
+                              fullText.split(' ').length / 2.5,
+                            ),
+                            order: voiceSession.turns.length + 1,
+                          },
+                        })
+                        aiTurnId = aiTurn.id
+                      } else {
+                        console.log(
+                          '[SSE Stream] Session ended during stream, skipping AI turn save',
+                        )
+                      }
+                    } catch (dbError) {
+                      // Session was likely deleted - log and continue gracefully
+                      console.warn(
+                        '[SSE Stream] Failed to save AI turn (session may have ended):',
+                        dbError instanceof Error
+                          ? dbError.message
+                          : 'Unknown error',
+                      )
+                    }
 
                     const totalLatency = Date.now() - startTime
                     console.log(
@@ -325,7 +356,7 @@ export const Route = createFileRoute('/api/stream/conversation')({
                     send('done', {
                       fullText,
                       totalSentences: processedSentenceCount,
-                      aiTurnId: aiTurn.id,
+                      aiTurnId,
                       latencyMs: totalLatency,
                     })
 

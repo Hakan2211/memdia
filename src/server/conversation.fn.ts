@@ -50,17 +50,64 @@ const savePreloadedGreetingSchema = z.object({
 
 // ==========================================
 // Pre-Generate AI Greeting (Before Session Starts)
+// Caches greeting per user per day to avoid repeated TTS API calls
 // ==========================================
 
 export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const startTime = Date.now()
-    console.log('[PreGreeting] Starting pre-generation')
+    const userId = context.user.id
+
+    // Calculate today's date (start of day in UTC)
+    const today = new Date()
+    today.setUTCHours(0, 0, 0, 0)
+
+    console.log('[PreGreeting] Checking cache for user:', userId)
+
+    // 1. Lazy cleanup: Delete greetings older than 24 hours
+    try {
+      const deletedCount = await prisma.dailyGreeting.deleteMany({
+        where: {
+          createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        },
+      })
+      if (deletedCount.count > 0) {
+        console.log(
+          `[PreGreeting] Cleaned up ${deletedCount.count} old greetings`,
+        )
+      }
+    } catch (cleanupError) {
+      // Non-critical, just log
+      console.warn('[PreGreeting] Cleanup error:', cleanupError)
+    }
+
+    // 2. Check if we already have a cached greeting for today
+    const existingGreeting = await prisma.dailyGreeting.findUnique({
+      where: {
+        userId_date: { userId, date: today },
+      },
+    })
+
+    if (existingGreeting && existingGreeting.audioBase64) {
+      const latency = Date.now() - startTime
+      console.log(
+        `[PreGreeting] Cache HIT (${latency}ms) - returning cached greeting`,
+      )
+      return {
+        text: existingGreeting.text,
+        audioUrl: null, // We only cache base64, URLs expire
+        audioBase64: existingGreeting.audioBase64,
+        contentType: existingGreeting.contentType,
+      }
+    }
+
+    // 3. Cache MISS - generate new greeting
+    console.log('[PreGreeting] Cache MISS - generating new greeting')
 
     // Get user preferences (optional - for future personality customization)
     const preferences = await prisma.userPreferences.findUnique({
-      where: { userId: context.user.id },
+      where: { userId },
     })
 
     // personality is stored for potential future use
@@ -70,7 +117,6 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
     const greeting = getRandomGreeting()
 
     // Generate TTS for the greeting
-    let audioUrl: string | null = null
     let audioBase64: string | null = null
     try {
       const ttsResult = await generateSpeech(greeting)
@@ -80,15 +126,8 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
         const response = await fetch(ttsResult.audioUrl)
         if (response.ok) {
           const audioBuffer = await response.arrayBuffer()
-          // Store original URL for later upload to Bunny
-          audioUrl = ttsResult.audioUrl
-          // Convert to base64 for immediate playback
-          const uint8Array = new Uint8Array(audioBuffer)
-          let binary = ''
-          for (let i = 0; i < uint8Array.length; i++) {
-            binary += String.fromCharCode(uint8Array[i])
-          }
-          audioBase64 = Buffer.from(binary, 'binary').toString('base64')
+          // Convert to base64 for immediate playback and caching
+          audioBase64 = Buffer.from(audioBuffer).toString('base64')
         }
       }
     } catch (error) {
@@ -96,14 +135,41 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
       // Continue without audio
     }
 
+    // 4. Cache the greeting for subsequent visits today
+    if (audioBase64) {
+      try {
+        await prisma.dailyGreeting.upsert({
+          where: {
+            userId_date: { userId, date: today },
+          },
+          create: {
+            userId,
+            date: today,
+            text: greeting,
+            audioBase64,
+            contentType: 'audio/mpeg',
+          },
+          update: {
+            text: greeting,
+            audioBase64,
+            contentType: 'audio/mpeg',
+          },
+        })
+        console.log('[PreGreeting] Cached new greeting for today')
+      } catch (cacheError) {
+        // Non-critical - greeting still works, just won't be cached
+        console.warn('[PreGreeting] Failed to cache greeting:', cacheError)
+      }
+    }
+
     const latency = Date.now() - startTime
     console.log(
-      `[PreGreeting] Complete (${latency}ms), audioUrl: ${audioUrl ? 'yes' : 'no'}`,
+      `[PreGreeting] Complete (${latency}ms), audio: ${audioBase64 ? 'yes' : 'no'}`,
     )
 
     return {
       text: greeting,
-      audioUrl,
+      audioUrl: null, // We don't return URL anymore, only base64
       audioBase64,
       contentType: 'audio/mpeg',
     }
