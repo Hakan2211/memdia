@@ -101,6 +101,7 @@ function TodayReflection() {
   const isPreloadingRef = useRef(false)
   const hasPreloadedOnceRef = useRef(false)
   const isAISpeakingRef = useRef(false)
+  const vadIsSpeakingRef = useRef(false) // Track VAD speaking state for hybrid detection
   const sessionRef = useRef<ReflectionSession | null>(null)
   const audioQueueRef = useRef<string[]>([])
   const isPlayingQueueRef = useRef(false)
@@ -133,10 +134,13 @@ function TodayReflection() {
     sessionRef.current = session ?? null
   }, [session])
 
-  // Update isAISpeaking ref
-  useEffect(() => {
-    isAISpeakingRef.current = isAISpeaking
-  }, [isAISpeaking])
+  // Sync helper: updates both ref and state to avoid race conditions
+  // The ref is checked in onPCMData callback which runs frequently,
+  // so we need to update it synchronously with state changes
+  const setIsAISpeakingSync = useCallback((value: boolean) => {
+    isAISpeakingRef.current = value
+    setIsAISpeaking(value)
+  }, [])
 
   // Helper to create WAV from PCM
   const createWavFromPcm = useCallback(
@@ -213,17 +217,57 @@ function TodayReflection() {
     language: deepgramLanguage,
     model: deepgramModel,
     onFinalTranscript: (transcript) => {
+      console.log(
+        '[DEBUG-STT] Final transcript received:',
+        transcript.substring(0, 50),
+      )
       pendingTranscriptRef.current +=
         (pendingTranscriptRef.current ? ' ' : '') + transcript
+      console.log(
+        '[DEBUG-STT] Pending transcript now:',
+        pendingTranscriptRef.current.substring(0, 50),
+      )
     },
     onSpeechStart: () => {
+      // HYBRID APPROACH: Set currentSpeaker if EITHER Deepgram OR VAD detects speech
+      // This ensures responsive UI - we show speaking indicator immediately
+      console.log(
+        '[DEBUG-STT] SpeechStarted event, isAISpeaking:',
+        isAISpeakingRef.current,
+      )
+
+      // Don't set speaker if AI is speaking (this is likely TTS echo)
+      if (isAISpeakingRef.current) {
+        console.log(
+          '[DEBUG-STT] Ignoring SpeechStarted - AI is speaking (TTS echo)',
+        )
+        return
+      }
+
+      // Set user as speaker - OR logic with VAD
       setCurrentSpeaker('user')
-      audioChunksRef.current = []
     },
     onSpeechEnd: () => {
+      console.log(
+        '[DEBUG-STT] SpeechEnd/UtteranceEnd event, isProcessing:',
+        isProcessingRef.current,
+        'isAISpeaking:',
+        isAISpeakingRef.current,
+      )
+      // Ignore if AI is speaking - this is likely TTS audio ending, not user speech
+      if (isAISpeakingRef.current) {
+        console.log(
+          '[DEBUG-STT] Ignoring SpeechEnd - AI is speaking (TTS echo)',
+        )
+        return
+      }
       if (isProcessingRef.current) return
 
       if (pendingTranscriptRef.current.trim() && session) {
+        console.log(
+          '[DEBUG-STT] Sending transcript to AI:',
+          pendingTranscriptRef.current.substring(0, 50),
+        )
         isProcessingRef.current = true
         const transcript = pendingTranscriptRef.current.trim()
         pendingTranscriptRef.current = ''
@@ -237,10 +281,26 @@ function TodayReflection() {
             isProcessingRef.current = false
           }, 100)
         }, 150)
+      } else {
+        console.log(
+          '[DEBUG-STT] No transcript to send, pending:',
+          pendingTranscriptRef.current,
+        )
+      }
+
+      // HYBRID APPROACH: Only clear currentSpeaker if VAD also stopped
+      // This prevents flickering when one system detects end before the other
+      if (!vadIsSpeakingRef.current) {
+        console.log('[DEBUG-STT] Clearing currentSpeaker (VAD also stopped)')
+        setCurrentSpeaker(null)
+      } else {
+        console.log(
+          '[DEBUG-STT] Keeping currentSpeaker=user (VAD still speaking)',
+        )
       }
     },
     onError: (error) => {
-      console.error('[STT] Error:', error)
+      console.error('[DEBUG-STT] Error:', error)
     },
   })
 
@@ -251,14 +311,38 @@ function TodayReflection() {
     positiveSpeechThreshold: 0.8, // Higher threshold to reduce false positives (default: 0.7)
     redemptionMs: 800, // Longer silence before ending speech (default: 600ms)
     onSpeechStart: () => {
+      console.log(
+        '[DEBUG-VAD] Speech START, isAISpeaking:',
+        isAISpeakingRef.current,
+      )
+
+      // Update ref for hybrid detection
+      vadIsSpeakingRef.current = true
+
+      // If AI is speaking, this could be:
+      // 1. User trying to barge-in (legitimate) - trigger barge-in but don't set speaker yet
+      // 2. VAD picking up TTS audio (false positive) - ignore
+      // We trigger barge-in either way, but don't set currentSpeaker to avoid UI flicker
+      if (isAISpeakingRef.current) {
+        console.log('[DEBUG-VAD] Triggering barge-in (AI is speaking)')
+        triggerBargeInRef.current?.()
+        // Don't set currentSpeaker here - wait for AI to actually stop
+        return
+      }
+
+      // HYBRID APPROACH: Set currentSpeaker if EITHER VAD OR Deepgram detects speech
       setCurrentSpeaker('user')
       audioChunksRef.current = []
-      if (isAISpeakingRef.current) {
-        triggerBargeInRef.current?.()
-      }
     },
     onSpeechEnd: (_audio, duration) => {
-      console.log(`[VAD] Speech ended (${duration.toFixed(2)}s)`)
+      console.log(
+        `[DEBUG-VAD] Speech END (${duration.toFixed(2)}s), isProcessing:`,
+        isProcessingRef.current,
+      )
+      console.log(
+        '[DEBUG-VAD] Pending transcript:',
+        pendingTranscriptRef.current.substring(0, 50) || '(empty)',
+      )
 
       // Fallback: If we have accumulated transcript and Deepgram hasn't
       // triggered onSpeechEnd yet (UtteranceEnd not received), send it now
@@ -268,7 +352,7 @@ function TodayReflection() {
         !isProcessingRef.current
       ) {
         console.log(
-          '[VAD] Fallback trigger - sending transcript that Deepgram missed',
+          '[DEBUG-VAD] Fallback trigger - sending transcript that Deepgram missed',
         )
         isProcessingRef.current = true
         const transcript = pendingTranscriptRef.current.trim()
@@ -284,28 +368,58 @@ function TodayReflection() {
         }, 100)
       }
 
-      // Clear the speaking indicator if still showing user
-      setCurrentSpeaker(null)
+      // Update ref for hybrid detection
+      vadIsSpeakingRef.current = false
+
+      // HYBRID APPROACH: Only clear currentSpeaker if Deepgram also stopped
+      // This prevents flickering when one system detects end before the other
+      if (!sttState.isSpeaking) {
+        console.log(
+          '[DEBUG-VAD] Clearing currentSpeaker (Deepgram also stopped)',
+        )
+        setCurrentSpeaker(null)
+      } else {
+        console.log(
+          '[DEBUG-VAD] Keeping currentSpeaker=user (Deepgram still speaking)',
+        )
+      }
     },
   })
 
   // Streaming audio player
   const [streamingAudioState, streamingAudioActions] = useStreamingAudioPlayer({
     onStart: () => {
-      setIsAISpeaking(true)
+      console.log('[DEBUG-Audio] AI audio playback STARTED')
+      setIsAISpeakingSync(true)
       setCurrentSpeaker('ai')
+
+      // Start Deepgram keepalive to prevent timeout during AI speech
+      // We don't send audio while AI speaks (to prevent TTS echo), so keepalive is needed
+      if (useVoiceInput && sttState.isConnected) {
+        sttActions.startKeepalive()
+      }
     },
     onEnd: () => {
-      setIsAISpeaking(false)
+      console.log('[DEBUG-Audio] AI audio playback ENDED')
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
+
+      // Stop keepalive - audio will flow again now that AI is done
+      sttActions.stopKeepalive()
+
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
         setTimeout(() => handleEndSession(), 100)
       }
     },
-    onError: () => {
-      setIsAISpeaking(false)
+    onError: (error) => {
+      console.log('[DEBUG-Audio] AI audio playback ERROR:', error)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
+
+      // Stop keepalive on error
+      sttActions.stopKeepalive()
+
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
         setTimeout(() => handleEndSession(), 100)
@@ -336,25 +450,37 @@ function TodayReflection() {
       onError: (error) => {
         console.error('[ConversationStream] Error:', error)
         toast.error('AI response failed', { description: error })
-        setIsAISpeaking(false)
+        setIsAISpeakingSync(false)
         setCurrentSpeaker(null)
+
+        // Stop keepalive on conversation error
+        sttActions.stopKeepalive()
       },
     })
 
   // Legacy audio player
   const [audioState, audioActions] = useAudioPlayer({
     onPlay: () => {
-      setIsAISpeaking(true)
+      setIsAISpeakingSync(true)
       setCurrentSpeaker('ai')
+
+      // Start Deepgram keepalive (legacy player)
+      if (useVoiceInput && sttState.isConnected) {
+        sttActions.startKeepalive()
+      }
     },
     onEnd: () => {
       if (audioQueueRef.current.length > 0) {
         playNextInQueueRef.current?.()
         return
       }
-      setIsAISpeaking(false)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
       isPlayingQueueRef.current = false
+
+      // Stop keepalive (legacy player)
+      sttActions.stopKeepalive()
+
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
         setTimeout(() => handleEndSession(), 100)
@@ -365,9 +491,13 @@ function TodayReflection() {
         playNextInQueueRef.current?.()
         return
       }
-      setIsAISpeaking(false)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
       isPlayingQueueRef.current = false
+
+      // Stop keepalive on error (legacy player)
+      sttActions.stopKeepalive()
+
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
         setTimeout(() => handleEndSession(), 100)
@@ -378,19 +508,36 @@ function TodayReflection() {
   // Check audio support
   const { isSupported, missingFeatures } = useAudioSupport()
 
+  // Track audio send count for debugging
+  const audioSendCountRef = useRef(0)
+  const lastAudioLogTimeRef = useRef(0)
+
   // Audio recorder
+  // NOTE: We no longer use onSpeechStart/onSpeechEnd from recorder for UI state
+  // VAD is the single source of truth for "user is speaking" state
   const [recorderState, recorderActions] = useAudioRecorder({
     onSpeechStart: () => {
-      setCurrentSpeaker('user')
-      audioChunksRef.current = []
+      // NOTE: VAD handles currentSpeaker state, not the recorder
+      console.log(
+        '[DEBUG-Recorder] Speech start detected (ignored for UI - VAD handles this)',
+      )
     },
     onSpeechEnd: () => {
+      // NOTE: VAD handles currentSpeaker state, not the recorder
+      // Only use this as fallback for sending transcript when STT is disconnected
+      console.log(
+        '[DEBUG-Recorder] Speech end detected, isProcessing:',
+        isProcessingRef.current,
+      )
       if (isProcessingRef.current) return
       if (
         !sttState.isConnected &&
         pendingTranscriptRef.current.trim() &&
         session
       ) {
+        console.log(
+          '[DEBUG-Recorder] Fallback - STT not connected, sending transcript',
+        )
         isProcessingRef.current = true
         const transcript = pendingTranscriptRef.current.trim()
         pendingTranscriptRef.current = ''
@@ -406,7 +553,24 @@ function TodayReflection() {
       }
     },
     onPCMData: (pcmData) => {
-      if (sttState.isConnected && useVoiceInput) {
+      // Log audio send status every 2 seconds
+      const now = Date.now()
+      audioSendCountRef.current++
+      if (now - lastAudioLogTimeRef.current > 2000) {
+        console.log(
+          '[DEBUG-Audio] Sending audio to Deepgram, connected:',
+          sttState.isConnected,
+          'voiceInput:',
+          useVoiceInput,
+          'chunks sent:',
+          audioSendCountRef.current,
+        )
+        lastAudioLogTimeRef.current = now
+        audioSendCountRef.current = 0
+      }
+
+      // Don't send audio to Deepgram while AI is speaking (prevents TTS echo)
+      if (sttState.isConnected && useVoiceInput && !isAISpeakingRef.current) {
         sttActions.sendAudio(pcmData)
       }
       const pcmArray = new Int16Array(pcmData)
@@ -425,14 +589,46 @@ function TodayReflection() {
     }
   }, [sttState.interimTranscript])
 
+  // DEBUG: Periodic status logger - logs state every 3 seconds during recording
+  useEffect(() => {
+    if (sessionState !== 'recording') return
+
+    const statusInterval = setInterval(() => {
+      console.log('[DEBUG-STATUS] ==================')
+      console.log('[DEBUG-STATUS] Session state:', sessionState)
+      console.log('[DEBUG-STATUS] currentSpeaker:', currentSpeaker)
+      console.log('[DEBUG-STATUS] isAISpeaking:', isAISpeaking)
+      console.log('[DEBUG-STATUS] VAD isSpeaking:', vadState.isSpeaking)
+      console.log('[DEBUG-STATUS] VAD isListening:', vadState.isListening)
+      console.log('[DEBUG-STATUS] STT isConnected:', sttState.isConnected)
+      console.log('[DEBUG-STATUS] STT isSpeaking:', sttState.isSpeaking)
+      console.log(
+        '[DEBUG-STATUS] Pending transcript:',
+        pendingTranscriptRef.current.substring(0, 30) || '(empty)',
+      )
+      console.log('[DEBUG-STATUS] isProcessing:', isProcessingRef.current)
+      console.log('[DEBUG-STATUS] ==================')
+    }, 3000)
+
+    return () => clearInterval(statusInterval)
+  }, [
+    sessionState,
+    currentSpeaker,
+    isAISpeaking,
+    vadState.isSpeaking,
+    vadState.isListening,
+    sttState.isConnected,
+    sttState.isSpeaking,
+  ])
+
   // Play audio helper
   const playAudio = useCallback(
     async (url: string | null) => {
       if (!url) {
-        setIsAISpeaking(true)
+        setIsAISpeakingSync(true)
         setCurrentSpeaker('ai')
         setTimeout(() => {
-          setIsAISpeaking(false)
+          setIsAISpeakingSync(false)
           setCurrentSpeaker(null)
         }, 2500)
         return
@@ -440,15 +636,15 @@ function TodayReflection() {
       try {
         await audioActions.play(url)
       } catch {
-        setIsAISpeaking(true)
+        setIsAISpeakingSync(true)
         setCurrentSpeaker('ai')
         setTimeout(() => {
-          setIsAISpeaking(false)
+          setIsAISpeakingSync(false)
           setCurrentSpeaker(null)
         }, 2500)
       }
     },
-    [audioActions],
+    [audioActions, setIsAISpeakingSync],
   )
 
   // Play next in queue
@@ -656,12 +852,13 @@ function TodayReflection() {
       }).catch(console.error)
     }
 
-    setIsAISpeaking(false)
+    setIsAISpeakingSync(false)
   }, [
     session?.id,
     streamingAudioActions,
     audioActions,
     conversationStreamActions,
+    setIsAISpeakingSync,
   ])
 
   useEffect(() => {

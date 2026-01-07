@@ -30,6 +30,12 @@ export interface DeepgramSTTActions {
   disconnect: () => void
   /** Send audio data to Deepgram */
   sendAudio: (audioData: ArrayBuffer) => void
+  /** Send KeepAlive message to prevent timeout (use during AI speech) */
+  sendKeepalive: () => void
+  /** Start automatic keepalive interval (call when AI starts speaking) */
+  startKeepalive: () => void
+  /** Stop automatic keepalive interval (call when AI stops speaking) */
+  stopKeepalive: () => void
   /** Clear the transcripts */
   clearTranscripts: () => void
 }
@@ -95,6 +101,7 @@ export function useDeepgramSTT(
 
   const wsRef = useRef<WebSocket | null>(null)
   const apiKeyRef = useRef<string | null>(null)
+  const keepaliveIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Store callbacks in refs to avoid dependency issues
   const callbacksRef = useRef({
@@ -339,9 +346,18 @@ export function useDeepgramSTT(
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(audioData)
     } else {
-      console.warn('[Deepgram] Cannot send audio - not connected')
+      // Only log once per second to avoid spam
+      const now = Date.now()
+      if (!sendAudio.lastWarnTime || now - sendAudio.lastWarnTime > 1000) {
+        console.warn(
+          '[Deepgram] Cannot send audio - WebSocket state:',
+          wsRef.current?.readyState,
+          '(0=CONNECTING, 1=OPEN, 2=CLOSING, 3=CLOSED)',
+        )
+        sendAudio.lastWarnTime = now
+      }
     }
-  }, [])
+  }, []) as { (audioData: ArrayBuffer): void; lastWarnTime?: number }
 
   // Clear transcripts
   const clearTranscripts = useCallback(() => {
@@ -352,12 +368,65 @@ export function useDeepgramSTT(
     }))
   }, [])
 
+  // Send a single KeepAlive message to Deepgram
+  // This prevents the connection from timing out when no audio is being sent
+  const sendKeepalive = useCallback(() => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify({ type: 'KeepAlive' }))
+        console.log('[Deepgram] KeepAlive sent')
+      } catch (error) {
+        console.warn('[Deepgram] Failed to send KeepAlive:', error)
+      }
+    }
+  }, [])
+
+  // Start automatic keepalive interval (every 5 seconds)
+  // Call this when AI starts speaking to prevent timeout
+  const startKeepalive = useCallback(() => {
+    // Clear any existing interval
+    if (keepaliveIntervalRef.current) {
+      clearInterval(keepaliveIntervalRef.current)
+    }
+
+    console.log('[Deepgram] Starting keepalive interval')
+
+    // Send immediately, then every 5 seconds
+    sendKeepalive()
+    keepaliveIntervalRef.current = setInterval(() => {
+      sendKeepalive()
+    }, 5000) // Deepgram timeout is ~10 seconds, so 5 seconds is safe
+  }, [sendKeepalive])
+
+  // Stop automatic keepalive interval
+  // Call this when AI stops speaking
+  const stopKeepalive = useCallback(() => {
+    if (keepaliveIntervalRef.current) {
+      console.log('[Deepgram] Stopping keepalive interval')
+      clearInterval(keepaliveIntervalRef.current)
+      keepaliveIntervalRef.current = null
+    }
+  }, [])
+
+  // Clean up keepalive interval on unmount
+  useEffect(() => {
+    return () => {
+      if (keepaliveIntervalRef.current) {
+        clearInterval(keepaliveIntervalRef.current)
+        keepaliveIntervalRef.current = null
+      }
+    }
+  }, [])
+
   return [
     state,
     {
       connect,
       disconnect,
       sendAudio,
+      sendKeepalive,
+      startKeepalive,
+      stopKeepalive,
       clearTranscripts,
     },
   ]

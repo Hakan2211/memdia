@@ -79,6 +79,15 @@ function TodaySession() {
   const [elapsedTime, setElapsedTime] = useState(0)
   const [liveTranscript, setLiveTranscript] = useState('')
   const [isAISpeaking, setIsAISpeaking] = useState(false)
+  // Ref to track AI speaking state for callbacks (avoids stale closures)
+  const isAISpeakingRef = useRef(false)
+  // Track VAD speaking state for hybrid detection
+  const vadIsSpeakingRef = useRef(false)
+  // Sync helper: updates both ref and state to avoid race conditions
+  const setIsAISpeakingSync = useCallback((value: boolean) => {
+    isAISpeakingRef.current = value
+    setIsAISpeaking(value)
+  }, [])
   const [useVoiceInput, setUseVoiceInput] = useState(true)
   // Loading state for ending session (covers both normal and short session cancellation)
   const [isEndingSession, setIsEndingSession] = useState(false)
@@ -232,20 +241,30 @@ function TodaySession() {
         (pendingTranscriptRef.current ? ' ' : '') + transcript
     },
     onSpeechStart: () => {
+      // HYBRID APPROACH: Set currentSpeaker if EITHER Deepgram OR VAD detects speech
+      // This ensures responsive UI - we show speaking indicator immediately
       console.log(
-        '[Deepgram] SpeechStarted, isAISpeakingRef:',
+        '[Deepgram] SpeechStarted, isAISpeaking:',
         isAISpeakingRef.current,
       )
-      setCurrentSpeaker('user')
-      // Clear accumulated audio when new speech starts
-      audioChunksRef.current = []
 
-      // NOTE: We no longer trigger barge-in here because Deepgram's SpeechStarted
-      // picks up the AI's TTS audio playing through speakers (acoustic echo).
-      // VAD is much better at distinguishing human speech from TTS audio,
-      // so we rely solely on VAD's onSpeechStart for barge-in detection.
+      // Don't set speaker if AI is speaking (this is likely TTS echo)
+      if (isAISpeakingRef.current) {
+        console.log(
+          '[Deepgram] Ignoring SpeechStarted - AI is speaking (TTS echo)',
+        )
+        return
+      }
+
+      // Set user as speaker - OR logic with VAD
+      setCurrentSpeaker('user')
     },
     onSpeechEnd: () => {
+      // Ignore if AI is speaking - this is likely TTS audio ending, not user speech
+      if (isAISpeakingRef.current) {
+        console.log('[STT] Ignoring SpeechEnd - AI is speaking (TTS echo)')
+        return
+      }
       // Prevent duplicate processing - check and set atomically
       if (isProcessingRef.current) {
         console.log('[STT] Ignoring duplicate onSpeechEnd - already processing')
@@ -253,6 +272,7 @@ function TodaySession() {
       }
 
       // Send accumulated transcript when user stops speaking
+      // NOTE: We no longer set currentSpeaker here - VAD handles this
       if (pendingTranscriptRef.current.trim() && session) {
         isProcessingRef.current = true
         // Capture transcript immediately to avoid race conditions
@@ -274,6 +294,17 @@ function TodaySession() {
           }, 100)
         }, 150)
       }
+
+      // HYBRID APPROACH: Only clear currentSpeaker if VAD also stopped
+      // This prevents flickering when one system detects end before the other
+      if (!vadIsSpeakingRef.current) {
+        console.log('[Deepgram] Clearing currentSpeaker (VAD also stopped)')
+        setCurrentSpeaker(null)
+      } else {
+        console.log(
+          '[Deepgram] Keeping currentSpeaker=user (VAD still speaking)',
+        )
+      }
     },
     onError: (error) => {
       console.error('[STT] Error:', error)
@@ -292,18 +323,38 @@ function TodaySession() {
         '[VAD] Speech detected, isAISpeakingRef:',
         isAISpeakingRef.current,
       )
+
+      // Update ref for hybrid detection
+      vadIsSpeakingRef.current = true
+
+      // If AI is speaking, trigger barge-in but don't set currentSpeaker yet
+      // This avoids UI flicker from TTS echo detection
+      if (isAISpeakingRef.current) {
+        console.log('[Barge-in] TRIGGERED via VAD (AI is speaking)')
+        triggerBargeInRef.current?.()
+        return
+      }
+
+      // HYBRID APPROACH: Set currentSpeaker if EITHER VAD OR Deepgram detects speech
       setCurrentSpeaker('user')
       audioChunksRef.current = []
-
-      // BARGE-IN: Stop AI if it's currently speaking
-      // Use REF to avoid stale closure issue
-      if (isAISpeakingRef.current) {
-        console.log('[Barge-in] TRIGGERED via VAD')
-        triggerBargeInRef.current?.()
-      }
     },
     onSpeechEnd: (_audio, duration) => {
       console.log(`[VAD] Speech ended (${duration.toFixed(2)}s)`)
+
+      // Update ref for hybrid detection
+      vadIsSpeakingRef.current = false
+
+      // HYBRID APPROACH: Only clear currentSpeaker if Deepgram also stopped
+      // This prevents flickering when one system detects end before the other
+      if (!sttState.isSpeaking) {
+        console.log('[VAD] Clearing currentSpeaker (Deepgram also stopped)')
+        setCurrentSpeaker(null)
+      } else {
+        console.log(
+          '[VAD] Keeping currentSpeaker=user (Deepgram still speaking)',
+        )
+      }
     },
   })
 
@@ -320,13 +371,22 @@ function TodaySession() {
   const [streamingAudioState, streamingAudioActions] = useStreamingAudioPlayer({
     onStart: () => {
       console.log('[StreamingAudio] onStart - Setting isAISpeaking = true')
-      setIsAISpeaking(true)
+      setIsAISpeakingSync(true)
       setCurrentSpeaker('ai')
+
+      // Start Deepgram keepalive to prevent timeout during AI speech
+      // We don't send audio while AI speaks (to prevent TTS echo), so keepalive is needed
+      if (useVoiceInput && sttState.isConnected) {
+        sttActions.startKeepalive()
+      }
     },
     onEnd: () => {
       console.log('[StreamingAudio] onEnd - Setting isAISpeaking = false')
-      setIsAISpeaking(false)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
+
+      // Stop keepalive - audio will flow again now that AI is done
+      sttActions.stopKeepalive()
 
       // If session end was pending, end now
       if (sessionEndPendingRef.current) {
@@ -339,8 +399,11 @@ function TodaySession() {
     },
     onError: (error) => {
       console.error('[StreamingAudio] Playback error:', error)
-      setIsAISpeaking(false)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
+
+      // Stop keepalive on error
+      sttActions.stopKeepalive()
 
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
@@ -381,16 +444,24 @@ function TodaySession() {
       onError: (error) => {
         console.error('[ConversationStream] Error:', error)
         toast.error('AI response failed', { description: error })
-        setIsAISpeaking(false)
+        setIsAISpeakingSync(false)
         setCurrentSpeaker(null)
+
+        // Stop keepalive on conversation error
+        sttActions.stopKeepalive()
       },
     })
 
   // Legacy: Audio player hook for URL-based playback
   const [audioState, audioActions] = useAudioPlayer({
     onPlay: () => {
-      setIsAISpeaking(true)
+      setIsAISpeakingSync(true)
       setCurrentSpeaker('ai')
+
+      // Start Deepgram keepalive (legacy player)
+      if (useVoiceInput && sttState.isConnected) {
+        sttActions.startKeepalive()
+      }
     },
     onEnd: () => {
       // Check if there are more audio chunks in the queue
@@ -400,15 +471,17 @@ function TodaySession() {
         return
       }
 
-      setIsAISpeaking(false)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
       isPlayingQueueRef.current = false
+
+      // Stop keepalive (legacy player)
+      sttActions.stopKeepalive()
 
       // If session end was pending (timer expired while AI was speaking), end now
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
         console.log('[Timer] AI finished speaking, ending session now')
-        // Small delay to ensure state is updated
         setTimeout(() => {
           handleEndSession()
         }, 100)
@@ -423,9 +496,12 @@ function TodaySession() {
         return
       }
 
-      setIsAISpeaking(false)
+      setIsAISpeakingSync(false)
       setCurrentSpeaker(null)
       isPlayingQueueRef.current = false
+
+      // Stop keepalive on error (legacy player)
+      sttActions.stopKeepalive()
 
       // Also check pending session end on error
       if (sessionEndPendingRef.current) {
@@ -447,15 +523,18 @@ function TodaySession() {
   })
 
   // Audio recorder hook - sends audio to Deepgram and accumulates for upload
+  // NOTE: We no longer use onSpeechStart/onSpeechEnd from recorder for UI state
+  // VAD is the single source of truth for "user is speaking" state
   const [recorderState, recorderActions] = useAudioRecorder({
     onSpeechStart: () => {
-      setCurrentSpeaker('user')
-      // Clear accumulated audio when new speech starts
-      audioChunksRef.current = []
+      // NOTE: VAD handles currentSpeaker state, not the recorder
+      console.log(
+        '[Recorder] Speech start detected (ignored for UI - VAD handles this)',
+      )
     },
     onSpeechEnd: () => {
-      // When Deepgram is not connected, use recorder's VAD for speech detection
-      // If we have accumulated transcript (typed or from failed STT), send it
+      // NOTE: VAD handles currentSpeaker state, not the recorder
+      // Only use this as fallback for sending transcript when STT is disconnected
       if (isProcessingRef.current) {
         console.log(
           '[Recorder VAD] Ignoring duplicate onSpeechEnd - already processing',
@@ -490,7 +569,8 @@ function TodaySession() {
     },
     onPCMData: (pcmData) => {
       // Send raw PCM audio directly to Deepgram
-      if (sttState.isConnected && useVoiceInput) {
+      // Don't send audio while AI is speaking (prevents TTS echo)
+      if (sttState.isConnected && useVoiceInput && !isAISpeakingRef.current) {
         sttActions.sendAudio(pcmData)
       }
       // Also accumulate for later upload
@@ -515,10 +595,10 @@ function TodaySession() {
     async (url: string | null) => {
       if (!url) {
         // No audio URL - simulate speaking time
-        setIsAISpeaking(true)
+        setIsAISpeakingSync(true)
         setCurrentSpeaker('ai')
         setTimeout(() => {
-          setIsAISpeaking(false)
+          setIsAISpeakingSync(false)
           setCurrentSpeaker(null)
         }, 2500)
         return
@@ -529,15 +609,15 @@ function TodaySession() {
       } catch (error) {
         console.error('[Audio] Failed to play:', error)
         // Fallback: simulate speaking time
-        setIsAISpeaking(true)
+        setIsAISpeakingSync(true)
         setCurrentSpeaker('ai')
         setTimeout(() => {
-          setIsAISpeaking(false)
+          setIsAISpeakingSync(false)
           setCurrentSpeaker(null)
         }, 2500)
       }
     },
-    [audioActions],
+    [audioActions, setIsAISpeakingSync],
   )
 
   // State for showing second attempt warning
@@ -821,12 +901,6 @@ function TodaySession() {
     }
   }, []) // Empty deps = only runs on unmount
 
-  // Ref to track if we're currently speaking (avoids stale closure in timer)
-  const isAISpeakingRef = useRef(false)
-  useEffect(() => {
-    isAISpeakingRef.current = isAISpeaking
-  }, [isAISpeaking])
-
   // Ref to track session for timer callback (avoids stale closure)
   const sessionRef = useRef(session)
   useEffect(() => {
@@ -857,12 +931,13 @@ function TodaySession() {
         .catch((error) => console.error('[Barge-in] Server error:', error))
     }
 
-    setIsAISpeaking(false)
+    setIsAISpeakingSync(false)
   }, [
     session?.id,
     streamingAudioActions,
     audioActions,
     conversationStreamActions,
+    setIsAISpeakingSync,
   ])
 
   // Populate the ref so early callbacks (Deepgram) can trigger barge-in

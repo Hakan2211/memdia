@@ -165,6 +165,7 @@ export function useVAD(options: UseVADOptions = {}): [VADState, VADActions] {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
 
   // Use refs for callbacks to avoid stale closures
   const onSpeechStartRef = useRef(onSpeechStart)
@@ -216,15 +217,18 @@ export function useVAD(options: UseVADOptions = {}): [VADState, VADActions] {
           onSpeechStart: () => {
             console.log('[VAD] Speech started')
             speechStartTimeRef.current = Date.now()
+            setIsSpeaking(true)
             onSpeechStartRef.current?.()
           },
           onSpeechEnd: (audio: Float32Array) => {
             const duration = (Date.now() - speechStartTimeRef.current) / 1000
             console.log(`[VAD] Speech ended (${duration.toFixed(2)}s)`)
+            setIsSpeaking(false)
             onSpeechEndRef.current?.(audio, duration)
           },
           onVADMisfire: () => {
             console.log('[VAD] Misfire (very short speech)')
+            setIsSpeaking(false)
           },
         } as any)
 
@@ -281,13 +285,14 @@ export function useVAD(options: UseVADOptions = {}): [VADState, VADActions] {
     } else {
       vadInstance.pause()
       setIsListening(false)
+      setIsSpeaking(false) // Clear speaking state when VAD is paused
     }
   }, [enabled, vadInstance])
 
   // Build state
   const state: VADState = {
     isListening: vadInstance?.listening ?? isListening,
-    isSpeaking: false, // MicVAD doesn't expose this directly
+    isSpeaking, // Now properly tracked via onSpeechStart/onSpeechEnd callbacks
     isLoading,
     error,
   }
