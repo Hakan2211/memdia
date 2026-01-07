@@ -8,6 +8,12 @@
  * - 1 attempt per day (vs 2 attempts)
  * - No image generation
  * - More therapeutic AI prompts
+ *
+ * SIMPLIFIED ARCHITECTURE (Jan 2026):
+ * - Direct use of useDeepgramSTT, useVAD, useAudioRecorder hooks
+ * - No complex useSpeechDetection abstraction
+ * - 5-second recovery timeout for stuck states
+ * - Visual feedback when recovery happens
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
@@ -34,9 +40,9 @@ import { CountdownTimer } from '../../components/memories/CountdownTimer'
 import { SessionControls } from '../../components/memories/SessionControls'
 import { useAudioRecorder, useAudioSupport } from '../../hooks/useAudioRecorder'
 import { useAudioPlayer } from '../../hooks/useAudioPlayer'
-import { useDeepgramSTT } from '../../hooks/useDeepgramSTT'
 import { useStreamingAudioPlayer } from '../../hooks/useStreamingAudioPlayer'
 import { useConversationStream } from '../../hooks/useConversationStream'
+import { useDeepgramSTT } from '../../hooks/useDeepgramSTT'
 import { useVAD } from '../../hooks/useVAD'
 import type {
   ReflectionSession,
@@ -81,17 +87,14 @@ function TodayReflection() {
   const [useVoiceInput, setUseVoiceInput] = useState(true)
   const [isEndingSession, setIsEndingSession] = useState(false)
   const [isAutoEnding, setIsAutoEnding] = useState(false)
+  const [showResetButton, setShowResetButton] = useState(false)
 
   // Refs for managing state across callbacks
   const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const pendingTranscriptRef = useRef('')
-  const isProcessingRef = useRef(false)
   const sessionEndPendingRef = useRef(false)
   const warningShownRef = useRef(false)
   const hardCutoffTimerRef = useRef<NodeJS.Timeout | null>(null)
   const elapsedTimeRef = useRef(0)
-  const triggerBargeInRef = useRef<(() => void) | null>(null)
-  const audioChunksRef = useRef<Int16Array[]>([])
   const preloadedGreetingRef = useRef<{
     text: string
     audioUrl: string | null
@@ -101,13 +104,21 @@ function TodayReflection() {
   const isPreloadingRef = useRef(false)
   const hasPreloadedOnceRef = useRef(false)
   const isAISpeakingRef = useRef(false)
-  const vadIsSpeakingRef = useRef(false) // Track VAD speaking state for hybrid detection
   const sessionRef = useRef<ReflectionSession | null>(null)
   const audioQueueRef = useRef<string[]>([])
   const isPlayingQueueRef = useRef(false)
   const playNextInQueueRef = useRef<(() => void) | null>(null)
   const lastSentMessageRef = useRef<string>('')
   const lastSentTimeRef = useRef<number>(0)
+  // For transcript accumulation (replaces useSpeechDetection internal state)
+  const pendingTranscriptRef = useRef<string>('')
+  // For audio chunk accumulation
+  const audioChunksRef = useRef<Int16Array[]>([])
+  // Recovery timeout ref
+  const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  // Track when user started speaking (for stuck state detection)
+  const userSpeakingStartRef = useRef<number | null>(null)
+  const resetButtonTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch user preferences for language setting
   const { data: userPreferences } = useQuery({
@@ -134,277 +145,265 @@ function TodayReflection() {
     sessionRef.current = session ?? null
   }, [session])
 
-  // Sync helper: updates both ref and state to avoid race conditions
-  // The ref is checked in onPCMData callback which runs frequently,
-  // so we need to update it synchronously with state changes
-  const setIsAISpeakingSync = useCallback((value: boolean) => {
-    isAISpeakingRef.current = value
-    setIsAISpeaking(value)
-  }, [])
+  // Update isAISpeaking ref for use in callbacks
+  useEffect(() => {
+    isAISpeakingRef.current = isAISpeaking
+  }, [isAISpeaking])
 
-  // Helper to create WAV from PCM
-  const createWavFromPcm = useCallback(
-    (pcmData: Int16Array, sampleRate: number = 16000): ArrayBuffer => {
-      const numChannels = 1
-      const bitsPerSample = 16
-      const byteRate = sampleRate * numChannels * (bitsPerSample / 8)
-      const blockAlign = numChannels * (bitsPerSample / 8)
-      const dataSize = pcmData.length * (bitsPerSample / 8)
-      const headerSize = 44
-      const totalSize = headerSize + dataSize
+  // Barge-in handler ref - will be set after other hooks are initialized
+  const triggerBargeInRef = useRef<(() => void) | null>(null)
 
-      const buffer = new ArrayBuffer(totalSize)
-      const view = new DataView(buffer)
+  // ==========================================
+  // Direct Hooks - Simplified Architecture
+  // ==========================================
 
-      const writeString = (offset: number, str: string) => {
-        for (let i = 0; i < str.length; i++) {
-          view.setUint8(offset + i, str.charCodeAt(i))
-        }
-      }
-
-      writeString(0, 'RIFF')
-      view.setUint32(4, totalSize - 8, true)
-      writeString(8, 'WAVE')
-      writeString(12, 'fmt ')
-      view.setUint32(16, 16, true)
-      view.setUint16(20, 1, true)
-      view.setUint16(22, numChannels, true)
-      view.setUint32(24, sampleRate, true)
-      view.setUint32(28, byteRate, true)
-      view.setUint16(32, blockAlign, true)
-      view.setUint16(34, bitsPerSample, true)
-      writeString(36, 'data')
-      view.setUint32(40, dataSize, true)
-
-      const pcmOffset = 44
-      for (let i = 0; i < pcmData.length; i++) {
-        view.setInt16(pcmOffset + i * 2, pcmData[i], true)
-      }
-
-      return buffer
-    },
-    [],
-  )
-
-  // Get accumulated audio as base64 WAV
-  const getAccumulatedAudioBase64 = useCallback((): string | undefined => {
-    if (audioChunksRef.current.length === 0) return undefined
-
-    const totalLength = audioChunksRef.current.reduce(
-      (acc, chunk) => acc + chunk.length,
-      0,
-    )
-    if (totalLength === 0) return undefined
-
-    const combined = new Int16Array(totalLength)
-    let offset = 0
-    for (const chunk of audioChunksRef.current) {
-      combined.set(chunk, offset)
-      offset += chunk.length
-    }
-
-    const wavBuffer = createWavFromPcm(combined, 16000)
-    const uint8Array = new Uint8Array(wavBuffer)
-    let binary = ''
-    for (let i = 0; i < uint8Array.length; i++) {
-      binary += String.fromCharCode(uint8Array[i])
-    }
-    return btoa(binary)
-  }, [createWavFromPcm])
-
-  // Deepgram STT hook
+  // Deepgram STT for transcription
   const [sttState, sttActions] = useDeepgramSTT({
     language: deepgramLanguage,
     model: deepgramModel,
-    onFinalTranscript: (transcript) => {
-      console.log(
-        '[DEBUG-STT] Final transcript received:',
-        transcript.substring(0, 50),
-      )
+    onFinalTranscript: (transcript: string) => {
+      console.log('[STT] Final transcript:', transcript)
       pendingTranscriptRef.current +=
         (pendingTranscriptRef.current ? ' ' : '') + transcript
-      console.log(
-        '[DEBUG-STT] Pending transcript now:',
-        pendingTranscriptRef.current.substring(0, 50),
-      )
     },
     onSpeechStart: () => {
-      // HYBRID APPROACH: Set currentSpeaker if EITHER Deepgram OR VAD detects speech
-      // This ensures responsive UI - we show speaking indicator immediately
-      console.log(
-        '[DEBUG-STT] SpeechStarted event, isAISpeaking:',
-        isAISpeakingRef.current,
-      )
-
-      // Don't set speaker if AI is speaking (this is likely TTS echo)
-      if (isAISpeakingRef.current) {
-        console.log(
-          '[DEBUG-STT] Ignoring SpeechStarted - AI is speaking (TTS echo)',
-        )
-        return
+      console.log('[STT] Speech started')
+      if (!isAISpeakingRef.current) {
+        setCurrentSpeaker('user')
+        audioChunksRef.current = []
       }
-
-      // Set user as speaker - OR logic with VAD
-      setCurrentSpeaker('user')
     },
     onSpeechEnd: () => {
-      console.log(
-        '[DEBUG-STT] SpeechEnd/UtteranceEnd event, isProcessing:',
-        isProcessingRef.current,
-        'isAISpeaking:',
-        isAISpeakingRef.current,
-      )
-      // Ignore if AI is speaking - this is likely TTS audio ending, not user speech
-      if (isAISpeakingRef.current) {
-        console.log(
-          '[DEBUG-STT] Ignoring SpeechEnd - AI is speaking (TTS echo)',
-        )
-        return
-      }
-      if (isProcessingRef.current) return
-
-      if (pendingTranscriptRef.current.trim() && session) {
-        console.log(
-          '[DEBUG-STT] Sending transcript to AI:',
-          pendingTranscriptRef.current.substring(0, 50),
-        )
-        isProcessingRef.current = true
+      console.log('[STT] Speech ended (UtteranceEnd)')
+      // Send accumulated transcript to AI
+      if (pendingTranscriptRef.current.trim() && sessionRef.current) {
         const transcript = pendingTranscriptRef.current.trim()
         pendingTranscriptRef.current = ''
         setLiveTranscript('')
-
-        setTimeout(() => {
-          const audioBase64 = getAccumulatedAudioBase64()
-          handleUserSpeechEnd(transcript, audioBase64)
-          audioChunksRef.current = []
-          setTimeout(() => {
-            isProcessingRef.current = false
-          }, 100)
-        }, 150)
-      } else {
-        console.log(
-          '[DEBUG-STT] No transcript to send, pending:',
-          pendingTranscriptRef.current,
-        )
+        handleUserSpeechEnd(transcript)
       }
-
-      // HYBRID APPROACH: Only clear currentSpeaker if VAD also stopped
-      // This prevents flickering when one system detects end before the other
-      if (!vadIsSpeakingRef.current) {
-        console.log('[DEBUG-STT] Clearing currentSpeaker (VAD also stopped)')
-        setCurrentSpeaker(null)
-      } else {
-        console.log(
-          '[DEBUG-STT] Keeping currentSpeaker=user (VAD still speaking)',
-        )
-      }
+      setCurrentSpeaker(null)
     },
-    onError: (error) => {
-      console.error('[DEBUG-STT] Error:', error)
+    onError: (error: Error) => {
+      console.error('[STT] Error:', error)
+    },
+    onDegradedState: () => {
+      console.log(
+        '[STT] Degraded state detected - showing reset button immediately',
+      )
+      setShowResetButton(true)
     },
   })
 
-  // VAD hook for barge-in and fallback speech end detection
-  // Tuned to reduce false positives that cause unwanted barge-ins
+  // VAD for barge-in detection only (when AI is speaking)
   const [vadState, vadActions] = useVAD({
     enabled: USE_VAD && sessionState === 'recording',
-    positiveSpeechThreshold: 0.8, // Higher threshold to reduce false positives (default: 0.7)
-    redemptionMs: 800, // Longer silence before ending speech (default: 600ms)
+    positiveSpeechThreshold: 0.8,
+    redemptionMs: 800,
     onSpeechStart: () => {
       console.log(
-        '[DEBUG-VAD] Speech START, isAISpeaking:',
+        '[VAD] Speech detected, isAISpeaking:',
         isAISpeakingRef.current,
       )
-
-      // Update ref for hybrid detection
-      vadIsSpeakingRef.current = true
-
-      // If AI is speaking, this could be:
-      // 1. User trying to barge-in (legitimate) - trigger barge-in but don't set speaker yet
-      // 2. VAD picking up TTS audio (false positive) - ignore
-      // We trigger barge-in either way, but don't set currentSpeaker to avoid UI flicker
+      // Only trigger barge-in when AI is speaking
       if (isAISpeakingRef.current) {
-        console.log('[DEBUG-VAD] Triggering barge-in (AI is speaking)')
+        console.log('[VAD] BARGE-IN triggered!')
         triggerBargeInRef.current?.()
-        // Don't set currentSpeaker here - wait for AI to actually stop
-        return
       }
-
-      // HYBRID APPROACH: Set currentSpeaker if EITHER VAD OR Deepgram detects speech
-      setCurrentSpeaker('user')
-      audioChunksRef.current = []
     },
-    onSpeechEnd: (_audio, duration) => {
-      console.log(
-        `[DEBUG-VAD] Speech END (${duration.toFixed(2)}s), isProcessing:`,
-        isProcessingRef.current,
-      )
-      console.log(
-        '[DEBUG-VAD] Pending transcript:',
-        pendingTranscriptRef.current.substring(0, 50) || '(empty)',
-      )
-
-      // Fallback: If we have accumulated transcript and Deepgram hasn't
-      // triggered onSpeechEnd yet (UtteranceEnd not received), send it now
-      if (
-        pendingTranscriptRef.current.trim() &&
-        session &&
-        !isProcessingRef.current
-      ) {
-        console.log(
-          '[DEBUG-VAD] Fallback trigger - sending transcript that Deepgram missed',
-        )
-        isProcessingRef.current = true
-        const transcript = pendingTranscriptRef.current.trim()
-        pendingTranscriptRef.current = ''
-        setLiveTranscript('')
-
-        const audioBase64 = getAccumulatedAudioBase64()
-        handleUserSpeechEnd(transcript, audioBase64)
-        audioChunksRef.current = []
-
-        setTimeout(() => {
-          isProcessingRef.current = false
-        }, 100)
-      }
-
-      // Update ref for hybrid detection
-      vadIsSpeakingRef.current = false
-
-      // HYBRID APPROACH: Only clear currentSpeaker if Deepgram also stopped
-      // This prevents flickering when one system detects end before the other
-      if (!sttState.isSpeaking) {
-        console.log(
-          '[DEBUG-VAD] Clearing currentSpeaker (Deepgram also stopped)',
-        )
+    onSpeechEnd: () => {
+      console.log('[VAD] Speech ended')
+      // Reset currentSpeaker when VAD detects speech end
+      // This prevents the "stuck green" state when Deepgram's UtteranceEnd is delayed
+      if (!isAISpeakingRef.current) {
         setCurrentSpeaker(null)
-      } else {
-        console.log(
-          '[DEBUG-VAD] Keeping currentSpeaker=user (Deepgram still speaking)',
-        )
       }
     },
   })
+
+  // Audio recorder for capturing and streaming PCM to Deepgram
+  const [recorderState, recorderActions] = useAudioRecorder({
+    onSpeechStart: () => {
+      if (!isAISpeakingRef.current) {
+        setCurrentSpeaker('user')
+        audioChunksRef.current = []
+      }
+    },
+    onSpeechEnd: () => {
+      // Fallback handled by recovery timeout
+    },
+    onPCMData: (pcmData: ArrayBuffer) => {
+      // Send audio to Deepgram for transcription
+      if (sttState.isConnected && useVoiceInput && !isAISpeakingRef.current) {
+        sttActions.sendAudio(pcmData)
+      }
+      // Accumulate audio chunks when user is speaking
+      if (!isAISpeakingRef.current) {
+        const pcmArray = new Int16Array(pcmData)
+        audioChunksRef.current.push(pcmArray)
+      }
+    },
+  })
+
+  // Update live transcript from interim results
+  useEffect(() => {
+    if (sttState.interimTranscript) {
+      setLiveTranscript(
+        pendingTranscriptRef.current +
+          (pendingTranscriptRef.current ? ' ' : '') +
+          sttState.interimTranscript,
+      )
+    }
+  }, [sttState.interimTranscript])
+
+  // ==========================================
+  // Recovery Timeout - Reset stuck speaking state
+  // ==========================================
+  useEffect(() => {
+    // Only start recovery timer when user appears to be speaking but AI isn't
+    if (
+      currentSpeaker === 'user' &&
+      !isAISpeaking &&
+      sessionState === 'recording'
+    ) {
+      speechTimeoutRef.current = setTimeout(() => {
+        // If no transcript accumulated after 5 seconds, we're stuck
+        if (!pendingTranscriptRef.current.trim()) {
+          console.warn(
+            '[Recovery] No transcript after 5s - resetting speech state',
+          )
+          setCurrentSpeaker(null)
+          pendingTranscriptRef.current = ''
+          setLiveTranscript('')
+
+          // Show toast notification
+          toast.info('Speech detection reset', {
+            description: 'Please try speaking again',
+            duration: 3000,
+          })
+
+          // Attempt to reconnect Deepgram if disconnected
+          if (!sttState.isConnected && !sttState.isConnecting) {
+            console.log('[Recovery] Reconnecting to Deepgram...')
+            sttActions.connect()
+          }
+        }
+      }, 5000)
+    }
+
+    return () => {
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current)
+        speechTimeoutRef.current = null
+      }
+    }
+  }, [
+    currentSpeaker,
+    isAISpeaking,
+    sessionState,
+    sttState.isConnected,
+    sttState.isConnecting,
+    sttActions,
+  ])
+
+  // ==========================================
+  // Stuck State Detection - Show reset button after 8 seconds
+  // ==========================================
+  useEffect(() => {
+    // Track when user starts speaking
+    if (
+      currentSpeaker === 'user' &&
+      !isAISpeaking &&
+      sessionState === 'recording'
+    ) {
+      if (!userSpeakingStartRef.current) {
+        userSpeakingStartRef.current = Date.now()
+      }
+
+      // Show reset button after 8 seconds of being in "user speaking" state
+      resetButtonTimerRef.current = setTimeout(() => {
+        console.log(
+          '[Recovery] Showing reset button - stuck in user speaking state',
+        )
+        setShowResetButton(true)
+      }, 8000)
+    } else {
+      // Clear timer and hide button when state changes
+      userSpeakingStartRef.current = null
+      setShowResetButton(false)
+      if (resetButtonTimerRef.current) {
+        clearTimeout(resetButtonTimerRef.current)
+        resetButtonTimerRef.current = null
+      }
+    }
+
+    return () => {
+      if (resetButtonTimerRef.current) {
+        clearTimeout(resetButtonTimerRef.current)
+        resetButtonTimerRef.current = null
+      }
+    }
+  }, [currentSpeaker, isAISpeaking, sessionState])
+
+  // Reset handler for the stuck state button - Full audio system restart
+  const handleResetSpeechState = useCallback(async () => {
+    console.log('[Recovery] Full audio system restart triggered')
+
+    // Reset all UI state
+    setCurrentSpeaker(null)
+    pendingTranscriptRef.current = ''
+    setLiveTranscript('')
+    setShowResetButton(false)
+    userSpeakingStartRef.current = null
+
+    // Stop everything in the audio pipeline
+    console.log('[Recovery] Stopping audio recorder...')
+    recorderActions.stopRecording()
+
+    console.log('[Recovery] Pausing VAD...')
+    vadActions.pause()
+
+    console.log('[Recovery] Disconnecting Deepgram...')
+    sttActions.disconnect()
+
+    // Wait for cleanup to complete
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    // Restart everything (same order as session start)
+    // IMPORTANT: Must wait for Deepgram to be fully connected before starting recorder
+    // Otherwise the recorder sends audio to an old/closing WebSocket reference
+    console.log('[Recovery] Reconnecting Deepgram (waiting for connection)...')
+    await sttActions.connect()
+    console.log('[Recovery] Deepgram connected!')
+
+    console.log('[Recovery] Restarting audio recorder...')
+    await recorderActions.startRecording()
+
+    // VAD will auto-resume since enabled=true when sessionState='recording'
+    console.log('[Recovery] Audio system restart complete')
+
+    toast.info('Speech recognition reset', {
+      description: 'Ready to listen again',
+      duration: 3000,
+    })
+  }, [sttActions, recorderActions, vadActions])
 
   // Streaming audio player
   const [streamingAudioState, streamingAudioActions] = useStreamingAudioPlayer({
     onStart: () => {
-      console.log('[DEBUG-Audio] AI audio playback STARTED')
-      setIsAISpeakingSync(true)
+      console.log('[Audio] AI started speaking')
+      isAISpeakingRef.current = true
+      setIsAISpeaking(true)
       setCurrentSpeaker('ai')
-
-      // Start Deepgram keepalive to prevent timeout during AI speech
-      // We don't send audio while AI speaks (to prevent TTS echo), so keepalive is needed
-      if (useVoiceInput && sttState.isConnected) {
-        sttActions.startKeepalive()
-      }
+      // Start keepalive to prevent Deepgram timeout during AI speech
+      sttActions.startKeepalive()
     },
     onEnd: () => {
-      console.log('[DEBUG-Audio] AI audio playback ENDED')
-      setIsAISpeakingSync(false)
+      console.log('[Audio] AI finished speaking')
+      isAISpeakingRef.current = false
+      setIsAISpeaking(false)
       setCurrentSpeaker(null)
-
-      // Stop keepalive - audio will flow again now that AI is done
+      // Stop keepalive - resume normal audio streaming
       sttActions.stopKeepalive()
 
       if (sessionEndPendingRef.current) {
@@ -413,11 +412,11 @@ function TodayReflection() {
       }
     },
     onError: (error) => {
-      console.log('[DEBUG-Audio] AI audio playback ERROR:', error)
-      setIsAISpeakingSync(false)
+      console.error('[Audio] Playback error:', error)
+      isAISpeakingRef.current = false
+      setIsAISpeaking(false)
       setCurrentSpeaker(null)
-
-      // Stop keepalive on error
+      // Stop keepalive on error too
       sttActions.stopKeepalive()
 
       if (sessionEndPendingRef.current) {
@@ -450,36 +449,28 @@ function TodayReflection() {
       onError: (error) => {
         console.error('[ConversationStream] Error:', error)
         toast.error('AI response failed', { description: error })
-        setIsAISpeakingSync(false)
+        isAISpeakingRef.current = false
+        setIsAISpeaking(false)
         setCurrentSpeaker(null)
-
-        // Stop keepalive on conversation error
-        sttActions.stopKeepalive()
       },
     })
 
   // Legacy audio player
   const [audioState, audioActions] = useAudioPlayer({
     onPlay: () => {
-      setIsAISpeakingSync(true)
+      isAISpeakingRef.current = true
+      setIsAISpeaking(true)
       setCurrentSpeaker('ai')
-
-      // Start Deepgram keepalive (legacy player)
-      if (useVoiceInput && sttState.isConnected) {
-        sttActions.startKeepalive()
-      }
     },
     onEnd: () => {
       if (audioQueueRef.current.length > 0) {
         playNextInQueueRef.current?.()
         return
       }
-      setIsAISpeakingSync(false)
+      isAISpeakingRef.current = false
+      setIsAISpeaking(false)
       setCurrentSpeaker(null)
       isPlayingQueueRef.current = false
-
-      // Stop keepalive (legacy player)
-      sttActions.stopKeepalive()
 
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
@@ -491,12 +482,10 @@ function TodayReflection() {
         playNextInQueueRef.current?.()
         return
       }
-      setIsAISpeakingSync(false)
+      isAISpeakingRef.current = false
+      setIsAISpeaking(false)
       setCurrentSpeaker(null)
       isPlayingQueueRef.current = false
-
-      // Stop keepalive on error (legacy player)
-      sttActions.stopKeepalive()
 
       if (sessionEndPendingRef.current) {
         sessionEndPendingRef.current = false
@@ -508,127 +497,16 @@ function TodayReflection() {
   // Check audio support
   const { isSupported, missingFeatures } = useAudioSupport()
 
-  // Track audio send count for debugging
-  const audioSendCountRef = useRef(0)
-  const lastAudioLogTimeRef = useRef(0)
-
-  // Audio recorder
-  // NOTE: We no longer use onSpeechStart/onSpeechEnd from recorder for UI state
-  // VAD is the single source of truth for "user is speaking" state
-  const [recorderState, recorderActions] = useAudioRecorder({
-    onSpeechStart: () => {
-      // NOTE: VAD handles currentSpeaker state, not the recorder
-      console.log(
-        '[DEBUG-Recorder] Speech start detected (ignored for UI - VAD handles this)',
-      )
-    },
-    onSpeechEnd: () => {
-      // NOTE: VAD handles currentSpeaker state, not the recorder
-      // Only use this as fallback for sending transcript when STT is disconnected
-      console.log(
-        '[DEBUG-Recorder] Speech end detected, isProcessing:',
-        isProcessingRef.current,
-      )
-      if (isProcessingRef.current) return
-      if (
-        !sttState.isConnected &&
-        pendingTranscriptRef.current.trim() &&
-        session
-      ) {
-        console.log(
-          '[DEBUG-Recorder] Fallback - STT not connected, sending transcript',
-        )
-        isProcessingRef.current = true
-        const transcript = pendingTranscriptRef.current.trim()
-        pendingTranscriptRef.current = ''
-        setLiveTranscript('')
-        setTimeout(() => {
-          const audioBase64 = getAccumulatedAudioBase64()
-          handleUserSpeechEnd(transcript, audioBase64)
-          audioChunksRef.current = []
-          setTimeout(() => {
-            isProcessingRef.current = false
-          }, 100)
-        }, 150)
-      }
-    },
-    onPCMData: (pcmData) => {
-      // Log audio send status every 2 seconds
-      const now = Date.now()
-      audioSendCountRef.current++
-      if (now - lastAudioLogTimeRef.current > 2000) {
-        console.log(
-          '[DEBUG-Audio] Sending audio to Deepgram, connected:',
-          sttState.isConnected,
-          'voiceInput:',
-          useVoiceInput,
-          'chunks sent:',
-          audioSendCountRef.current,
-        )
-        lastAudioLogTimeRef.current = now
-        audioSendCountRef.current = 0
-      }
-
-      // Don't send audio to Deepgram while AI is speaking (prevents TTS echo)
-      if (sttState.isConnected && useVoiceInput && !isAISpeakingRef.current) {
-        sttActions.sendAudio(pcmData)
-      }
-      const pcmArray = new Int16Array(pcmData)
-      audioChunksRef.current.push(pcmArray)
-    },
-  })
-
-  // Update live transcript from STT
-  useEffect(() => {
-    if (sttState.interimTranscript) {
-      setLiveTranscript(
-        pendingTranscriptRef.current +
-          (pendingTranscriptRef.current ? ' ' : '') +
-          sttState.interimTranscript,
-      )
-    }
-  }, [sttState.interimTranscript])
-
-  // DEBUG: Periodic status logger - logs state every 3 seconds during recording
-  useEffect(() => {
-    if (sessionState !== 'recording') return
-
-    const statusInterval = setInterval(() => {
-      console.log('[DEBUG-STATUS] ==================')
-      console.log('[DEBUG-STATUS] Session state:', sessionState)
-      console.log('[DEBUG-STATUS] currentSpeaker:', currentSpeaker)
-      console.log('[DEBUG-STATUS] isAISpeaking:', isAISpeaking)
-      console.log('[DEBUG-STATUS] VAD isSpeaking:', vadState.isSpeaking)
-      console.log('[DEBUG-STATUS] VAD isListening:', vadState.isListening)
-      console.log('[DEBUG-STATUS] STT isConnected:', sttState.isConnected)
-      console.log('[DEBUG-STATUS] STT isSpeaking:', sttState.isSpeaking)
-      console.log(
-        '[DEBUG-STATUS] Pending transcript:',
-        pendingTranscriptRef.current.substring(0, 30) || '(empty)',
-      )
-      console.log('[DEBUG-STATUS] isProcessing:', isProcessingRef.current)
-      console.log('[DEBUG-STATUS] ==================')
-    }, 3000)
-
-    return () => clearInterval(statusInterval)
-  }, [
-    sessionState,
-    currentSpeaker,
-    isAISpeaking,
-    vadState.isSpeaking,
-    vadState.isListening,
-    sttState.isConnected,
-    sttState.isSpeaking,
-  ])
-
   // Play audio helper
   const playAudio = useCallback(
     async (url: string | null) => {
       if (!url) {
-        setIsAISpeakingSync(true)
+        isAISpeakingRef.current = true
+        setIsAISpeaking(true)
         setCurrentSpeaker('ai')
         setTimeout(() => {
-          setIsAISpeakingSync(false)
+          isAISpeakingRef.current = false
+          setIsAISpeaking(false)
           setCurrentSpeaker(null)
         }, 2500)
         return
@@ -636,15 +514,17 @@ function TodayReflection() {
       try {
         await audioActions.play(url)
       } catch {
-        setIsAISpeakingSync(true)
+        isAISpeakingRef.current = true
+        setIsAISpeaking(true)
         setCurrentSpeaker('ai')
         setTimeout(() => {
-          setIsAISpeakingSync(false)
+          isAISpeakingRef.current = false
+          setIsAISpeaking(false)
           setCurrentSpeaker(null)
         }, 2500)
       }
     },
-    [audioActions, setIsAISpeakingSync],
+    [audioActions],
   )
 
   // Play next in queue
@@ -685,10 +565,10 @@ function TodayReflection() {
       audioActions.enableAutoplay()
       streamingAudioActions.enablePlayback()
 
+      // Connect to Deepgram and start recording
       if (useVoiceInput) {
         await sttActions.connect()
       }
-
       await recorderActions.startRecording()
       startTimer()
 
@@ -747,6 +627,7 @@ function TodayReflection() {
     onSuccess: (updatedSession) => {
       recorderActions.stopRecording()
       sttActions.disconnect()
+      vadActions.pause()
       audioActions.stop()
       streamingAudioActions.stop()
       conversationStreamActions.cancel()
@@ -852,13 +733,13 @@ function TodayReflection() {
       }).catch(console.error)
     }
 
-    setIsAISpeakingSync(false)
+    isAISpeakingRef.current = false
+    setIsAISpeaking(false)
   }, [
     session?.id,
     streamingAudioActions,
     audioActions,
     conversationStreamActions,
-    setIsAISpeakingSync,
   ])
 
   useEffect(() => {
@@ -884,6 +765,7 @@ function TodayReflection() {
     conversationStreamActions.cancel()
     recorderActions.stopRecording()
     sttActions.disconnect()
+    vadActions.pause()
     stopTimer()
 
     setIsAutoEnding(true)
@@ -902,6 +784,7 @@ function TodayReflection() {
     conversationStreamActions,
     recorderActions,
     sttActions,
+    vadActions,
     stopTimer,
   ])
 
@@ -964,12 +847,15 @@ function TodayReflection() {
       if (hardCutoffTimerRef.current) {
         clearTimeout(hardCutoffTimerRef.current)
       }
+      if (speechTimeoutRef.current) {
+        clearTimeout(speechTimeoutRef.current)
+      }
       recorderActions.stopRecording()
       sttActions.disconnect()
+      vadActions.pause()
       audioActions.stop()
       streamingAudioActions.stop()
       conversationStreamActions.cancel()
-      if (USE_VAD) vadActions.pause()
     }
   }, [])
 
@@ -999,18 +885,11 @@ function TodayReflection() {
   }
 
   const handleStartSession = useCallback(async () => {
-    const hasPermission = await recorderActions.requestPermission()
-    if (!hasPermission) {
-      toast.error('Microphone Required', {
-        description: 'Please allow microphone access to start a reflection.',
-        duration: 5000,
-      })
-      return
-    }
-
+    // Request microphone permission via the speech detection system
+    // The hook will handle this when we call startRecording
     setSessionState('starting')
     startMutation.mutate()
-  }, [startMutation, recorderActions])
+  }, [startMutation])
 
   const handleEndSession = useCallback(async () => {
     if (!session) return
@@ -1020,6 +899,7 @@ function TodayReflection() {
     if (elapsedTime < MIN_SESSION_DURATION) {
       recorderActions.stopRecording()
       sttActions.disconnect()
+      vadActions.pause()
       audioActions.stop()
       streamingAudioActions.stop()
       conversationStreamActions.cancel()
@@ -1052,6 +932,7 @@ function TodayReflection() {
     endMutation,
     recorderActions,
     sttActions,
+    vadActions,
     audioActions,
     streamingAudioActions,
     conversationStreamActions,
@@ -1059,9 +940,11 @@ function TodayReflection() {
     queryClient,
   ])
 
+  // Note: Mute toggle not available in unified hook - could be added later
   const handleToggleMute = useCallback(() => {
-    recorderActions.toggleMute()
-  }, [recorderActions])
+    // TODO: Add mute toggle to useSpeechDetection if needed
+    console.log('[TODO] Mute toggle not implemented in useSpeechDetection')
+  }, [])
 
   // Calculate remaining time
   const maxDuration =
@@ -1163,6 +1046,18 @@ function TodayReflection() {
           }
           isMuted={recorderState.isMuted}
         />
+
+        {/* Reset button when stuck in user speaking state */}
+        {showResetButton && sessionState === 'recording' && (
+          <button
+            onClick={handleResetSpeechState}
+            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full animate-pulse cursor-pointer"
+          >
+            <span className="text-white text-sm font-medium px-4 py-2 bg-black/60 rounded-full">
+              Tap to reset
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Audio enable button */}
@@ -1206,8 +1101,8 @@ function TodayReflection() {
           <p className="mt-4 text-sm text-muted-foreground">
             10 minutes to process your thoughts
           </p>
-          {recorderState.error && (
-            <p className="mt-2 text-sm text-red-500">{recorderState.error}</p>
+          {sttState.error && (
+            <p className="mt-2 text-sm text-red-500">{sttState.error}</p>
           )}
         </div>
       )}
@@ -1221,7 +1116,7 @@ function TodayReflection() {
 
       {(sessionState === 'recording' || sessionState === 'paused') && (
         <SessionControls
-          isMuted={recorderState.isMuted}
+          isMuted={false}
           isPaused={sessionState === 'paused'}
           isEnding={isEndingSession || endMutation.isPending}
           elapsedTime={elapsedTime}
@@ -1234,17 +1129,19 @@ function TodayReflection() {
       {/* Live transcript */}
       {sessionState === 'recording' && (
         <div className="mt-8 max-w-md text-center">
-          <p className="text-sm text-muted-foreground italic">
+          <p
+            className={`text-sm italic ${sttState.isDegraded ? 'text-amber-500' : 'text-muted-foreground'}`}
+          >
             {isAISpeaking
               ? 'AI is speaking...'
-              : USE_VAD && vadState.isSpeaking
-                ? 'Listening...'
-                : recorderState.audioLevel > 0.1
+              : sttState.isDegraded
+                ? 'Speech recognition issue - tap circle to reset'
+                : currentSpeaker === 'user'
                   ? 'Listening...'
                   : "Take your time. Share what's on your mind."}
           </p>
           {liveTranscript && <p className="mt-2 text-sm">{liveTranscript}</p>}
-          {USE_VAD && vadState.isLoading && (
+          {vadState.isLoading && (
             <p className="mt-1 text-xs text-muted-foreground">
               Loading speech detection...
             </p>
@@ -1307,6 +1204,7 @@ function TodayReflection() {
                 if (e.key === 'Enter' && liveTranscript.trim() && session) {
                   handleUserSpeechEnd(liveTranscript)
                   setLiveTranscript('')
+                  sttActions.clearTranscripts()
                   pendingTranscriptRef.current = ''
                 }
               }}
@@ -1321,6 +1219,7 @@ function TodayReflection() {
                 if (liveTranscript.trim() && session) {
                   handleUserSpeechEnd(liveTranscript)
                   setLiveTranscript('')
+                  sttActions.clearTranscripts()
                   pendingTranscriptRef.current = ''
                 }
               }}
