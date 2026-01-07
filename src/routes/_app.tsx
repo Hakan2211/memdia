@@ -86,6 +86,9 @@ function AppLayout() {
             <NavLink to="/memories" icon="🎙️">
               Memories
             </NavLink>
+            <NavLink to="/reflections" icon="💭">
+              Reflections
+            </NavLink>
             <NavLink to="/dashboard" icon="📊">
               Dashboard
             </NavLink>

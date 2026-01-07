@@ -59,7 +59,11 @@ export const ModelName = {
   TranscriptTurn: 'TranscriptTurn',
   UserPreferences: 'UserPreferences',
   DeletedSessionAttempt: 'DeletedSessionAttempt',
-  DailyGreeting: 'DailyGreeting'
+  DailyGreeting: 'DailyGreeting',
+  ReflectionSession: 'ReflectionSession',
+  ReflectionTurn: 'ReflectionTurn',
+  DeletedReflectionAttempt: 'DeletedReflectionAttempt',
+  DailyReflectionGreeting: 'DailyReflectionGreeting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -209,6 +213,63 @@ export const DailyGreetingScalarFieldEnum = {
 } as const
 
 export type DailyGreetingScalarFieldEnum = (typeof DailyGreetingScalarFieldEnum)[keyof typeof DailyGreetingScalarFieldEnum]
+
+
+export const ReflectionSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  status: 'status',
+  recordingAttempt: 'recordingAttempt',
+  totalUserSpeakingTime: 'totalUserSpeakingTime',
+  maxDuration: 'maxDuration',
+  summaryText: 'summaryText',
+  pausedAt: 'pausedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReflectionSessionScalarFieldEnum = (typeof ReflectionSessionScalarFieldEnum)[keyof typeof ReflectionSessionScalarFieldEnum]
+
+
+export const ReflectionTurnScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  speaker: 'speaker',
+  text: 'text',
+  audioUrl: 'audioUrl',
+  startTime: 'startTime',
+  duration: 'duration',
+  order: 'order',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionTurnScalarFieldEnum = (typeof ReflectionTurnScalarFieldEnum)[keyof typeof ReflectionTurnScalarFieldEnum]
+
+
+export const DeletedReflectionAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  createdAt: 'createdAt'
+} as const
+
+export type DeletedReflectionAttemptScalarFieldEnum = (typeof DeletedReflectionAttemptScalarFieldEnum)[keyof typeof DeletedReflectionAttemptScalarFieldEnum]
+
+
+export const DailyReflectionGreetingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  language: 'language',
+  text: 'text',
+  audioBase64: 'audioBase64',
+  contentType: 'contentType',
+  createdAt: 'createdAt'
+} as const
+
+export type DailyReflectionGreetingScalarFieldEnum = (typeof DailyReflectionGreetingScalarFieldEnum)[keyof typeof DailyReflectionGreetingScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -37,6 +37,9 @@ model User {
   voiceSessions VoiceSession[]
   preferences   UserPreferences?
 
+  // Reflection Sessions
+  reflectionSessions ReflectionSession[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -211,4 +214,99 @@ model DailyGreeting {
   // One greeting per user per day per language
   @@unique([userId, date, language])
   @@map("daily_greeting")
+}
+
+// ==========================================
+// Reflection Session Models (10-min therapeutic conversations)
+// ==========================================
+
+model ReflectionSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Session date (user's timezone, stored as start of day)
+  date DateTime
+
+  // Status: active | paused | processing | completed
+  status String @default("active")
+
+  // Recording attempt tracking (max 1 allowed for reflections)
+  recordingAttempt Int @default(1)
+
+  // Time tracking (in seconds)
+  totalUserSpeakingTime Int @default(0)
+  maxDuration           Int @default(600) // 600 = 10 minutes
+
+  // Post-processing results (no image for reflections)
+  summaryText String?
+
+  // Timestamps
+  pausedAt    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Transcript turns
+  turns ReflectionTurn[]
+
+  // Ensure one reflection session per user per day
+  @@unique([userId, date])
+  @@map("reflection_session")
+}
+
+model ReflectionTurn {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   ReflectionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Speaker: "user" | "ai"
+  speaker String
+
+  // Content
+  text     String
+  audioUrl String? // bunny.net URL
+
+  // Timing (in seconds from session start)
+  startTime Float
+  duration  Float
+  order     Int // sequence number
+
+  createdAt DateTime @default(now())
+
+  @@map("reflection_turn")
+}
+
+// Track deleted reflection attempts to enforce 1-recording limit per day
+model DeletedReflectionAttempt {
+  id     String   @id @default(cuid())
+  userId String
+  date   DateTime // The date of the deleted session (start of day)
+
+  createdAt DateTime @default(now())
+
+  // Unique constraint: one record per user per day
+  @@unique([userId, date])
+  @@map("deleted_reflection_attempt")
+}
+
+// Cache daily reflection greeting to avoid regenerating TTS on every page visit
+model DailyReflectionGreeting {
+  id     String   @id @default(cuid())
+  userId String
+  date   DateTime // Start of day (UTC)
+
+  // Language of the greeting (ISO 639-1 code)
+  language String @default("en")
+
+  // Greeting content
+  text        String
+  audioBase64 String? // Base64 encoded audio for instant playback
+  contentType String  @default("audio/mpeg")
+
+  createdAt DateTime @default(now())
+
+  // One greeting per user per day per language
+  @@unique([userId, date, language])
+  @@map("daily_reflection_greeting")
 }

@@ -15,8 +15,21 @@ import {
   buildConversationSystemPrompt,
   buildConversationContext,
 } from '../../../lib/prompts/conversation'
-import type { AIPersonality } from '../../../types/voice-session'
+import {
+  buildReflectionSystemPrompt,
+  buildReflectionContext,
+} from '../../../lib/prompts/reflection'
+import type { AIPersonality, Language } from '../../../types/voice-session'
 import { getGeneration, setGeneration } from './cancel'
+
+// Type for session turns (shared between voice and reflection sessions)
+interface SessionTurn {
+  speaker: string
+  text: string
+  startTime: number
+  duration: number
+  order: number
+}
 
 // ==========================================
 // Sentence Detection
@@ -74,8 +87,9 @@ export const Route = createFileRoute('/api/stream/conversation')({
           })
         }
 
-        // Get voice session
-        const voiceSession = await prisma.voiceSession.findFirst({
+        // Get voice session or reflection session
+        // First try voice session (memories)
+        let voiceSession = await prisma.voiceSession.findFirst({
           where: {
             id: sessionId,
             userId: session.user.id,
@@ -88,7 +102,29 @@ export const Route = createFileRoute('/api/stream/conversation')({
           },
         })
 
+        // If not found, try reflection session
+        let reflectionSession = null
+        let isReflection = false
         if (!voiceSession) {
+          reflectionSession = await prisma.reflectionSession.findFirst({
+            where: {
+              id: sessionId,
+              userId: session.user.id,
+              status: 'active',
+            },
+            include: {
+              turns: {
+                orderBy: { order: 'asc' },
+              },
+            },
+          })
+          isReflection = !!reflectionSession
+        }
+
+        // Use whichever session was found
+        const activeSession = voiceSession || reflectionSession
+
+        if (!activeSession) {
           return new Response('Session not found', { status: 404 })
         }
 
@@ -99,19 +135,37 @@ export const Route = createFileRoute('/api/stream/conversation')({
 
         const personality = (preferences?.aiPersonality ||
           'empathetic') as AIPersonality
+        const userLanguage = (preferences?.language || 'en') as Language
 
-        // Build conversation messages
-        const systemPrompt = buildConversationSystemPrompt(
-          personality,
-          session.user.name || undefined,
-        )
+        // Build conversation messages - use reflection prompts for reflection sessions
+        const sessionTurns = activeSession.turns.map((t: SessionTurn) => ({
+          speaker: t.speaker as 'user' | 'ai',
+          text: t.text,
+        }))
 
-        const conversationHistory = buildConversationContext(
-          voiceSession.turns.map((t) => ({
-            speaker: t.speaker as 'user' | 'ai',
-            text: t.text,
-          })),
-        )
+        let systemPrompt: string
+        let conversationHistory: Array<{
+          role: 'user' | 'assistant'
+          content: string
+        }>
+
+        if (isReflection) {
+          // Use therapeutic reflection prompts
+          systemPrompt = buildReflectionSystemPrompt(
+            personality,
+            session.user.name || undefined,
+            userLanguage,
+          )
+          conversationHistory = buildReflectionContext(sessionTurns)
+        } else {
+          // Use standard memory conversation prompts
+          systemPrompt = buildConversationSystemPrompt(
+            personality,
+            session.user.name || undefined,
+            userLanguage,
+          )
+          conversationHistory = buildConversationContext(sessionTurns)
+        }
 
         const messages: ChatMessage[] = [
           { role: 'system', content: systemPrompt },
@@ -120,22 +174,35 @@ export const Route = createFileRoute('/api/stream/conversation')({
         ]
 
         // Save user turn first
-        const lastTurn = voiceSession.turns[voiceSession.turns.length - 1]
+        const lastTurn = activeSession.turns[activeSession.turns.length - 1]
         const userStartTime = lastTurn
           ? lastTurn.startTime + lastTurn.duration + 0.5
           : 0
 
-        const userTurn = await prisma.transcriptTurn.create({
-          data: {
-            sessionId: voiceSession.id,
-            speaker: 'user',
-            text: userMessage,
-            audioUrl: null,
-            startTime: userStartTime,
-            duration: Math.ceil(userMessage.split(' ').length / 2.5),
-            order: voiceSession.turns.length,
-          },
-        })
+        // Save to appropriate turn table based on session type
+        const userTurn = isReflection
+          ? await prisma.reflectionTurn.create({
+              data: {
+                sessionId: activeSession.id,
+                speaker: 'user',
+                text: userMessage,
+                audioUrl: null,
+                startTime: userStartTime,
+                duration: Math.ceil(userMessage.split(' ').length / 2.5),
+                order: activeSession.turns.length,
+              },
+            })
+          : await prisma.transcriptTurn.create({
+              data: {
+                sessionId: activeSession.id,
+                speaker: 'user',
+                text: userMessage,
+                audioUrl: null,
+                startTime: userStartTime,
+                duration: Math.ceil(userMessage.split(' ').length / 2.5),
+                order: activeSession.turns.length,
+              },
+            })
 
         // Create SSE response stream
         const encoder = new TextEncoder()
@@ -309,29 +376,51 @@ export const Route = createFileRoute('/api/stream/conversation')({
                     let aiTurnId: string | null = null
                     try {
                       // Verify session still exists and is active before saving
-                      const sessionStillExists =
-                        await prisma.voiceSession.findUnique({
-                          where: { id: voiceSession.id },
-                          select: { id: true, status: true },
-                        })
+                      // Check appropriate table based on session type
+                      const sessionStillExists = isReflection
+                        ? await prisma.reflectionSession.findUnique({
+                            where: { id: activeSession.id },
+                            select: { id: true, status: true },
+                          })
+                        : await prisma.voiceSession.findUnique({
+                            where: { id: activeSession.id },
+                            select: { id: true, status: true },
+                          })
 
                       if (
                         sessionStillExists &&
                         sessionStillExists.status === 'active'
                       ) {
-                        const aiTurn = await prisma.transcriptTurn.create({
-                          data: {
-                            sessionId: voiceSession.id,
-                            speaker: 'ai',
-                            text: fullText,
-                            audioUrl: null, // Will be set during archival
-                            startTime: userStartTime + userTurn.duration + 0.5,
-                            duration: Math.ceil(
-                              fullText.split(' ').length / 2.5,
-                            ),
-                            order: voiceSession.turns.length + 1,
-                          },
-                        })
+                        // Save to appropriate turn table
+                        const aiTurn = isReflection
+                          ? await prisma.reflectionTurn.create({
+                              data: {
+                                sessionId: activeSession.id,
+                                speaker: 'ai',
+                                text: fullText,
+                                audioUrl: null,
+                                startTime:
+                                  userStartTime + userTurn.duration + 0.5,
+                                duration: Math.ceil(
+                                  fullText.split(' ').length / 2.5,
+                                ),
+                                order: activeSession.turns.length + 1,
+                              },
+                            })
+                          : await prisma.transcriptTurn.create({
+                              data: {
+                                sessionId: activeSession.id,
+                                speaker: 'ai',
+                                text: fullText,
+                                audioUrl: null,
+                                startTime:
+                                  userStartTime + userTurn.duration + 0.5,
+                                duration: Math.ceil(
+                                  fullText.split(' ').length / 2.5,
+                                ),
+                                order: activeSession.turns.length + 1,
+                              },
+                            })
                         aiTurnId = aiTurn.id
                       } else {
                         console.log(

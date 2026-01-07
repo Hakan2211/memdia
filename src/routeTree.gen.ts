@@ -15,6 +15,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppReflectionsRouteImport } from './routes/_app/reflections'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
 import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
@@ -23,6 +24,8 @@ import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as ApiStreamConversationRouteImport } from './routes/api/stream/conversation'
 import { Route as ApiStreamCancelRouteImport } from './routes/api/stream/cancel'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AppReflectionsTodayRouteImport } from './routes/_app/reflections.today'
+import { Route as AppReflectionsDateRouteImport } from './routes/_app/reflections.$date'
 import { Route as AppMemoriesTodayRouteImport } from './routes/_app/memories.today'
 import { Route as AppMemoriesDateRouteImport } from './routes/_app/memories.$date'
 
@@ -53,6 +56,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRoute,
+} as any)
+const AppReflectionsRoute = AppReflectionsRouteImport.update({
+  id: '/reflections',
+  path: '/reflections',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
@@ -94,6 +102,16 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppReflectionsTodayRoute = AppReflectionsTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AppReflectionsRoute,
+} as any)
+const AppReflectionsDateRoute = AppReflectionsDateRouteImport.update({
+  id: '/$date',
+  path: '/$date',
+  getParentRoute: () => AppReflectionsRoute,
+} as any)
 const AppMemoriesTodayRoute = AppMemoriesTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -113,10 +131,13 @@ export interface FileRoutesByFullPath {
   '/memories': typeof AppMemoriesRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
+  '/reflections': typeof AppReflectionsRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
+  '/reflections/$date': typeof AppReflectionsDateRoute
+  '/reflections/today': typeof AppReflectionsTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
@@ -129,10 +150,13 @@ export interface FileRoutesByTo {
   '/memories': typeof AppMemoriesRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
+  '/reflections': typeof AppReflectionsRouteWithChildren
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
+  '/reflections/$date': typeof AppReflectionsDateRoute
+  '/reflections/today': typeof AppReflectionsTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
@@ -148,10 +172,13 @@ export interface FileRoutesById {
   '/_app/memories': typeof AppMemoriesRouteWithChildren
   '/_app/onboarding': typeof AppOnboardingRoute
   '/_app/profile': typeof AppProfileRoute
+  '/_app/reflections': typeof AppReflectionsRouteWithChildren
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_app/memories/$date': typeof AppMemoriesDateRoute
   '/_app/memories/today': typeof AppMemoriesTodayRoute
+  '/_app/reflections/$date': typeof AppReflectionsDateRoute
+  '/_app/reflections/today': typeof AppReflectionsTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
@@ -166,10 +193,13 @@ export interface FileRouteTypes {
     | '/memories'
     | '/onboarding'
     | '/profile'
+    | '/reflections'
     | '/login'
     | '/signup'
     | '/memories/$date'
     | '/memories/today'
+    | '/reflections/$date'
+    | '/reflections/today'
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
@@ -182,10 +212,13 @@ export interface FileRouteTypes {
     | '/memories'
     | '/onboarding'
     | '/profile'
+    | '/reflections'
     | '/login'
     | '/signup'
     | '/memories/$date'
     | '/memories/today'
+    | '/reflections/$date'
+    | '/reflections/today'
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
@@ -200,10 +233,13 @@ export interface FileRouteTypes {
     | '/_app/memories'
     | '/_app/onboarding'
     | '/_app/profile'
+    | '/_app/reflections'
     | '/_auth/login'
     | '/_auth/signup'
     | '/_app/memories/$date'
     | '/_app/memories/today'
+    | '/_app/reflections/$date'
+    | '/_app/reflections/today'
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
@@ -263,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_app/reflections': {
+      id: '/_app/reflections'
+      path: '/reflections'
+      fullPath: '/reflections'
+      preLoaderRoute: typeof AppReflectionsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -319,6 +362,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/reflections/today': {
+      id: '/_app/reflections/today'
+      path: '/today'
+      fullPath: '/reflections/today'
+      preLoaderRoute: typeof AppReflectionsTodayRouteImport
+      parentRoute: typeof AppReflectionsRoute
+    }
+    '/_app/reflections/$date': {
+      id: '/_app/reflections/$date'
+      path: '/$date'
+      fullPath: '/reflections/$date'
+      preLoaderRoute: typeof AppReflectionsDateRouteImport
+      parentRoute: typeof AppReflectionsRoute
+    }
     '/_app/memories/today': {
       id: '/_app/memories/today'
       path: '/today'
@@ -350,12 +407,27 @@ const AppMemoriesRouteWithChildren = AppMemoriesRoute._addFileChildren(
   AppMemoriesRouteChildren,
 )
 
+interface AppReflectionsRouteChildren {
+  AppReflectionsDateRoute: typeof AppReflectionsDateRoute
+  AppReflectionsTodayRoute: typeof AppReflectionsTodayRoute
+}
+
+const AppReflectionsRouteChildren: AppReflectionsRouteChildren = {
+  AppReflectionsDateRoute: AppReflectionsDateRoute,
+  AppReflectionsTodayRoute: AppReflectionsTodayRoute,
+}
+
+const AppReflectionsRouteWithChildren = AppReflectionsRoute._addFileChildren(
+  AppReflectionsRouteChildren,
+)
+
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppMemoriesRoute: typeof AppMemoriesRouteWithChildren
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppReflectionsRoute: typeof AppReflectionsRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -364,6 +436,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMemoriesRoute: AppMemoriesRouteWithChildren,
   AppOnboardingRoute: AppOnboardingRoute,
   AppProfileRoute: AppProfileRoute,
+  AppReflectionsRoute: AppReflectionsRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

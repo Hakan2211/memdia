@@ -224,6 +224,12 @@ export const LANGUAGE_LABELS: Record<
 }
 
 // ==========================================
+// Session Type (memory vs reflection)
+// ==========================================
+
+export type SessionType = 'memory' | 'reflection'
+
+// ==========================================
 // Session Configuration
 // ==========================================
 
@@ -233,6 +239,39 @@ export const SESSION_CONFIG = {
 
   /** Premium session duration in seconds (5 minutes) - Future */
   PREMIUM_MAX_DURATION_SECONDS: 300,
+
+  /** Reconnection timeout in seconds */
+  RECONNECTION_TIMEOUT_SECONDS: 300, // 5 minutes
+
+  /** Audio chunk size in milliseconds */
+  AUDIO_CHUNK_MS: 250,
+
+  /** Minimum session duration to count as attempt (60 seconds) */
+  MIN_DURATION_SECONDS: 60,
+
+  /** Hard cutoff grace period after timer ends (30 seconds) */
+  HARD_CUTOFF_GRACE_SECONDS: 30,
+
+  /** Maximum recording attempts per day for memories */
+  MAX_DAILY_ATTEMPTS: 2,
+} as const
+
+// ==========================================
+// Reflection Session Configuration
+// ==========================================
+
+export const REFLECTION_CONFIG = {
+  /** Maximum reflection duration in seconds (10 minutes) */
+  MAX_DURATION_SECONDS: 600,
+
+  /** Hard cutoff grace period after timer ends (30 seconds) */
+  HARD_CUTOFF_GRACE_SECONDS: 30,
+
+  /** Minimum session duration to count as attempt (60 seconds) */
+  MIN_DURATION_SECONDS: 60,
+
+  /** Maximum recording attempts per day for reflections (1 to protect costs) */
+  MAX_DAILY_ATTEMPTS: 1,
 
   /** Reconnection timeout in seconds */
   RECONNECTION_TIMEOUT_SECONDS: 300, // 5 minutes
@@ -365,4 +404,63 @@ export interface AudioManifest {
     startTime: number
     duration: number
   }[]
+}
+
+// ==========================================
+// Reflection Session Types
+// ==========================================
+
+export interface ReflectionTurn {
+  id: string
+  sessionId: string
+  speaker: Speaker
+  text: string
+  audioUrl: string | null
+  startTime: number // seconds from session start
+  duration: number // seconds
+  order: number
+  createdAt: Date
+}
+
+export interface ReflectionSession {
+  id: string
+  userId: string
+  date: Date
+  status: SessionStatus
+  recordingAttempt: number // max 1 allowed for reflections
+  totalUserSpeakingTime: number // seconds
+  maxDuration: number // seconds (600 = 10 minutes)
+  summaryText: string | null
+  pausedAt: Date | null
+  completedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  turns?: ReflectionTurn[]
+}
+
+// ==========================================
+// Reflection API Response Types
+// ==========================================
+
+export interface ReflectionResponse {
+  session: ReflectionSession
+  turns: ReflectionTurn[]
+}
+
+export interface ReflectionsListResponse {
+  sessions: ReflectionSession[]
+  hasMore: boolean
+  nextCursor?: string
+}
+
+export interface CalendarReflectionsResponse {
+  /** Map of date string (YYYY-MM-DD) to reflection summary */
+  sessions: Record<
+    string,
+    {
+      id: string
+      status: SessionStatus
+      duration: number
+    }
+  >
 }

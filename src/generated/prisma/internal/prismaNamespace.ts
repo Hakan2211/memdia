@@ -392,7 +392,11 @@ export const ModelName = {
   TranscriptTurn: 'TranscriptTurn',
   UserPreferences: 'UserPreferences',
   DeletedSessionAttempt: 'DeletedSessionAttempt',
-  DailyGreeting: 'DailyGreeting'
+  DailyGreeting: 'DailyGreeting',
+  ReflectionSession: 'ReflectionSession',
+  ReflectionTurn: 'ReflectionTurn',
+  DeletedReflectionAttempt: 'DeletedReflectionAttempt',
+  DailyReflectionGreeting: 'DailyReflectionGreeting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -408,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting"
+    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting" | "reflectionSession" | "reflectionTurn" | "deletedReflectionAttempt" | "dailyReflectionGreeting"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1078,6 +1082,302 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReflectionSession: {
+      payload: Prisma.$ReflectionSessionPayload<ExtArgs>
+      fields: Prisma.ReflectionSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReflectionSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReflectionSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.ReflectionSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReflectionSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>
+        }
+        findMany: {
+          args: Prisma.ReflectionSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>[]
+        }
+        create: {
+          args: Prisma.ReflectionSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>
+        }
+        createMany: {
+          args: Prisma.ReflectionSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReflectionSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.ReflectionSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>
+        }
+        update: {
+          args: Prisma.ReflectionSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReflectionSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReflectionSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReflectionSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReflectionSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.ReflectionSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReflectionSession>
+        }
+        groupBy: {
+          args: Prisma.ReflectionSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReflectionSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReflectionSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReflectionSessionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ReflectionTurn: {
+      payload: Prisma.$ReflectionTurnPayload<ExtArgs>
+      fields: Prisma.ReflectionTurnFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReflectionTurnFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReflectionTurnFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>
+        }
+        findFirst: {
+          args: Prisma.ReflectionTurnFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReflectionTurnFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>
+        }
+        findMany: {
+          args: Prisma.ReflectionTurnFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>[]
+        }
+        create: {
+          args: Prisma.ReflectionTurnCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>
+        }
+        createMany: {
+          args: Prisma.ReflectionTurnCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReflectionTurnCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>[]
+        }
+        delete: {
+          args: Prisma.ReflectionTurnDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>
+        }
+        update: {
+          args: Prisma.ReflectionTurnUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>
+        }
+        deleteMany: {
+          args: Prisma.ReflectionTurnDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReflectionTurnUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReflectionTurnUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>[]
+        }
+        upsert: {
+          args: Prisma.ReflectionTurnUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionTurnPayload>
+        }
+        aggregate: {
+          args: Prisma.ReflectionTurnAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReflectionTurn>
+        }
+        groupBy: {
+          args: Prisma.ReflectionTurnGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReflectionTurnGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReflectionTurnCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReflectionTurnCountAggregateOutputType> | number
+        }
+      }
+    }
+    DeletedReflectionAttempt: {
+      payload: Prisma.$DeletedReflectionAttemptPayload<ExtArgs>
+      fields: Prisma.DeletedReflectionAttemptFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DeletedReflectionAttemptFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DeletedReflectionAttemptFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>
+        }
+        findFirst: {
+          args: Prisma.DeletedReflectionAttemptFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DeletedReflectionAttemptFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>
+        }
+        findMany: {
+          args: Prisma.DeletedReflectionAttemptFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>[]
+        }
+        create: {
+          args: Prisma.DeletedReflectionAttemptCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>
+        }
+        createMany: {
+          args: Prisma.DeletedReflectionAttemptCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DeletedReflectionAttemptCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>[]
+        }
+        delete: {
+          args: Prisma.DeletedReflectionAttemptDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>
+        }
+        update: {
+          args: Prisma.DeletedReflectionAttemptUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>
+        }
+        deleteMany: {
+          args: Prisma.DeletedReflectionAttemptDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DeletedReflectionAttemptUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DeletedReflectionAttemptUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>[]
+        }
+        upsert: {
+          args: Prisma.DeletedReflectionAttemptUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DeletedReflectionAttemptPayload>
+        }
+        aggregate: {
+          args: Prisma.DeletedReflectionAttemptAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDeletedReflectionAttempt>
+        }
+        groupBy: {
+          args: Prisma.DeletedReflectionAttemptGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeletedReflectionAttemptGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DeletedReflectionAttemptCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DeletedReflectionAttemptCountAggregateOutputType> | number
+        }
+      }
+    }
+    DailyReflectionGreeting: {
+      payload: Prisma.$DailyReflectionGreetingPayload<ExtArgs>
+      fields: Prisma.DailyReflectionGreetingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DailyReflectionGreetingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DailyReflectionGreetingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>
+        }
+        findFirst: {
+          args: Prisma.DailyReflectionGreetingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DailyReflectionGreetingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>
+        }
+        findMany: {
+          args: Prisma.DailyReflectionGreetingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>[]
+        }
+        create: {
+          args: Prisma.DailyReflectionGreetingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>
+        }
+        createMany: {
+          args: Prisma.DailyReflectionGreetingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DailyReflectionGreetingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>[]
+        }
+        delete: {
+          args: Prisma.DailyReflectionGreetingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>
+        }
+        update: {
+          args: Prisma.DailyReflectionGreetingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>
+        }
+        deleteMany: {
+          args: Prisma.DailyReflectionGreetingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DailyReflectionGreetingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DailyReflectionGreetingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>[]
+        }
+        upsert: {
+          args: Prisma.DailyReflectionGreetingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DailyReflectionGreetingPayload>
+        }
+        aggregate: {
+          args: Prisma.DailyReflectionGreetingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDailyReflectionGreeting>
+        }
+        groupBy: {
+          args: Prisma.DailyReflectionGreetingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyReflectionGreetingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DailyReflectionGreetingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DailyReflectionGreetingCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1250,6 +1550,63 @@ export const DailyGreetingScalarFieldEnum = {
 export type DailyGreetingScalarFieldEnum = (typeof DailyGreetingScalarFieldEnum)[keyof typeof DailyGreetingScalarFieldEnum]
 
 
+export const ReflectionSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  status: 'status',
+  recordingAttempt: 'recordingAttempt',
+  totalUserSpeakingTime: 'totalUserSpeakingTime',
+  maxDuration: 'maxDuration',
+  summaryText: 'summaryText',
+  pausedAt: 'pausedAt',
+  completedAt: 'completedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ReflectionSessionScalarFieldEnum = (typeof ReflectionSessionScalarFieldEnum)[keyof typeof ReflectionSessionScalarFieldEnum]
+
+
+export const ReflectionTurnScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  speaker: 'speaker',
+  text: 'text',
+  audioUrl: 'audioUrl',
+  startTime: 'startTime',
+  duration: 'duration',
+  order: 'order',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionTurnScalarFieldEnum = (typeof ReflectionTurnScalarFieldEnum)[keyof typeof ReflectionTurnScalarFieldEnum]
+
+
+export const DeletedReflectionAttemptScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  createdAt: 'createdAt'
+} as const
+
+export type DeletedReflectionAttemptScalarFieldEnum = (typeof DeletedReflectionAttemptScalarFieldEnum)[keyof typeof DeletedReflectionAttemptScalarFieldEnum]
+
+
+export const DailyReflectionGreetingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  date: 'date',
+  language: 'language',
+  text: 'text',
+  audioBase64: 'audioBase64',
+  contentType: 'contentType',
+  createdAt: 'createdAt'
+} as const
+
+export type DailyReflectionGreetingScalarFieldEnum = (typeof DailyReflectionGreetingScalarFieldEnum)[keyof typeof DailyReflectionGreetingScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1410,6 +1767,10 @@ export type GlobalOmitConfig = {
   userPreferences?: Prisma.UserPreferencesOmit
   deletedSessionAttempt?: Prisma.DeletedSessionAttemptOmit
   dailyGreeting?: Prisma.DailyGreetingOmit
+  reflectionSession?: Prisma.ReflectionSessionOmit
+  reflectionTurn?: Prisma.ReflectionTurnOmit
+  deletedReflectionAttempt?: Prisma.DeletedReflectionAttemptOmit
+  dailyReflectionGreeting?: Prisma.DailyReflectionGreetingOmit
 }
 
 /* Types for Logging */

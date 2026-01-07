@@ -62,3 +62,23 @@ export type DeletedSessionAttempt = Prisma.DeletedSessionAttemptModel
  * 
  */
 export type DailyGreeting = Prisma.DailyGreetingModel
+/**
+ * Model ReflectionSession
+ * 
+ */
+export type ReflectionSession = Prisma.ReflectionSessionModel
+/**
+ * Model ReflectionTurn
+ * 
+ */
+export type ReflectionTurn = Prisma.ReflectionTurnModel
+/**
+ * Model DeletedReflectionAttempt
+ * 
+ */
+export type DeletedReflectionAttempt = Prisma.DeletedReflectionAttemptModel
+/**
+ * Model DailyReflectionGreeting
+ * 
+ */
+export type DailyReflectionGreeting = Prisma.DailyReflectionGreetingModel
