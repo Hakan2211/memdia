@@ -37,6 +37,10 @@ function getStartOfDay(date: Date = new Date()): Date {
 // ==========================================
 
 const sessionIdSchema = z.object({ sessionId: z.string() })
+const endSessionSchema = z.object({
+  sessionId: z.string(),
+  totalUserSpeakingTime: z.number().optional(),
+})
 const dateSchema = z.object({ date: z.string() })
 const monthSchema = z.object({ year: z.number(), month: z.number() })
 const paginationSchema = z.object({
@@ -221,21 +225,26 @@ export const startReflectionFn = createServerFn({ method: 'POST' })
       }
     }
 
-    // Check if there was a deleted reflection today (user already used their 1 attempt)
-    const deletedAttempt = await prisma.deletedReflectionAttempt.findUnique({
-      where: {
-        userId_date: {
-          userId: context.user.id,
-          date: today,
-        },
-      },
-    })
+    // Skip attempt limits for admins (for testing/development)
+    const isAdmin = context.user.role === 'admin'
 
-    // Reflections only allow 1 attempt per day to protect costs
-    if (deletedAttempt) {
-      throw new Error(
-        'You have already used your reflection for today. Come back tomorrow!',
-      )
+    if (!isAdmin) {
+      // Check if there was a deleted reflection today (user already used their 1 attempt)
+      const deletedAttempt = await prisma.deletedReflectionAttempt.findUnique({
+        where: {
+          userId_date: {
+            userId: context.user.id,
+            date: today,
+          },
+        },
+      })
+
+      // Reflections only allow 1 attempt per day to protect costs
+      if (deletedAttempt) {
+        throw new Error(
+          'You have already used your reflection for today. Come back tomorrow!',
+        )
+      }
     }
 
     // Create new reflection session
@@ -258,7 +267,7 @@ export const startReflectionFn = createServerFn({ method: 'POST' })
 
 export const endReflectionFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator(sessionIdSchema)
+  .inputValidator(endSessionSchema)
   .handler(async ({ data, context }) => {
     const session = await prisma.reflectionSession.findFirst({
       where: {
@@ -275,12 +284,16 @@ export const endReflectionFn = createServerFn({ method: 'POST' })
       throw new Error('Reflection is already completed')
     }
 
-    // Update session to processing status
+    // Update session to processing status with duration atomically
     const updated = await prisma.reflectionSession.update({
       where: { id: session.id },
       data: {
         status: 'processing',
         completedAt: new Date(),
+        // Save duration atomically - use provided value or keep existing
+        ...(data.totalUserSpeakingTime !== undefined && {
+          totalUserSpeakingTime: data.totalUserSpeakingTime,
+        }),
       },
     })
 

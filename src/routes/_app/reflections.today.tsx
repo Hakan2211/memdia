@@ -21,7 +21,6 @@ import {
   getTodayReflectionFn,
   startReflectionFn,
   endReflectionFn,
-  updateReflectionTimeFn,
   cancelShortReflectionFn,
 } from '../../server/reflection.fn'
 import { getUserPreferencesFn } from '../../server/session.fn'
@@ -245,9 +244,12 @@ function TodayReflection() {
     },
   })
 
-  // VAD hook for barge-in
+  // VAD hook for barge-in and fallback speech end detection
+  // Tuned to reduce false positives that cause unwanted barge-ins
   const [vadState, vadActions] = useVAD({
     enabled: USE_VAD && sessionState === 'recording',
+    positiveSpeechThreshold: 0.8, // Higher threshold to reduce false positives (default: 0.7)
+    redemptionMs: 800, // Longer silence before ending speech (default: 600ms)
     onSpeechStart: () => {
       setCurrentSpeaker('user')
       audioChunksRef.current = []
@@ -255,7 +257,36 @@ function TodayReflection() {
         triggerBargeInRef.current?.()
       }
     },
-    onSpeechEnd: () => {},
+    onSpeechEnd: (_audio, duration) => {
+      console.log(`[VAD] Speech ended (${duration.toFixed(2)}s)`)
+
+      // Fallback: If we have accumulated transcript and Deepgram hasn't
+      // triggered onSpeechEnd yet (UtteranceEnd not received), send it now
+      if (
+        pendingTranscriptRef.current.trim() &&
+        session &&
+        !isProcessingRef.current
+      ) {
+        console.log(
+          '[VAD] Fallback trigger - sending transcript that Deepgram missed',
+        )
+        isProcessingRef.current = true
+        const transcript = pendingTranscriptRef.current.trim()
+        pendingTranscriptRef.current = ''
+        setLiveTranscript('')
+
+        const audioBase64 = getAccumulatedAudioBase64()
+        handleUserSpeechEnd(transcript, audioBase64)
+        audioChunksRef.current = []
+
+        setTimeout(() => {
+          isProcessingRef.current = false
+        }, 100)
+      }
+
+      // Clear the speaking indicator if still showing user
+      setCurrentSpeaker(null)
+    },
   })
 
   // Streaming audio player
@@ -508,12 +539,14 @@ function TodayReflection() {
   // End session mutation
   const endMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      if (elapsedTime > 0) {
-        await updateReflectionTimeFn({
-          data: { sessionId, userSpeakingTime: elapsedTime },
-        })
-      }
-      return endReflectionFn({ data: { sessionId } })
+      // Save duration atomically with status change to prevent data loss
+      return endReflectionFn({
+        data: {
+          sessionId,
+          totalUserSpeakingTime:
+            elapsedTimeRef.current > 0 ? elapsedTimeRef.current : elapsedTime,
+        },
+      })
     },
     onSuccess: (updatedSession) => {
       recorderActions.stopRecording()
@@ -648,6 +681,7 @@ function TodayReflection() {
   }, [])
 
   const forceEndSession = useCallback(() => {
+    // Stop all audio/recording immediately
     streamingAudioActions.stop()
     audioActions.stop()
     conversationStreamActions.cancel()
@@ -659,16 +693,13 @@ function TodayReflection() {
     setIsEndingSession(true)
 
     if (session) {
+      // Pass the current elapsed time to ensure it's saved atomically
+      // The navigation will happen in endMutation.onSuccess
       endMutation.mutate(session.id)
-      setTimeout(() => {
-        const dateStr = format(new Date(), 'yyyy-MM-dd')
-        navigate({ to: '/reflections/$date', params: { date: dateStr } })
-      }, 3000)
     }
   }, [
     session,
     endMutation,
-    navigate,
     streamingAudioActions,
     audioActions,
     conversationStreamActions,

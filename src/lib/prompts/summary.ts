@@ -3,6 +3,16 @@
  * Prompts for generating conversation summaries
  */
 
+import { LANGUAGE_LABELS, type Language } from '../../types/voice-session'
+
+/**
+ * Get the English name of a language from its code
+ */
+export function getLanguageName(code: string): string {
+  const labels = LANGUAGE_LABELS[code as Language]
+  return labels?.name || 'English'
+}
+
 /**
  * System prompt for summary generation
  */
@@ -35,12 +45,20 @@ Make it feel like a personal journal entry that the person would appreciate read
 
 /**
  * Build the full messages array for summary generation
+ * @param transcript - The formatted transcript text
+ * @param language - Optional language code (e.g., 'de' for German). If provided, the summary will be written in that language.
  */
 export function buildSummaryMessages(
   transcript: string,
+  language?: string,
 ): Array<{ role: 'system' | 'user'; content: string }> {
+  // Add language instruction if a specific language is requested
+  const langInstruction = language
+    ? `\n\nIMPORTANT: Write the summary in ${getLanguageName(language)}.`
+    : ''
+
   return [
-    { role: 'system', content: SUMMARY_SYSTEM_PROMPT },
+    { role: 'system', content: SUMMARY_SYSTEM_PROMPT + langInstruction },
     { role: 'user', content: buildSummaryPrompt(transcript) },
   ]
 }

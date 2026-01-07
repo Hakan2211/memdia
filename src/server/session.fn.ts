@@ -185,26 +185,33 @@ export const startSessionFn = createServerFn({ method: 'POST' })
       }
     }
 
-    // Check if there was a deleted session today (user already used one attempt)
-    const deletedAttempt = await prisma.deletedSessionAttempt.findUnique({
-      where: {
-        userId_date: {
-          userId: context.user.id,
-          date: today,
+    // Skip attempt limits for admins (for testing/development)
+    const isAdmin = context.user.role === 'admin'
+
+    let recordingAttempt = 1
+
+    if (!isAdmin) {
+      // Check if there was a deleted session today (user already used one attempt)
+      const deletedAttempt = await prisma.deletedSessionAttempt.findUnique({
+        where: {
+          userId_date: {
+            userId: context.user.id,
+            date: today,
+          },
         },
-      },
-    })
+      })
 
-    // If there was a deleted attempt, this would be attempt 2
-    // If there are 2 deleted attempts tracked (via multiple records somehow), block
-    // Actually our schema only allows one record per day, so if it exists, this is attempt 2
-    const recordingAttempt = deletedAttempt ? 2 : 1
+      // If there was a deleted attempt, this would be attempt 2
+      // If there are 2 deleted attempts tracked (via multiple records somehow), block
+      // Actually our schema only allows one record per day, so if it exists, this is attempt 2
+      recordingAttempt = deletedAttempt ? 2 : 1
 
-    // Block if this would be attempt 3 (shouldn't happen with current schema, but defensive)
-    if (recordingAttempt > 2) {
-      throw new Error(
-        'You have used all recording attempts for today. Come back tomorrow!',
-      )
+      // Block if this would be attempt 3 (shouldn't happen with current schema, but defensive)
+      if (recordingAttempt > 2) {
+        throw new Error(
+          'You have used all recording attempts for today. Come back tomorrow!',
+        )
+      }
     }
 
     // Get user preferences for image style

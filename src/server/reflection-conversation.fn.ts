@@ -244,6 +244,12 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       throw new Error('Reflection not found or not in processing state')
     }
 
+    // Get user preferences for language
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId: context.user.id },
+    })
+    const userLanguage = preferences?.language || 'en'
+
     // Check if there are any user turns
     const userTurns = session.turns.filter((t) => t.speaker === 'user')
 
@@ -277,10 +283,10 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       })),
     )
 
-    // Generate summary
+    // Generate summary in user's preferred language
     let summaryText: string | null = null
     try {
-      const summaryMessages = buildSummaryMessages(transcript)
+      const summaryMessages = buildSummaryMessages(transcript, userLanguage)
       summaryText = await chatCompletion(summaryMessages as ChatMessage[], {
         maxTokens: 1000,
       })

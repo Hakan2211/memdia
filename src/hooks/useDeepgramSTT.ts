@@ -250,7 +250,7 @@ export function useDeepgramSTT(
         interim_results: 'true',
         utterance_end_ms: '1500',
         vad_events: 'true',
-        endpointing: '300',
+        endpointing: '400', // Increased from 300ms to reduce premature utterance endings
         // Audio format - we'll send raw PCM
         encoding: 'linear16',
         sample_rate: '16000',

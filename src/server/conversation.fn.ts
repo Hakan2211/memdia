@@ -472,10 +472,10 @@ export const processSessionFn = createServerFn({ method: 'POST' })
       })),
     )
 
-    // Generate summary
+    // Generate summary in user's preferred language
     let summaryText: string | null = null
     try {
-      const summaryMessages = buildSummaryMessages(transcript)
+      const summaryMessages = buildSummaryMessages(transcript, userLanguage)
       summaryText = await chatCompletion(summaryMessages as ChatMessage[], {
         maxTokens: 1000,
       })
