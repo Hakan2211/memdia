@@ -51,7 +51,7 @@ export function PulsingCircle({
           <div
             className={cn(
               'absolute inset-0 rounded-full animate-ping opacity-20',
-              isUserSpeaking && 'bg-teal-500',
+              isUserSpeaking && 'bg-[#7e9ec9]',
               isAISpeaking && 'bg-slate-500',
             )}
             style={{ animationDuration: '1.5s' }}
@@ -59,7 +59,7 @@ export function PulsingCircle({
           <div
             className={cn(
               'absolute inset-2 rounded-full animate-ping opacity-30',
-              isUserSpeaking && 'bg-teal-500',
+              isUserSpeaking && 'bg-[#7e9ec9]',
               isAISpeaking && 'bg-slate-500',
             )}
             style={{ animationDuration: '1.5s', animationDelay: '0.2s' }}
@@ -72,7 +72,7 @@ export function PulsingCircle({
         className={cn(
           'absolute inset-4 rounded-full transition-all duration-500',
           isActive && !speaker && 'animate-pulse bg-slate-200',
-          isActive && isUserSpeaking && 'bg-teal-100',
+          isActive && isUserSpeaking && 'bg-[#7e9ec9]/20',
           isActive && isAISpeaking && 'bg-slate-100',
           !isActive && 'bg-slate-100',
         )}
@@ -87,7 +87,7 @@ export function PulsingCircle({
           isActive && !speaker && 'bg-slate-300',
           isActive &&
             isUserSpeaking &&
-            'bg-teal-500 shadow-lg shadow-teal-500/30',
+            'bg-[#7e9ec9] shadow-lg shadow-[#7e9ec9]/30',
           isActive &&
             isAISpeaking &&
             'bg-slate-600 shadow-lg shadow-slate-500/30',
@@ -99,7 +99,7 @@ export function PulsingCircle({
           <div
             className={cn(
               'absolute inset-0 rounded-full',
-              isUserSpeaking && 'bg-gradient-to-br from-teal-400 to-teal-600',
+              isUserSpeaking && 'bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6]',
               isAISpeaking && 'bg-gradient-to-br from-slate-500 to-slate-700',
             )}
           />

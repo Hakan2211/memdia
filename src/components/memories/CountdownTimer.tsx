@@ -51,7 +51,7 @@ export function CountdownTimer({
           r={radius}
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.5"
           className="text-slate-200"
         />
         {/* Progress circle */}
@@ -61,13 +61,13 @@ export function CountdownTimer({
           r={radius}
           fill="none"
           stroke="currentColor"
-          strokeWidth="3"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           className={cn(
             'transition-all duration-1000',
-            isLow ? 'text-red-500' : 'text-slate-600',
+            isLow ? 'text-red-500' : 'text-[#7e9ec9]',
           )}
         />
       </svg>
@@ -75,7 +75,7 @@ export function CountdownTimer({
       {/* Time display */}
       <div
         className={cn(
-          'font-mono font-medium tabular-nums',
+          'font-sans font-light tracking-widest text-[#7e9ec9]',
           sizeClasses[size],
           isLow && 'text-red-500 animate-pulse',
         )}

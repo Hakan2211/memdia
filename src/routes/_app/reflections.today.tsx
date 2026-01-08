@@ -23,6 +23,7 @@ import { format } from 'date-fns'
 import { Play, AlertCircle, Volume2, MessageCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '../../components/ui/button'
+import { MagicButton } from '../../components/ui/magic-button'
 import {
   getTodayReflectionFn,
   startReflectionFn,
@@ -478,6 +479,7 @@ function TodayReflection() {
       }
     },
     onError: () => {
+      // Legacy player error - silenced since streaming player is primary
       if (audioQueueRef.current.length > 0) {
         playNextInQueueRef.current?.()
         return
@@ -1001,7 +1003,7 @@ function TodayReflection() {
   }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center p-8">
+    <div className="flex h-full flex-col p-8">
       {/* Auto-ending overlay */}
       {isAutoEnding && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -1013,25 +1015,27 @@ function TodayReflection() {
         </div>
       )}
 
-      {/* Date Header */}
-      <div className="text-center mb-8">
-        <p className="text-sm text-muted-foreground uppercase tracking-wider">
+      {/* Date Header - positioned at top */}
+      <div className="flex flex-col items-center justify-center pt-4 pb-8 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <h1 className="text-3xl md:text-4xl font-extralight tracking-tight text-foreground/90">
           {format(new Date(), 'EEEE')}
-        </p>
-        <h1 className="text-2xl font-light">
-          {format(new Date(), 'MMMM d, yyyy')}
         </h1>
+        <p className="text-sm text-muted-foreground font-light tracking-wide uppercase">
+          {format(new Date(), 'MMMM d, yyyy')}
+        </p>
       </div>
 
-      {/* Timer */}
-      {sessionState === 'recording' && (
-        <div className="mb-6">
-          <CountdownTimer
-            remainingSeconds={remainingTime}
-            maxSeconds={maxDuration}
-          />
-        </div>
-      )}
+      {/* Main content area - centered vertically */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        {/* Timer */}
+        {sessionState === 'recording' && (
+          <div className="mb-6">
+            <CountdownTimer
+              remainingSeconds={remainingTime}
+              maxSeconds={maxDuration}
+            />
+          </div>
+        )}
 
       {/* Main Circle */}
       <div className="relative mb-8">
@@ -1089,16 +1093,12 @@ function TodayReflection() {
 
       {/* Idle state controls */}
       {sessionState === 'idle' && (
-        <div className="text-center">
-          <Button
-            size="lg"
-            onClick={handleStartSession}
-            className="rounded-full px-8 py-6 text-lg bg-violet-600 hover:bg-violet-700"
-          >
-            <Play className="mr-2 h-5 w-5" />
+        <div className="text-center animate-in fade-in zoom-in-95 duration-700 delay-150">
+          <MagicButton onClick={handleStartSession}>
+            <Play className="mr-3 h-5 w-5 fill-current" />
             Start Reflection
-          </Button>
-          <p className="mt-4 text-sm text-muted-foreground">
+          </MagicButton>
+          <p className="mt-6 text-sm text-muted-foreground font-light tracking-wide">
             10 minutes to process your thoughts
           </p>
           {sttState.error && (
@@ -1231,6 +1231,7 @@ function TodayReflection() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }

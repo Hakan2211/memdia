@@ -13,8 +13,18 @@ import {
   Sparkles,
   ChevronRight,
   Check,
+  Clock,
+  Languages,
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
+import { Label } from '../../components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../components/ui/select'
 import {
   completeOnboardingFn,
   getUserPreferencesFn,
@@ -33,6 +43,47 @@ import {
   isMultilingualLanguage,
   requiresNova2Model,
 } from '../../types/voice-session'
+import 'flag-icons/css/flag-icons.min.css'
+
+// Map language codes to flag-icons country codes
+const LANGUAGE_TO_FLAG: Record<string, string> = {
+  // Multilingual
+  en: 'us',
+  es: 'es',
+  fr: 'fr',
+  de: 'de',
+  it: 'it',
+  pt: 'pt',
+  nl: 'nl',
+  ja: 'jp',
+  ru: 'ru',
+  hi: 'in',
+  // Monolingual
+  bg: 'bg',
+  ca: 'es-ct', // Catalan - use Catalonia flag
+  cs: 'cz',
+  da: 'dk',
+  et: 'ee',
+  fi: 'fi',
+  'nl-BE': 'be',
+  el: 'gr',
+  hu: 'hu',
+  id: 'id',
+  ko: 'kr',
+  lv: 'lv',
+  lt: 'lt',
+  ms: 'my',
+  no: 'no',
+  pl: 'pl',
+  ro: 'ro',
+  sk: 'sk',
+  sv: 'se',
+  tr: 'tr',
+  uk: 'ua',
+  vi: 'vn',
+  zh: 'cn',
+  'zh-TW': 'tw',
+}
 
 export const Route = createFileRoute('/_app/onboarding')({
   component: OnboardingPage,
@@ -84,27 +135,27 @@ const IMAGE_STYLES: {
   {
     value: 'realistic',
     label: 'Realistic',
-    description: 'Photorealistic, cinematic, hyperreal',
+    description: 'Photorealistic, cinematic',
   },
   {
     value: 'dreamlike',
     label: 'Dreamlike',
-    description: 'Ethereal, soft focus, pastel colors',
+    description: 'Ethereal, soft focus',
   },
   {
     value: 'watercolor',
     label: 'Watercolor',
-    description: 'Delicate washes, flowing shapes',
+    description: 'Delicate washes, flowing',
   },
   {
     value: 'geometric',
     label: 'Geometric',
-    description: 'Clean lines, modern minimalist',
+    description: 'Clean lines, minimalist',
   },
   {
     value: 'sketch',
     label: 'Sketch',
-    description: 'Elegant pencil, fine line art',
+    description: 'Elegant pencil, line art',
   },
 ]
 
@@ -116,12 +167,12 @@ const AI_PERSONALITIES: {
   {
     value: 'empathetic',
     label: 'Empathetic',
-    description: 'Warm, supportive, and understanding',
+    description: 'Warm, supportive, understanding',
   },
   {
     value: 'curious',
     label: 'Curious',
-    description: 'Inquisitive, exploratory, thought-provoking',
+    description: 'Inquisitive, thought-provoking',
   },
 ]
 
@@ -251,365 +302,415 @@ function OnboardingPage() {
     'Asia/Shanghai',
     'Asia/Kolkata',
     'Australia/Sydney',
+    'UTC',
   ]
 
+  const steps = [
+    { id: 'welcome', label: 'Welcome', icon: Sparkles },
+    { id: 'language', label: 'Language', icon: Languages },
+    { id: 'microphone', label: 'Mic', icon: Mic },
+    { id: 'timezone', label: 'Timezone', icon: Clock },
+    { id: 'preferences', label: 'Preferences', icon: Palette },
+    { id: 'complete', label: 'Ready', icon: Check },
+  ] as const
+
+  const currentStepIndex = steps.findIndex((s) => s.id === step)
+  const stepCount = steps.length
+  const halfStepPercent = 100 / (stepCount * 2) // Center of first step in %
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
-      <div className="w-full max-w-md">
-        {/* Progress indicator */}
-        <div className="flex justify-center gap-2 mb-8">
-          {(
-            [
-              'welcome',
-              'language',
-              'microphone',
-              'timezone',
-              'preferences',
-              'complete',
-            ] as const
-          ).map((s, i) => (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/30">
+      <div className="w-full max-w-3xl">
+        {/* Progress Stepper */}
+        <div className="mb-8 relative">
+          {/* Line Container */}
+          <div
+            className="absolute top-4 h-1 -translate-y-1/2 z-0"
+            style={{
+              left: `${halfStepPercent}%`,
+              right: `${halfStepPercent}%`,
+            }}
+          >
+            {/* Background Track */}
+            <div className="absolute inset-0 bg-muted rounded-full" />
+            {/* Progress Bar */}
             <div
-              key={s}
-              className={`h-2 w-2 rounded-full transition-colors ${
-                step === s
-                  ? 'bg-primary'
-                  : i <
-                      [
-                        'welcome',
-                        'language',
-                        'microphone',
-                        'timezone',
-                        'preferences',
-                        'complete',
-                      ].indexOf(step)
-                    ? 'bg-primary/50'
-                    : 'bg-muted'
-              }`}
+              className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-1000 ease-in-out"
+              style={{
+                width: `${(currentStepIndex / (stepCount - 1)) * 100}%`,
+              }}
             />
-          ))}
+          </div>
+
+          {/* Steps Grid */}
+          <div className="grid grid-cols-6 relative z-10">
+            {steps.map((s, i) => {
+              const Icon = s.icon
+              const isActive = i === currentStepIndex
+              const isCompleted = i < currentStepIndex
+              return (
+                <div
+                  key={s.id}
+                  className={`flex flex-col items-center gap-2 ${
+                    isActive || isCompleted
+                      ? 'text-primary'
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  <div
+                    className={`h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all duration-500 bg-background ${
+                      isActive
+                        ? 'border-primary scale-110 shadow-sm delay-500'
+                        : isCompleted
+                          ? 'bg-primary border-primary text-primary-foreground'
+                          : 'border-muted'
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <Icon className="h-4 w-4" />
+                    )}
+                  </div>
+                  <span className="text-xs font-medium hidden sm:block">
+                    {s.label}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
-        {/* Welcome Step */}
-        {step === 'welcome' && (
-          <div className="text-center">
-            <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Sparkles className="h-10 w-10 text-primary" />
+        {/* Content Card */}
+        <div className="rounded-xl border bg-card p-6 md:p-10 shadow-lg">
+          {/* Welcome Step */}
+          {step === 'welcome' && (
+            <div className="text-center max-w-md mx-auto py-8">
+              <div className="h-24 w-24 mx-auto mb-8 rounded-full bg-primary/10 flex items-center justify-center animate-in zoom-in-50 duration-500">
+                <Sparkles className="h-12 w-12 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight mb-4">
+                Welcome to Memdia
+              </h1>
+              <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
+                Your daily voice companion for reflection and mindfulness.
+                Let's customize your experience in just a few steps.
+              </p>
+              <Button onClick={handleNext} size="lg" className="w-full text-base">
+                Get Started
+                <ChevronRight className="ml-2 h-5 w-5" />
+              </Button>
             </div>
-            <h1 className="text-2xl font-semibold mb-2">Welcome to Memdia</h1>
-            <p className="text-muted-foreground mb-8">
-              Your daily 3-minute voice companion for reflection and
-              mindfulness. Let's get you set up.
-            </p>
-            <Button onClick={handleNext} size="lg" className="w-full">
-              Get Started
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
+          )}
 
-        {/* Language Step */}
-        {step === 'language' && (
-          <div className="text-center">
-            <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Globe className="h-10 w-10 text-primary" />
-            </div>
-            <h1 className="text-2xl font-semibold mb-2">
-              Choose Your Language
-            </h1>
-            <p className="text-muted-foreground mb-6">
-              Select your preferred language for conversations.
-            </p>
-
-            {/* Scrollable language container */}
-            <div className="max-h-[400px] overflow-y-auto pr-1 mb-6">
-              {/* Multilingual Section */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm font-medium text-left">
-                    Multilingual
-                  </span>
-                  <span className="text-xs text-muted-foreground bg-primary/10 px-2 py-0.5 rounded-full">
-                    Auto-detect
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground text-left mb-3">
-                  Supports switching between languages mid-conversation
+          {/* Language Step */}
+          {step === 'language' && (
+            <div className="space-y-6">
+              <div className="text-center mb-8">
+                <h1 className="text-2xl font-semibold mb-2">
+                  Choose Your Language
+                </h1>
+                <p className="text-muted-foreground">
+                  Select your preferred language for voice conversations.
                 </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {MULTILINGUAL_LANGUAGES.map((lang) => {
-                    const { name, native } = MULTILINGUAL_LANGUAGE_LABELS[lang]
-                    return (
-                      <button
-                        key={lang}
-                        onClick={() => setSelectedLanguage(lang)}
-                        className={`p-3 rounded-lg border text-left transition-colors ${
-                          selectedLanguage === lang
-                            ? 'border-primary bg-primary/5'
-                            : 'border-muted hover:border-muted-foreground/30'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">{native}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {name}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-muted my-4" />
-
-              {/* Monolingual Section */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm font-medium text-left">
-                    Single Language
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground text-left mb-3">
-                  Optimized for single-language conversations
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {MONOLINGUAL_LANGUAGES.map((lang) => {
-                    const { name, native } = MONOLINGUAL_LANGUAGE_LABELS[lang]
-                    const isNova2 = requiresNova2Model(lang)
-                    return (
-                      <button
-                        key={lang}
-                        onClick={() => setSelectedLanguage(lang)}
-                        className={`p-3 rounded-lg border text-left transition-colors ${
-                          selectedLanguage === lang
-                            ? 'border-primary bg-primary/5'
-                            : 'border-muted hover:border-muted-foreground/30'
-                        }`}
-                      >
-                        <div className="font-medium text-sm">{native}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {name}
-                        </div>
-                        {isNova2 && (
-                          <div className="text-xs text-amber-600 mt-1">
-                            Nova-2 model
+              {/* Scrollable language container */}
+              <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar -mr-2">
+                {/* Multilingual Section */}
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-3 px-1">
+                    <span className="text-sm font-medium">Multilingual</span>
+                    <span className="text-xs text-muted-foreground bg-primary/10 px-2 py-0.5 rounded-full">
+                      Auto-detect
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {MULTILINGUAL_LANGUAGES.map((lang) => {
+                      const { name, native } = MULTILINGUAL_LANGUAGE_LABELS[lang]
+                      const flagCode = LANGUAGE_TO_FLAG[lang]
+                      return (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => setSelectedLanguage(lang)}
+                          className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                            selectedLanguage === lang
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                              : 'border-muted hover:border-muted-foreground/30 hover:bg-accent/50'
+                          }`}
+                        >
+                          <span
+                            className={`fi fi-${flagCode} text-2xl rounded-sm shadow-sm shrink-0`}
+                          />
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm truncate">
+                              {native}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {name}
+                            </div>
                           </div>
-                        )}
-                      </button>
-                    )
-                  })}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                <div className="border-t my-6" />
+
+                {/* Monolingual Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3 px-1">
+                    <span className="text-sm font-medium">Single Language</span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {MONOLINGUAL_LANGUAGES.map((lang) => {
+                      const { name, native } = MONOLINGUAL_LANGUAGE_LABELS[lang]
+                      const flagCode = LANGUAGE_TO_FLAG[lang]
+                      const isNova2 = requiresNova2Model(lang)
+                      return (
+                        <button
+                          key={lang}
+                          type="button"
+                          onClick={() => setSelectedLanguage(lang)}
+                          className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                            selectedLanguage === lang
+                              ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                              : 'border-muted hover:border-muted-foreground/30 hover:bg-accent/50'
+                          }`}
+                        >
+                          <span
+                            className={`fi fi-${flagCode} text-2xl rounded-sm shadow-sm shrink-0`}
+                          />
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm truncate">
+                              {native}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {name}
+                              {isNova2 && (
+                                <span className="text-amber-600 ml-1 text-[10px]">
+                                  (Nova-2)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Selected language indicator */}
-            {selectedLanguage && (
-              <div className="text-sm text-muted-foreground mb-4">
-                Selected:{' '}
-                <span className="font-medium text-foreground">
-                  {isMultilingualLanguage(selectedLanguage)
-                    ? MULTILINGUAL_LANGUAGE_LABELS[selectedLanguage].native
-                    : MONOLINGUAL_LANGUAGE_LABELS[selectedLanguage].native}
-                </span>
-                {isMultilingualLanguage(selectedLanguage) && (
-                  <span className="text-xs ml-1">(multilingual)</span>
+              <div className="pt-6 border-t flex justify-end">
+                <Button
+                  onClick={handleNext}
+                  size="lg"
+                  className="w-full md:w-auto min-w-[150px]"
+                  disabled={updatePrefsMutation.isPending}
+                >
+                  {updatePrefsMutation.isPending ? 'Saving...' : 'Continue'}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Microphone Step */}
+          {step === 'microphone' && (
+            <div className="text-center max-w-md mx-auto py-8">
+              <div
+                className={`h-24 w-24 mx-auto mb-8 rounded-full flex items-center justify-center transition-all duration-500 ${
+                  hasMicPermission
+                    ? 'bg-emerald-100 text-emerald-600 scale-110'
+                    : 'bg-primary/10 text-primary'
+                }`}
+              >
+                {hasMicPermission ? (
+                  <Check className="h-12 w-12" />
+                ) : (
+                  <Mic className="h-12 w-12" />
                 )}
-                {requiresNova2Model(selectedLanguage) && (
-                  <div className="text-xs text-amber-600 mt-1">
-                    Uses Nova-2 model. Nova-3 support coming soon.
+              </div>
+              <h1 className="text-2xl font-semibold mb-4">Enable Microphone</h1>
+              <p className="text-muted-foreground mb-8 text-lg">
+                Memdia needs microphone access to record your daily reflections.
+                Your audio is processed securely.
+              </p>
+
+              <div className="space-y-4">
+                {!hasMicPermission ? (
+                  <Button
+                    onClick={requestMicPermission}
+                    size="lg"
+                    className="w-full py-6 text-lg"
+                  >
+                    <Mic className="mr-2 h-5 w-5" />
+                    Allow Microphone Access
+                  </Button>
+                ) : (
+                  <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-4 text-emerald-700 flex items-center justify-center gap-2">
+                    <Check className="h-5 w-5" />
+                    <span className="font-medium">
+                      Microphone access granted
+                    </span>
                   </div>
                 )}
+
+                <Button
+                  onClick={handleNext}
+                  variant={hasMicPermission ? 'default' : 'ghost'}
+                  size="lg"
+                  className={`w-full ${!hasMicPermission && 'text-muted-foreground hover:text-foreground'}`}
+                  disabled={!hasMicPermission}
+                >
+                  Continue
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
-            )}
-
-            <Button
-              onClick={handleNext}
-              size="lg"
-              className="w-full"
-              disabled={updatePrefsMutation.isPending}
-            >
-              {updatePrefsMutation.isPending ? 'Saving...' : 'Continue'}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Microphone Step */}
-        {step === 'microphone' && (
-          <div className="text-center">
-            <div
-              className={`h-20 w-20 mx-auto mb-6 rounded-full flex items-center justify-center ${
-                hasMicPermission
-                  ? 'bg-emerald-500/20'
-                  : 'bg-gradient-to-br from-primary/20 to-primary/5'
-              }`}
-            >
-              {hasMicPermission ? (
-                <Check className="h-10 w-10 text-emerald-500" />
-              ) : (
-                <Mic className="h-10 w-10 text-primary" />
-              )}
             </div>
-            <h1 className="text-2xl font-semibold mb-2">Enable Microphone</h1>
-            <p className="text-muted-foreground mb-8">
-              Memdia needs microphone access to record your daily reflections.
-              Your audio is processed securely and never shared.
-            </p>
-            {!hasMicPermission ? (
-              <Button
-                onClick={requestMicPermission}
-                size="lg"
-                className="w-full mb-4"
-              >
-                <Mic className="mr-2 h-4 w-4" />
-                Allow Microphone Access
-              </Button>
-            ) : (
-              <div className="text-emerald-600 mb-4 flex items-center justify-center gap-2">
-                <Check className="h-4 w-4" />
-                Microphone access granted
-              </div>
-            )}
-            <Button
-              onClick={handleNext}
-              variant={hasMicPermission ? 'default' : 'outline'}
-              size="lg"
-              className="w-full"
-              disabled={!hasMicPermission}
-            >
-              Continue
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
+          )}
 
-        {/* Timezone Step */}
-        {step === 'timezone' && (
-          <div className="text-center">
-            <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-              <Globe className="h-10 w-10 text-primary" />
-            </div>
-            <h1 className="text-2xl font-semibold mb-2">Your Timezone</h1>
-            <p className="text-muted-foreground mb-6">
-              We'll use this to schedule your daily sessions and show the right
-              dates.
-            </p>
-            <select
-              value={selectedTimezone}
-              onChange={(e) => setSelectedTimezone(e.target.value)}
-              className="w-full p-3 border rounded-lg mb-6 text-sm"
-            >
-              {commonTimezones.map((tz) => (
-                <option key={tz} value={tz}>
-                  {tz.replace('_', ' ')}
-                </option>
-              ))}
-            </select>
-            <Button onClick={handleNext} size="lg" className="w-full">
-              Continue
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Preferences Step */}
-        {step === 'preferences' && (
-          <div>
-            <div className="text-center mb-6">
-              <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <Palette className="h-10 w-10 text-primary" />
+          {/* Timezone Step */}
+          {step === 'timezone' && (
+            <div className="max-w-md mx-auto py-8 text-center">
+              <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                <Clock className="h-10 w-10 text-primary" />
               </div>
-              <h1 className="text-2xl font-semibold mb-2">Personalize</h1>
-              <p className="text-muted-foreground">
-                Choose how you'd like your AI companion to interact with you.
+              <h1 className="text-2xl font-semibold mb-2">Your Timezone</h1>
+              <p className="text-muted-foreground mb-8">
+                We'll use this to schedule your daily sessions and display dates
+                correctly.
               </p>
-            </div>
 
-            {/* AI Personality */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-3">
-                AI Personality
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {AI_PERSONALITIES.map((p) => (
-                  <button
-                    key={p.value}
-                    onClick={() => setSelectedPersonality(p.value)}
-                    className={`p-4 rounded-lg border text-left transition-colors ${
-                      selectedPersonality === p.value
-                        ? 'border-primary bg-primary/5'
-                        : 'border-muted hover:border-muted-foreground/30'
-                    }`}
+              <div className="space-y-8 text-left">
+                <div className="space-y-2">
+                  <Label>Select Timezone</Label>
+                  <Select
+                    value={selectedTimezone}
+                    onValueChange={setSelectedTimezone}
                   >
-                    <div className="font-medium text-sm">{p.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {p.description}
-                    </div>
-                  </button>
-                ))}
+                    <SelectTrigger className="w-full h-11">
+                      <SelectValue placeholder="Select timezone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {commonTimezones.map((tz) => (
+                        <SelectItem key={tz} value={tz}>
+                          {tz.replace('_', ' ')}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button onClick={handleNext} size="lg" className="w-full">
+                  Continue
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </div>
+          )}
 
-            {/* Image Style */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-3">
-                Memory Image Style
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {IMAGE_STYLES.map((s) => (
-                  <button
-                    key={s.value}
-                    onClick={() => setSelectedImageStyle(s.value)}
-                    className={`p-4 rounded-lg border text-left transition-colors ${
-                      selectedImageStyle === s.value
-                        ? 'border-primary bg-primary/5'
-                        : 'border-muted hover:border-muted-foreground/30'
-                    }`}
-                  >
-                    <div className="font-medium text-sm">{s.label}</div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {s.description}
-                    </div>
-                  </button>
-                ))}
+          {/* Preferences Step */}
+          {step === 'preferences' && (
+            <div className="space-y-8">
+              <div className="text-center mb-6">
+                <h1 className="text-2xl font-semibold mb-2">Personalize</h1>
+                <p className="text-muted-foreground">
+                  Customize your AI companion's personality and visual style.
+                </p>
+              </div>
+
+              <div className="space-y-8">
+                {/* AI Personality */}
+                <div className="space-y-3">
+                  <Label className="text-base">AI Personality</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {AI_PERSONALITIES.map((p) => (
+                      <button
+                        key={p.value}
+                        onClick={() => setSelectedPersonality(p.value)}
+                        className={`p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ${
+                          selectedPersonality === p.value
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                            : 'border-muted hover:border-primary/30 hover:bg-accent/50'
+                        }`}
+                      >
+                        <div className="font-semibold mb-1">{p.label}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {p.description}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Image Style */}
+                <div className="space-y-3">
+                  <Label className="text-base">Memory Image Style</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {IMAGE_STYLES.map((s) => (
+                      <button
+                        key={s.value}
+                        onClick={() => setSelectedImageStyle(s.value)}
+                        className={`p-3 rounded-xl border-2 text-left transition-all hover:shadow-sm ${
+                          selectedImageStyle === s.value
+                            ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
+                            : 'border-muted hover:border-primary/30 hover:bg-accent/50'
+                        }`}
+                      >
+                        <div className="font-medium text-sm mb-1">{s.label}</div>
+                        <div className="text-xs text-muted-foreground leading-tight">
+                          {s.description}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t flex justify-end">
+                <Button
+                  onClick={handleNext}
+                  size="lg"
+                  className="w-full md:w-auto min-w-[150px]"
+                  disabled={updatePrefsMutation.isPending}
+                >
+                  {updatePrefsMutation.isPending ? 'Saving...' : 'Finish Setup'}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
             </div>
+          )}
 
-            <Button
-              onClick={handleNext}
-              size="lg"
-              className="w-full"
-              disabled={updatePrefsMutation.isPending}
-            >
-              {updatePrefsMutation.isPending ? 'Saving...' : 'Continue'}
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Complete Step */}
-        {step === 'complete' && (
-          <div className="text-center">
-            <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <Check className="h-10 w-10 text-emerald-500" />
+          {/* Complete Step */}
+          {step === 'complete' && (
+            <div className="text-center max-w-md mx-auto py-8">
+              <div className="h-24 w-24 mx-auto mb-8 rounded-full bg-emerald-100 flex items-center justify-center animate-in zoom-in-50 duration-500">
+                <Check className="h-12 w-12 text-emerald-600" />
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight mb-4">
+                You're All Set!
+              </h1>
+              <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
+                Your 7-day free trial starts now. Take 3 minutes each day to
+                reflect, and we'll turn your thoughts into beautiful memories.
+              </p>
+              <Button
+                onClick={handleNext}
+                size="lg"
+                className="w-full py-6 text-lg shadow-lg hover:shadow-xl transition-all"
+                disabled={completeMutation.isPending}
+              >
+                {completeMutation.isPending
+                  ? 'Starting...'
+                  : 'Start My First Session'}
+                <Sparkles className="ml-2 h-5 w-5" />
+              </Button>
             </div>
-            <h1 className="text-2xl font-semibold mb-2">You're All Set!</h1>
-            <p className="text-muted-foreground mb-8">
-              Your 7-day free trial starts now. Take 3 minutes each day to
-              reflect, and we'll turn your thoughts into beautiful memories.
-            </p>
-            <Button
-              onClick={handleNext}
-              size="lg"
-              className="w-full"
-              disabled={completeMutation.isPending}
-            >
-              {completeMutation.isPending
-                ? 'Starting...'
-                : 'Start My First Session'}
-              <Sparkles className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   )
