@@ -63,7 +63,13 @@ export const ModelName = {
   ReflectionSession: 'ReflectionSession',
   ReflectionTurn: 'ReflectionTurn',
   DeletedReflectionAttempt: 'DeletedReflectionAttempt',
-  DailyReflectionGreeting: 'DailyReflectionGreeting'
+  DailyReflectionGreeting: 'DailyReflectionGreeting',
+  ReflectionMood: 'ReflectionMood',
+  ReflectionTopic: 'ReflectionTopic',
+  ReflectionInsight: 'ReflectionInsight',
+  Todo: 'Todo',
+  Person: 'Person',
+  PersonMention: 'PersonMention'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -270,6 +276,82 @@ export const DailyReflectionGreetingScalarFieldEnum = {
 } as const
 
 export type DailyReflectionGreetingScalarFieldEnum = (typeof DailyReflectionGreetingScalarFieldEnum)[keyof typeof DailyReflectionGreetingScalarFieldEnum]
+
+
+export const ReflectionMoodScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  mood: 'mood',
+  confidence: 'confidence',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionMoodScalarFieldEnum = (typeof ReflectionMoodScalarFieldEnum)[keyof typeof ReflectionMoodScalarFieldEnum]
+
+
+export const ReflectionTopicScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  topic: 'topic',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionTopicScalarFieldEnum = (typeof ReflectionTopicScalarFieldEnum)[keyof typeof ReflectionTopicScalarFieldEnum]
+
+
+export const ReflectionInsightScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  text: 'text',
+  category: 'category',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionInsightScalarFieldEnum = (typeof ReflectionInsightScalarFieldEnum)[keyof typeof ReflectionInsightScalarFieldEnum]
+
+
+export const TodoScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  text: 'text',
+  dueDate: 'dueDate',
+  priority: 'priority',
+  context: 'context',
+  completed: 'completed',
+  completedAt: 'completedAt',
+  sourceSessionId: 'sourceSessionId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TodoScalarFieldEnum = (typeof TodoScalarFieldEnum)[keyof typeof TodoScalarFieldEnum]
+
+
+export const PersonScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  relationship: 'relationship',
+  mentionCount: 'mentionCount',
+  averageSentiment: 'averageSentiment',
+  lastMentioned: 'lastMentioned',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PersonScalarFieldEnum = (typeof PersonScalarFieldEnum)[keyof typeof PersonScalarFieldEnum]
+
+
+export const PersonMentionScalarFieldEnum = {
+  id: 'id',
+  personId: 'personId',
+  sessionId: 'sessionId',
+  sentiment: 'sentiment',
+  context: 'context',
+  createdAt: 'createdAt'
+} as const
+
+export type PersonMentionScalarFieldEnum = (typeof PersonMentionScalarFieldEnum)[keyof typeof PersonMentionScalarFieldEnum]
 
 
 export const SortOrder = {

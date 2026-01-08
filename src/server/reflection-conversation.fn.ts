@@ -21,6 +21,7 @@ import {
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
 import type { AIPersonality } from '../types/voice-session'
+import { extractInsightsFromSession } from './extraction.fn'
 
 // ==========================================
 // Schemas
@@ -302,6 +303,22 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
         summaryText,
       },
     })
+
+    // Extract insights from the completed session (async, non-blocking)
+    // This runs after the session is marked complete so the user gets a response quickly
+    extractInsightsFromSession(session.id, context.user.id)
+      .then((result) => {
+        if (result) {
+          console.log(
+            `[Process Reflection] Extracted insights: mood=${result.mood.primary}, ` +
+              `topics=${result.topics.length}, insights=${result.insights.length}, ` +
+              `todos=${result.todos.length}, people=${result.people.length}`,
+          )
+        }
+      })
+      .catch((error) => {
+        console.error('[Process Reflection] Failed to extract insights:', error)
+      })
 
     return {
       session: updatedSession,

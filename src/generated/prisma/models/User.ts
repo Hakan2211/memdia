@@ -243,6 +243,8 @@ export type UserWhereInput = {
   voiceSessions?: Prisma.VoiceSessionListRelationFilter
   preferences?: Prisma.XOR<Prisma.UserPreferencesNullableScalarRelationFilter, Prisma.UserPreferencesWhereInput> | null
   reflectionSessions?: Prisma.ReflectionSessionListRelationFilter
+  todos?: Prisma.TodoListRelationFilter
+  people?: Prisma.PersonListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -263,6 +265,8 @@ export type UserOrderByWithRelationInput = {
   voiceSessions?: Prisma.VoiceSessionOrderByRelationAggregateInput
   preferences?: Prisma.UserPreferencesOrderByWithRelationInput
   reflectionSessions?: Prisma.ReflectionSessionOrderByRelationAggregateInput
+  todos?: Prisma.TodoOrderByRelationAggregateInput
+  people?: Prisma.PersonOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -286,6 +290,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   voiceSessions?: Prisma.VoiceSessionListRelationFilter
   preferences?: Prisma.XOR<Prisma.UserPreferencesNullableScalarRelationFilter, Prisma.UserPreferencesWhereInput> | null
   reflectionSessions?: Prisma.ReflectionSessionListRelationFilter
+  todos?: Prisma.TodoListRelationFilter
+  people?: Prisma.PersonListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -342,6 +348,8 @@ export type UserCreateInput = {
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -362,6 +370,8 @@ export type UserUncheckedCreateInput = {
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -382,6 +392,8 @@ export type UserUpdateInput = {
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -402,6 +414,8 @@ export type UserUncheckedUpdateInput = {
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -589,6 +603,34 @@ export type UserUpdateOneRequiredWithoutReflectionSessionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutReflectionSessionsInput, Prisma.UserUpdateWithoutReflectionSessionsInput>, Prisma.UserUncheckedUpdateWithoutReflectionSessionsInput>
 }
 
+export type UserCreateNestedOneWithoutTodosInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTodosInput, Prisma.UserUncheckedCreateWithoutTodosInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTodosInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutTodosNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTodosInput, Prisma.UserUncheckedCreateWithoutTodosInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTodosInput
+  upsert?: Prisma.UserUpsertWithoutTodosInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTodosInput, Prisma.UserUpdateWithoutTodosInput>, Prisma.UserUncheckedUpdateWithoutTodosInput>
+}
+
+export type UserCreateNestedOneWithoutPeopleInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPeopleInput, Prisma.UserUncheckedCreateWithoutPeopleInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPeopleInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPeopleNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPeopleInput, Prisma.UserUncheckedCreateWithoutPeopleInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPeopleInput
+  upsert?: Prisma.UserUpsertWithoutPeopleInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPeopleInput, Prisma.UserUpdateWithoutPeopleInput>, Prisma.UserUncheckedUpdateWithoutPeopleInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   email: string
@@ -606,6 +648,8 @@ export type UserCreateWithoutSessionsInput = {
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -625,6 +669,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -660,6 +706,8 @@ export type UserUpdateWithoutSessionsInput = {
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -679,6 +727,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -698,6 +748,8 @@ export type UserCreateWithoutAccountsInput = {
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -717,6 +769,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -752,6 +806,8 @@ export type UserUpdateWithoutAccountsInput = {
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -771,6 +827,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutVoiceSessionsInput = {
@@ -790,6 +848,8 @@ export type UserCreateWithoutVoiceSessionsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutVoiceSessionsInput = {
@@ -809,6 +869,8 @@ export type UserUncheckedCreateWithoutVoiceSessionsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutVoiceSessionsInput = {
@@ -844,6 +906,8 @@ export type UserUpdateWithoutVoiceSessionsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVoiceSessionsInput = {
@@ -863,6 +927,8 @@ export type UserUncheckedUpdateWithoutVoiceSessionsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPreferencesInput = {
@@ -882,6 +948,8 @@ export type UserCreateWithoutPreferencesInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPreferencesInput = {
@@ -901,6 +969,8 @@ export type UserUncheckedCreateWithoutPreferencesInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPreferencesInput = {
@@ -936,6 +1006,8 @@ export type UserUpdateWithoutPreferencesInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPreferencesInput = {
@@ -955,6 +1027,8 @@ export type UserUncheckedUpdateWithoutPreferencesInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReflectionSessionsInput = {
@@ -974,6 +1048,8 @@ export type UserCreateWithoutReflectionSessionsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReflectionSessionsInput = {
@@ -993,6 +1069,8 @@ export type UserUncheckedCreateWithoutReflectionSessionsInput = {
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReflectionSessionsInput = {
@@ -1028,6 +1106,8 @@ export type UserUpdateWithoutReflectionSessionsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReflectionSessionsInput = {
@@ -1047,6 +1127,208 @@ export type UserUncheckedUpdateWithoutReflectionSessionsInput = {
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutTodosInput = {
+  id?: string
+  email: string
+  name?: string | null
+  image?: string | null
+  emailVerified?: boolean
+  role?: string
+  stripeCustomerId?: string | null
+  subscriptionStatus?: string | null
+  trialEndsAt?: Date | string | null
+  onboardingComplete?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
+  preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
+  reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutTodosInput = {
+  id?: string
+  email: string
+  name?: string | null
+  image?: string | null
+  emailVerified?: boolean
+  role?: string
+  stripeCustomerId?: string | null
+  subscriptionStatus?: string | null
+  trialEndsAt?: Date | string | null
+  onboardingComplete?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
+  preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
+  reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutTodosInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTodosInput, Prisma.UserUncheckedCreateWithoutTodosInput>
+}
+
+export type UserUpsertWithoutTodosInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTodosInput, Prisma.UserUncheckedUpdateWithoutTodosInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTodosInput, Prisma.UserUncheckedCreateWithoutTodosInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTodosInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTodosInput, Prisma.UserUncheckedUpdateWithoutTodosInput>
+}
+
+export type UserUpdateWithoutTodosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
+  preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
+  reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTodosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
+  preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
+  reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPeopleInput = {
+  id?: string
+  email: string
+  name?: string | null
+  image?: string | null
+  emailVerified?: boolean
+  role?: string
+  stripeCustomerId?: string | null
+  subscriptionStatus?: string | null
+  trialEndsAt?: Date | string | null
+  onboardingComplete?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
+  preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
+  reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPeopleInput = {
+  id?: string
+  email: string
+  name?: string | null
+  image?: string | null
+  emailVerified?: boolean
+  role?: string
+  stripeCustomerId?: string | null
+  subscriptionStatus?: string | null
+  trialEndsAt?: Date | string | null
+  onboardingComplete?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
+  preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
+  reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPeopleInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPeopleInput, Prisma.UserUncheckedCreateWithoutPeopleInput>
+}
+
+export type UserUpsertWithoutPeopleInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPeopleInput, Prisma.UserUncheckedUpdateWithoutPeopleInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPeopleInput, Prisma.UserUncheckedCreateWithoutPeopleInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPeopleInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPeopleInput, Prisma.UserUncheckedUpdateWithoutPeopleInput>
+}
+
+export type UserUpdateWithoutPeopleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
+  preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
+  reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPeopleInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  subscriptionStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  trialEndsAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
+  preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
+  reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1059,6 +1341,8 @@ export type UserCountOutputType = {
   sessions: number
   voiceSessions: number
   reflectionSessions: number
+  todos: number
+  people: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1066,6 +1350,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   voiceSessions?: boolean | UserCountOutputTypeCountVoiceSessionsArgs
   reflectionSessions?: boolean | UserCountOutputTypeCountReflectionSessionsArgs
+  todos?: boolean | UserCountOutputTypeCountTodosArgs
+  people?: boolean | UserCountOutputTypeCountPeopleArgs
 }
 
 /**
@@ -1106,6 +1392,20 @@ export type UserCountOutputTypeCountReflectionSessionsArgs<ExtArgs extends runti
   where?: Prisma.ReflectionSessionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTodosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TodoWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPeopleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PersonWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1125,6 +1425,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   voiceSessions?: boolean | Prisma.User$voiceSessionsArgs<ExtArgs>
   preferences?: boolean | Prisma.User$preferencesArgs<ExtArgs>
   reflectionSessions?: boolean | Prisma.User$reflectionSessionsArgs<ExtArgs>
+  todos?: boolean | Prisma.User$todosArgs<ExtArgs>
+  people?: boolean | Prisma.User$peopleArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1180,6 +1482,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   voiceSessions?: boolean | Prisma.User$voiceSessionsArgs<ExtArgs>
   preferences?: boolean | Prisma.User$preferencesArgs<ExtArgs>
   reflectionSessions?: boolean | Prisma.User$reflectionSessionsArgs<ExtArgs>
+  todos?: boolean | Prisma.User$todosArgs<ExtArgs>
+  people?: boolean | Prisma.User$peopleArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1193,6 +1497,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     voiceSessions: Prisma.$VoiceSessionPayload<ExtArgs>[]
     preferences: Prisma.$UserPreferencesPayload<ExtArgs> | null
     reflectionSessions: Prisma.$ReflectionSessionPayload<ExtArgs>[]
+    todos: Prisma.$TodoPayload<ExtArgs>[]
+    people: Prisma.$PersonPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1606,6 +1912,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   voiceSessions<T extends Prisma.User$voiceSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$voiceSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VoiceSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   preferences<T extends Prisma.User$preferencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$preferencesArgs<ExtArgs>>): Prisma.Prisma__UserPreferencesClient<runtime.Types.Result.GetResult<Prisma.$UserPreferencesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   reflectionSessions<T extends Prisma.User$reflectionSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reflectionSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReflectionSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  todos<T extends Prisma.User$todosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$todosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TodoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  people<T extends Prisma.User$peopleArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$peopleArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PersonPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2145,6 +2453,54 @@ export type User$reflectionSessionsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.ReflectionSessionScalarFieldEnum | Prisma.ReflectionSessionScalarFieldEnum[]
+}
+
+/**
+ * User.todos
+ */
+export type User$todosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Todo
+   */
+  select?: Prisma.TodoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Todo
+   */
+  omit?: Prisma.TodoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TodoInclude<ExtArgs> | null
+  where?: Prisma.TodoWhereInput
+  orderBy?: Prisma.TodoOrderByWithRelationInput | Prisma.TodoOrderByWithRelationInput[]
+  cursor?: Prisma.TodoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TodoScalarFieldEnum | Prisma.TodoScalarFieldEnum[]
+}
+
+/**
+ * User.people
+ */
+export type User$peopleArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Person
+   */
+  select?: Prisma.PersonSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Person
+   */
+  omit?: Prisma.PersonOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PersonInclude<ExtArgs> | null
+  where?: Prisma.PersonWhereInput
+  orderBy?: Prisma.PersonOrderByWithRelationInput | Prisma.PersonOrderByWithRelationInput[]
+  cursor?: Prisma.PersonWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PersonScalarFieldEnum | Prisma.PersonScalarFieldEnum[]
 }
 
 /**

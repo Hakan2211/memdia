@@ -3,7 +3,7 @@
  * View a specific day's reflection (transcript, summary - no image)
  */
 
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
 import { ArrowLeft, Trash2, Clock, MessageCircle } from 'lucide-react'
@@ -14,7 +14,11 @@ import {
   getReflectionByDateFn,
   deleteReflectionFn,
 } from '../../server/reflection.fn'
+import { getSessionInsightsFn } from '../../server/extraction.fn'
 import type { ReflectionTurn } from '../../types/voice-session'
+import { MoodBadge } from '../../components/insights/mood-badge'
+import { TopicList } from '../../components/insights/topic-pill'
+import type { Mood } from '../../types/insights'
 
 export const Route = createFileRoute('/_app/reflections/$date')({
   component: ReflectionByDate,
@@ -41,6 +45,16 @@ function ReflectionByDate() {
       if (data.status === 'processing') return 2000
       return false
     },
+  })
+
+  // Fetch insights for this session
+  const { data: insights } = useQuery({
+    queryKey: ['reflection', 'insights', session?.id],
+    queryFn: () =>
+      session?.id
+        ? getSessionInsightsFn({ data: { sessionId: session.id } })
+        : null,
+    enabled: !!session?.id && session?.status === 'completed',
   })
 
   // Delete mutation
@@ -145,7 +159,37 @@ function ReflectionByDate() {
           </span>
           <SessionStatusBadge status={session.status} />
         </div>
+
+        {/* Mood and Topics */}
+        {insights &&
+          (insights.mood ||
+            (insights.topics && insights.topics.length > 0)) && (
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+              {insights.mood && (
+                <MoodBadge mood={insights.mood.mood as Mood} size="md" />
+              )}
+              {insights.topics && insights.topics.length > 0 && (
+                <TopicList
+                  topics={insights.topics.map((t) => t.topic)}
+                  maxVisible={4}
+                  size="sm"
+                />
+              )}
+            </div>
+          )}
       </div>
+
+      {/* View Full Insights Link */}
+      {insights && session.status === 'completed' && (
+        <div className="mb-6 text-center">
+          <Link
+            to="/insights"
+            className="text-sm text-violet-600 hover:text-violet-700 hover:underline"
+          >
+            View full insights
+          </Link>
+        </div>
+      )}
 
       {/* Summary - with skeleton while processing */}
       <div className="mb-8">

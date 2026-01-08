@@ -56,7 +56,7 @@ function SignupPage() {
 
         // Force full page reload to pick up new session cookie
         await router.invalidate()
-        window.location.href = '/dashboard'
+        window.location.href = '/memories'
       } catch (err) {
         setError('An unexpected error occurred')
         setLoading(false)

@@ -4,13 +4,13 @@ import { getSessionFn } from '../server/auth.fn'
 /**
  * Auth Layout
  * Centered layout for authentication pages (login, signup)
- * Redirects to dashboard if already authenticated
+ * Redirects to memories if already authenticated
  */
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
     const session = await getSessionFn()
     if (session?.user) {
-      throw redirect({ to: '/dashboard' })
+      throw redirect({ to: '/memories' })
     }
   },
   component: AuthLayout,

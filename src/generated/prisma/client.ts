@@ -104,3 +104,33 @@ export type DeletedReflectionAttempt = Prisma.DeletedReflectionAttemptModel
  * 
  */
 export type DailyReflectionGreeting = Prisma.DailyReflectionGreetingModel
+/**
+ * Model ReflectionMood
+ * 
+ */
+export type ReflectionMood = Prisma.ReflectionMoodModel
+/**
+ * Model ReflectionTopic
+ * 
+ */
+export type ReflectionTopic = Prisma.ReflectionTopicModel
+/**
+ * Model ReflectionInsight
+ * 
+ */
+export type ReflectionInsight = Prisma.ReflectionInsightModel
+/**
+ * Model Todo
+ * 
+ */
+export type Todo = Prisma.TodoModel
+/**
+ * Model Person
+ * 
+ */
+export type Person = Prisma.PersonModel
+/**
+ * Model PersonMention
+ * 
+ */
+export type PersonMention = Prisma.PersonMentionModel

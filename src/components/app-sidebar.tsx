@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from '@tanstack/react-router'
 import {
-  LayoutDashboard,
+  Lightbulb,
   MessageCircle,
   Mic,
   Shield,
@@ -126,16 +126,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/dashboard')}
-                  tooltip="Dashboard"
+                  isActive={isActive('/insights')}
+                  tooltip="Insights"
                   size="lg"
                   className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
                   onClick={handleNavClick}
                 >
-                  <Link to="/dashboard">
-                    <LayoutDashboard className="h-5! w-5!" />
+                  <Link to="/insights">
+                    <Lightbulb className="h-5! w-5!" />
                     <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
-                      Dashboard
+                      Insights
                     </span>
                   </Link>
                 </SidebarMenuButton>

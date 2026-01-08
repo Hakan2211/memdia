@@ -40,6 +40,10 @@ model User {
   // Reflection Sessions
   reflectionSessions ReflectionSession[]
 
+  // Insights (Phase 2)
+  todos  Todo[]
+  people Person[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -250,6 +254,12 @@ model ReflectionSession {
   // Transcript turns
   turns ReflectionTurn[]
 
+  // Extracted insights (Phase 2)
+  mood           ReflectionMood?
+  topics         ReflectionTopic[]
+  insights       ReflectionInsight[]
+  personMentions PersonMention[]
+
   // Ensure one reflection session per user per day
   @@unique([userId, date])
   @@map("reflection_session")
@@ -309,4 +319,131 @@ model DailyReflectionGreeting {
   // One greeting per user per day per language
   @@unique([userId, date, language])
   @@map("daily_reflection_greeting")
+}
+
+// ==========================================
+// Insights Models (Extracted from Reflections)
+// ==========================================
+
+// Mood - One per reflection session
+model ReflectionMood {
+  id        String            @id @default(cuid())
+  sessionId String            @unique
+  session   ReflectionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // One of 20 moods: joyful, grateful, hopeful, excited, peaceful, content, proud, loved,
+  // calm, reflective, curious, contemplative, uncertain, nostalgic,
+  // anxious, frustrated, overwhelmed, sad, worried, angry, lonely, exhausted
+  mood       String
+  confidence Float  @default(0.8)
+
+  createdAt DateTime @default(now())
+
+  @@map("reflection_mood")
+}
+
+// Topics - Multiple per session
+model ReflectionTopic {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   ReflectionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // e.g., "work", "relationships", "health", "family", "growth"
+  topic String
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@map("reflection_topic")
+}
+
+// Insights - Multiple per session, categorized
+model ReflectionInsight {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   ReflectionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // The insight text/quote
+  text String
+
+  // Category: realization, goal, gratitude, concern, question, learning, idea, inspiration
+  category String
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([category])
+  @@map("reflection_insight")
+}
+
+// Todos - Standalone, linked to source session
+model Todo {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  text     String
+  dueDate  DateTime?
+  priority String? // high, medium, low
+  context  String? // Additional context from conversation
+
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  // Which reflection it came from (nullable for manual todos)
+  sourceSessionId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, completed])
+  @@index([sourceSessionId])
+  @@map("todo")
+}
+
+// People - Persistent entity per user
+model Person {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // "Sarah", "my boss", "Mom"
+  name String
+
+  // friend, family, coworker, partner, acquaintance, other
+  relationship String?
+
+  mentionCount     Int      @default(1)
+  averageSentiment Float? // -1 to 1
+  lastMentioned    DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mentions PersonMention[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@map("person")
+}
+
+// Person Mentions - Junction table tracking mentions per session
+model PersonMention {
+  id       String @id @default(cuid())
+  personId String
+  person   Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  sessionId String
+  session   ReflectionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Sentiment for this specific mention
+  sentiment String? // positive, neutral, negative
+
+  // Brief context of mention
+  context String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([personId, sessionId])
+  @@map("person_mention")
 }

@@ -19,7 +19,7 @@ export const Route = createFileRoute('/_app/admin')({
     // Additional admin check (middleware already checks in server functions)
     const user = context.user as { role?: string } | undefined
     if (user?.role !== 'admin') {
-      throw redirect({ to: '/dashboard' })
+      throw redirect({ to: '/memories' })
     }
   },
   component: AdminPage,
