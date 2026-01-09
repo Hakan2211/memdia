@@ -5,25 +5,24 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { authMiddleware } from './middleware'
 import { prisma } from '../db'
-import { chatCompletion, type ChatMessage } from './services/openrouter.service'
-import { generateSpeech } from './services/falai.service'
-import { generateImage } from './services/falai.service'
-import { uploadImageFromUrl } from './services/bunny.service'
 import {
-  buildConversationSystemPrompt,
   buildConversationContext,
+  buildConversationSystemPrompt,
   getRandomGreeting,
 } from '../lib/prompts/conversation'
-import type { Language } from '../types/voice-session'
 import {
   buildSummaryMessages,
-  formatTranscriptForSummary,
   buildTranslationMessages,
+  formatTranscriptForSummary,
 } from '../lib/prompts/summary'
 import { buildImagePrompt } from '../lib/prompts/image'
-import type { AIPersonality, ImageStyle } from '../types/voice-session'
+import { authMiddleware } from './middleware'
+import {  chatCompletion } from './services/openrouter.service'
+import { generateImage, generateSpeech  } from './services/falai.service'
+import { uploadImageFromUrl } from './services/bunny.service'
+import type {ChatMessage} from './services/openrouter.service';
+import type { AIPersonality, ImageStyle, Language  } from '../types/voice-session'
 
 // ==========================================
 // Schemas
@@ -345,7 +344,7 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
       })),
     )
 
-    const messages: ChatMessage[] = [
+    const messages: Array<ChatMessage> = [
       { role: 'system', content: systemPrompt },
       ...conversationHistory,
       { role: 'user', content: data.userMessage },
@@ -476,7 +475,7 @@ export const processSessionFn = createServerFn({ method: 'POST' })
     let summaryText: string | null = null
     try {
       const summaryMessages = buildSummaryMessages(transcript, userLanguage)
-      summaryText = await chatCompletion(summaryMessages as ChatMessage[], {
+      summaryText = await chatCompletion(summaryMessages as Array<ChatMessage>, {
         maxTokens: 1000,
       })
     } catch (error) {
@@ -494,7 +493,7 @@ export const processSessionFn = createServerFn({ method: 'POST' })
           try {
             const translationMessages = buildTranslationMessages(summaryText)
             const translatedSummary = await chatCompletion(
-              translationMessages as ChatMessage[],
+              translationMessages as Array<ChatMessage>,
               { maxTokens: 1000 },
             )
             if (translatedSummary) {

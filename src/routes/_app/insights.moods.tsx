@@ -3,16 +3,15 @@
  * View mood history and distribution charts
  */
 
-import { createFileRoute, getRouteApi } from '@tanstack/react-router'
+import { Link, createFileRoute  } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Smile } from 'lucide-react'
+import { format } from 'date-fns'
+import { Bar, BarChart, XAxis, YAxis } from 'recharts'
 import {
-  getMoodHistoryFn,
   getMoodDistributionFn,
+  getMoodHistoryFn,
 } from '../../server/insights.fn'
-import {
-  MOCK_MOOD_HISTORY,
-  MOCK_MOOD_DISTRIBUTION,
-} from '../../lib/mock/insights-mock-data'
 import { MoodBadge, MoodDot } from '../../components/insights/mood-badge'
 import {
   Card,
@@ -21,37 +20,27 @@ import {
   CardTitle,
 } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
-import { Smile } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '../../components/ui/chart'
-import { Bar, BarChart, XAxis, YAxis } from 'recharts'
-import type { Mood } from '../../types/insights'
 import { getMoodValence } from '../../types/insights'
+import type { Mood } from '../../types/insights'
 
 export const Route = createFileRoute('/_app/insights/moods')({
   component: MoodsTab,
 })
 
-const parentRoute = getRouteApi('/_app/insights')
-
 function MoodsTab() {
-  const { mock } = parentRoute.useSearch()
-
   const { data: history, isLoading: historyLoading } = useQuery({
-    queryKey: ['insights', 'moods', 'history', mock],
-    queryFn: () =>
-      mock ? Promise.resolve(MOCK_MOOD_HISTORY) : getMoodHistoryFn(),
+    queryKey: ['insights', 'moods', 'history'],
+    queryFn: () => getMoodHistoryFn(),
   })
 
   const { data: distribution, isLoading: distributionLoading } = useQuery({
-    queryKey: ['insights', 'moods', 'distribution', mock],
-    queryFn: () =>
-      mock ? Promise.resolve(MOCK_MOOD_DISTRIBUTION) : getMoodDistributionFn(),
+    queryKey: ['insights', 'moods', 'distribution'],
+    queryFn: () => getMoodDistributionFn(),
   })
 
   if (historyLoading || distributionLoading) {

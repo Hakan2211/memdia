@@ -3,21 +3,22 @@
  * View a specific day's reflection (transcript, summary - no image)
  */
 
-import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Trash2, Clock, MessageCircle } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft, Clock, MessageCircle, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '../../components/ui/button'
 import {
-  getReflectionByDateFn,
   deleteReflectionFn,
+  getReflectionByDateFn,
 } from '../../server/reflection.fn'
+import { processReflectionFn } from '../../server/reflection-conversation.fn'
 import { getSessionInsightsFn } from '../../server/extraction.fn'
-import type { ReflectionTurn } from '../../types/voice-session'
 import { MoodBadge } from '../../components/insights/mood-badge'
 import { TopicList } from '../../components/insights/topic-pill'
+import type { ReflectionTurn } from '../../types/voice-session'
 import type { Mood } from '../../types/insights'
 
 export const Route = createFileRoute('/_app/reflections/$date')({
@@ -56,6 +57,34 @@ function ReflectionByDate() {
         : null,
     enabled: !!session?.id && session?.status === 'completed',
   })
+
+  // Track if we've already tried processing this session
+  const hasTriedProcessing = useRef(false)
+
+  // Retry processing mutation for stuck sessions
+  const retryProcessingMutation = useMutation({
+    mutationFn: (sessionId: string) =>
+      processReflectionFn({ data: { sessionId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reflection', 'date', date] })
+    },
+    onError: (error) => {
+      console.error('Failed to process reflection:', error)
+    },
+  })
+
+  // Auto-retry when session is stuck in processing
+  useEffect(() => {
+    if (
+      session?.status === 'processing' &&
+      !hasTriedProcessing.current &&
+      !retryProcessingMutation.isPending
+    ) {
+      hasTriedProcessing.current = true
+      console.log('[Detail] Session stuck in processing, retrying...')
+      retryProcessingMutation.mutate(session.id)
+    }
+  }, [session?.status, session?.id, retryProcessingMutation])
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -142,8 +171,8 @@ function ReflectionByDate() {
 
       {/* Date Header */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-violet-100 dark:bg-violet-900/30 mb-4">
-          <MessageCircle className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+        <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-[#7e9ec9]/10 dark:bg-[#7e9ec9]/20 mb-4">
+          <MessageCircle className="h-8 w-8 text-[#7e9ec9]" />
         </div>
         <p className="text-sm text-muted-foreground uppercase tracking-wider">
           {format(parsedDate, 'EEEE')}
@@ -184,7 +213,7 @@ function ReflectionByDate() {
         <div className="mb-6 text-center">
           <Link
             to="/insights"
-            className="text-sm text-violet-600 hover:text-violet-700 hover:underline"
+            className="text-sm text-[#7e9ec9] hover:text-[#5a7ba6] hover:underline"
           >
             View full insights
           </Link>
@@ -259,7 +288,7 @@ function ReflectionByDate() {
 function SessionStatusBadge({ status }: { status: string }) {
   const colors = {
     completed:
-      'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+      'bg-[#7e9ec9]/10 text-[#7e9ec9] dark:bg-[#7e9ec9]/20 dark:text-[#7e9ec9]',
     processing:
       'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
     active: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -275,7 +304,7 @@ function SessionStatusBadge({ status }: { status: string }) {
   )
 }
 
-function TranscriptView({ turns }: { turns: ReflectionTurn[] }) {
+function TranscriptView({ turns }: { turns: Array<ReflectionTurn> }) {
   return (
     <div className="space-y-4">
       {turns.map((turn) => (
@@ -285,7 +314,7 @@ function TranscriptView({ turns }: { turns: ReflectionTurn[] }) {
         >
           <div
             className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-              turn.speaker === 'user' ? 'bg-violet-600 text-white' : 'bg-muted'
+              turn.speaker === 'user' ? 'bg-[#7e9ec9] text-white' : 'bg-muted'
             }`}
           >
             <p className="text-sm">{turn.text}</p>

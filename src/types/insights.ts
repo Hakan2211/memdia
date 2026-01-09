@@ -50,8 +50,8 @@ export type Mood = (typeof ALL_MOODS)[number]
 export type MoodValence = 'positive' | 'neutral' | 'negative'
 
 export function getMoodValence(mood: Mood): MoodValence {
-  if ((POSITIVE_MOODS as readonly string[]).includes(mood)) return 'positive'
-  if ((NEUTRAL_MOODS as readonly string[]).includes(mood)) return 'neutral'
+  if ((POSITIVE_MOODS as ReadonlyArray<string>).includes(mood)) return 'positive'
+  if ((NEUTRAL_MOODS as ReadonlyArray<string>).includes(mood)) return 'neutral'
   return 'negative'
 }
 
@@ -131,7 +131,7 @@ export interface ReflectionTopic {
 export interface TopicWithCount {
   topic: string
   count: number
-  sessions: string[] // session IDs
+  sessions: Array<string> // session IDs
 }
 
 // ==========================================
@@ -215,13 +215,13 @@ export interface PersonMention {
 
 // Person with mentions for detail view
 export interface PersonWithMentions extends Person {
-  mentions: (PersonMention & {
+  mentions: Array<PersonMention & {
     session: {
       id: string
       date: Date
       summaryText: string | null
     }
-  })[]
+  }>
 }
 
 // ==========================================
@@ -234,22 +234,22 @@ export interface ExtractedInsights {
     primary: Mood
     confidence: number
   }
-  topics: string[]
-  insights: {
+  topics: Array<string>
+  insights: Array<{
     text: string
     category: InsightCategory
-  }[]
-  todos: {
+  }>
+  todos: Array<{
     text: string
     dueDate: string | null // ISO date string
     priority: TodoPriority | null
     context: string | null
-  }[]
-  people: {
+  }>
+  people: Array<{
     name: string
     relationship: RelationshipType | null
     sentiment: Sentiment
-  }[]
+  }>
 }
 
 // ==========================================
@@ -268,10 +268,10 @@ export interface InsightsOverview {
   moodTrend: 'improving' | 'stable' | 'declining' | null
 
   // Top topics this week
-  topTopics: TopicWithCount[]
+  topTopics: Array<TopicWithCount>
 
   // Recent insights
-  recentInsights: ReflectionInsight[]
+  recentInsights: Array<ReflectionInsight>
 }
 
 // Mood history for charts

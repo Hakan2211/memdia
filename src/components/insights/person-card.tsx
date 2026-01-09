@@ -3,11 +3,11 @@
  * Displays person with sentiment and mention count
  */
 
+import { Minus, TrendingDown, TrendingUp, User } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Card, CardContent } from '../ui/card'
 import { Badge } from '../ui/badge'
-import { User, TrendingUp, TrendingDown, Minus } from 'lucide-react'
-import type { Sentiment, RelationshipType } from '../../types/insights'
+import type { RelationshipType, Sentiment } from '../../types/insights'
 
 interface PersonCardProps {
   name: string

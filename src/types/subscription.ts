@@ -26,7 +26,7 @@ export const SUBSCRIPTION_TIERS: Record<
     name: string
     maxDurationSeconds: number
     priceMonthly: number | null
-    features: string[]
+    features: Array<string>
   }
 > = {
   trial: {

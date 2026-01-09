@@ -8,10 +8,10 @@ import { z } from 'zod'
 import { prisma } from '../db'
 import { authMiddleware } from './middleware'
 import type {
-  Mood,
   InsightCategory,
-  TodoPriority,
+  Mood,
   Sentiment,
+  TodoPriority,
 } from '../types/insights'
 
 // ==========================================

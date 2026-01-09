@@ -12,7 +12,7 @@
  * - Audio chunk management for upload
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useVAD } from './useVAD'
 import { useDeepgramSTT } from './useDeepgramSTT'
 import { useAudioRecorder } from './useAudioRecorder'
@@ -201,7 +201,7 @@ export function useSpeechDetection(
   const [accumulatedTranscript, setAccumulatedTranscript] = useState('')
 
   // Audio chunks for upload
-  const audioChunksRef = useRef<Int16Array[]>([])
+  const audioChunksRef = useRef<Array<Int16Array>>([])
 
   // Raw signal tracking (for debug display)
   const [vadIsSpeaking, setVadIsSpeaking] = useState(false)

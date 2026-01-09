@@ -9,7 +9,7 @@
  * The library uses CommonJS internally which doesn't work with Vite's ESM handling.
  */
 
-import { useCallback, useRef, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export interface UseVADOptions {
   /** Called when speech starts (user begins speaking) */

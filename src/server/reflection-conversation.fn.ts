@@ -6,22 +6,22 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { authMiddleware } from './middleware'
 import { prisma } from '../db'
-import { chatCompletion, type ChatMessage } from './services/openrouter.service'
-import { generateSpeech } from './services/falai.service'
 import {
+  buildReflectionContext,
   buildReflectionSystemPrompt,
   getRandomReflectionGreeting,
-  buildReflectionContext,
 } from '../lib/prompts/reflection'
-import type { Language } from '../types/voice-session'
 import {
   buildSummaryMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
-import type { AIPersonality } from '../types/voice-session'
-import { extractInsightsFromSession } from './extraction.fn'
+import { authMiddleware } from './middleware'
+import {  chatCompletion } from './services/openrouter.service'
+import { generateSpeech } from './services/falai.service'
+import { extractInsightsFromSession } from './extraction.internal'
+import type {ChatMessage} from './services/openrouter.service';
+import type { AIPersonality, Language  } from '../types/voice-session'
 
 // ==========================================
 // Schemas
@@ -288,7 +288,7 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
     let summaryText: string | null = null
     try {
       const summaryMessages = buildSummaryMessages(transcript, userLanguage)
-      summaryText = await chatCompletion(summaryMessages as ChatMessage[], {
+      summaryText = await chatCompletion(summaryMessages as Array<ChatMessage>, {
         maxTokens: 1000,
       })
     } catch (error) {
@@ -368,7 +368,7 @@ export function buildReflectionMessages(params: {
   language: Language
   turns: Array<{ speaker: 'user' | 'ai'; text: string }>
   userMessage: string
-}): ChatMessage[] {
+}): Array<ChatMessage> {
   const systemPrompt = buildReflectionSystemPrompt(
     params.personality,
     params.userName,

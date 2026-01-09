@@ -5,7 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { X, Sparkles } from 'lucide-react'
+import { Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { getTrialStatusFn } from '../../server/session.fn'
 import { Button } from '../ui/button'

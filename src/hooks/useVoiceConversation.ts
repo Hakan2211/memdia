@@ -9,7 +9,7 @@
  * - Streaming audio playback integration
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 // ==========================================
 // Types

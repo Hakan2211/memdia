@@ -12,28 +12,25 @@
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
-import { Play, AlertCircle, Volume2 } from 'lucide-react'
+import { AlertCircle, Play, Volume2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '../../components/ui/button'
 import { MagicButton } from '../../components/ui/magic-button'
 import {
-  getTodaySessionFn,
-  startSessionFn,
-  endSessionFn,
-  updateSessionTimeFn,
   cancelShortSessionFn,
+  endSessionFn,
+  getTodaySessionFn,
   getUserPreferencesFn,
+  startSessionFn,
+  updateSessionTimeFn,
 } from '../../server/session.fn'
-
-// Minimum session duration in seconds (sessions shorter than this are discarded)
-const MIN_SESSION_DURATION = 60
 import {
   generateGreetingFn,
-  processSessionFn,
   preGenerateGreetingFn,
+  processSessionFn,
   savePreloadedGreetingFn,
 } from '../../server/conversation.fn'
 import { streamMessageFn } from '../../server/streaming.fn'
@@ -47,15 +44,18 @@ import { useStreamingAudioPlayer } from '../../hooks/useStreamingAudioPlayer'
 import { useConversationStream } from '../../hooks/useConversationStream'
 import { useDeepgramSTT } from '../../hooks/useDeepgramSTT'
 import { useVAD } from '../../hooks/useVAD'
-import type {
-  VoiceSession,
-  TranscriptTurn,
-  Language,
-} from '../../types/voice-session'
 import {
   getDeepgramLanguageParam,
   getDeepgramModel,
 } from '../../types/voice-session'
+import type {
+  Language,
+  TranscriptTurn,
+  VoiceSession,
+} from '../../types/voice-session'
+
+// Minimum session duration in seconds (sessions shorter than this are discarded)
+const MIN_SESSION_DURATION = 60
 
 // Feature flag: Use new SSE streaming architecture for lower latency
 const USE_SSE_STREAMING = true
@@ -122,7 +122,7 @@ function TodaySession() {
   // For transcript accumulation (replaces useSpeechDetection internal state)
   const pendingTranscriptRef = useRef<string>('')
   // For audio chunk accumulation
-  const audioChunksRef = useRef<Int16Array[]>([])
+  const audioChunksRef = useRef<Array<Int16Array>>([])
   // Recovery timeout ref
   const speechTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   // Track last sent message to prevent duplicates
@@ -301,7 +301,7 @@ function TodaySession() {
   // ==========================================
 
   // Legacy: Audio queue for URL-based playback
-  const audioQueueRef = useRef<string[]>([])
+  const audioQueueRef = useRef<Array<string>>([])
   const isPlayingQueueRef = useRef(false)
   const playNextInQueueRef = useRef<(() => void) | null>(null)
 
@@ -837,8 +837,9 @@ function TodaySession() {
     setIsEndingSession(true)
 
     // Call end mutation if we have a session
-    if (session) {
-      endMutation.mutate(session.id)
+    // Use sessionRef.current to avoid stale closure issue when timer fires
+    if (sessionRef.current) {
+      endMutation.mutate(sessionRef.current.id)
 
       // Fallback: force navigate after 3 seconds if mutation doesn't complete
       setTimeout(() => {
@@ -848,7 +849,6 @@ function TodaySession() {
       }, 3000)
     }
   }, [
-    session,
     endMutation,
     navigate,
     streamingAudioActions,
@@ -992,7 +992,8 @@ function TodaySession() {
   }, [startMutation])
 
   const handleEndSession = useCallback(async () => {
-    if (!session) return
+    // Use sessionRef.current to avoid stale closure issue
+    if (!sessionRef.current) return
 
     // Set loading state immediately for all cases
     setIsEndingSession(true)
@@ -1010,7 +1011,7 @@ function TodaySession() {
 
       // Cancel the short session (doesn't count as an attempt)
       try {
-        await cancelShortSessionFn({ data: { sessionId: session.id } })
+        await cancelShortSessionFn({ data: { sessionId: sessionRef.current.id } })
       } catch (error) {
         console.error('Failed to cancel short session:', error)
       }
@@ -1032,9 +1033,9 @@ function TodaySession() {
       return
     }
 
-    endMutation.mutate(session.id)
+    // Use sessionRef.current to avoid stale closure issue
+    endMutation.mutate(sessionRef.current.id)
   }, [
-    session,
     elapsedTime,
     endMutation,
     recorderActions,
@@ -1162,217 +1163,218 @@ function TodaySession() {
           </div>
         )}
 
-      {/* Main Circle */}
-      <div className="relative mb-8">
-        <PulsingCircle
-          isActive={sessionState === 'recording'}
-          speaker={
-            isAISpeaking
-              ? 'ai'
-              : recorderState.audioLevel > 0.1
-                ? 'user'
-                : currentSpeaker
-          }
-          isMuted={recorderState.isMuted}
-        />
-      </div>
+        {/* Main Circle */}
+        <div className="relative mb-8">
+          <PulsingCircle
+            isActive={sessionState === 'recording'}
+            speaker={
+              isAISpeaking
+                ? 'ai'
+                : recorderState.audioLevel > 0.1
+                  ? 'user'
+                  : currentSpeaker
+            }
+            isMuted={recorderState.isMuted}
+          />
+        </div>
 
-      {/* Audio status indicator */}
-      {sessionState === 'recording' &&
-        !audioState.canAutoplay &&
-        !streamingAudioState.isReady && (
-          <div className="mb-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                audioActions.enableAutoplay()
-                streamingAudioActions.enablePlayback()
-              }}
-              className="flex items-center gap-2"
-            >
-              <Volume2 className="h-4 w-4" />
-              Click to enable audio
-            </Button>
+        {/* Audio status indicator */}
+        {sessionState === 'recording' &&
+          !audioState.canAutoplay &&
+          !streamingAudioState.isReady && (
+            <div className="mb-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  audioActions.enableAutoplay()
+                  streamingAudioActions.enablePlayback()
+                }}
+                className="flex items-center gap-2"
+              >
+                <Volume2 className="h-4 w-4" />
+                Click to enable audio
+              </Button>
+            </div>
+          )}
+
+        {/* Streaming status indicator */}
+        {sessionState === 'recording' &&
+          conversationStreamState.isStreaming && (
+            <div className="mb-2 text-xs text-muted-foreground">
+              AI is responding...
+            </div>
+          )}
+
+        {/* Controls */}
+        {sessionState === 'idle' && (
+          <div className="text-center animate-in fade-in zoom-in-95 duration-700 delay-150">
+            <MagicButton onClick={handleStartSession}>
+              <Play className="mr-3 h-5 w-5 fill-current" />
+              Start Today's Session
+            </MagicButton>
+            <p className="mt-6 text-sm text-muted-foreground font-light tracking-wide">
+              3 minutes to reflect on your day
+            </p>
+            {sttState.error && (
+              <p className="mt-2 text-sm text-red-500">{sttState.error}</p>
+            )}
           </div>
         )}
 
-      {/* Streaming status indicator */}
-      {sessionState === 'recording' && conversationStreamState.isStreaming && (
-        <div className="mb-2 text-xs text-muted-foreground">
-          AI is responding...
-        </div>
-      )}
-
-      {/* Controls */}
-      {sessionState === 'idle' && (
-        <div className="text-center animate-in fade-in zoom-in-95 duration-700 delay-150">
-          <MagicButton onClick={handleStartSession}>
-            <Play className="mr-3 h-5 w-5 fill-current" />
-            Start Today's Session
-          </MagicButton>
-          <p className="mt-6 text-sm text-muted-foreground font-light tracking-wide">
-            3 minutes to reflect on your day
-          </p>
-          {sttState.error && (
-            <p className="mt-2 text-sm text-red-500">{sttState.error}</p>
-          )}
-        </div>
-      )}
-
-      {sessionState === 'starting' && (
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Starting session...</p>
-        </div>
-      )}
-
-      {(sessionState === 'recording' || sessionState === 'paused') && (
-        <SessionControls
-          isMuted={false}
-          isPaused={sessionState === 'paused'}
-          isEnding={isEndingSession || endMutation.isPending}
-          elapsedTime={elapsedTime}
-          minDuration={MIN_SESSION_DURATION}
-          onToggleMute={handleToggleMute}
-          onEndSession={handleEndSession}
-        />
-      )}
-
-      {/* Live Transcript Preview */}
-      {sessionState === 'recording' && (
-        <div className="mt-8 max-w-md text-center">
-          <p className="text-sm text-muted-foreground italic">
-            {isAISpeaking
-              ? 'AI is speaking...'
-              : currentSpeaker === 'user'
-                ? 'Listening...'
-                : "Speak whenever you're ready"}
-          </p>
-          {liveTranscript && <p className="mt-2 text-sm">{liveTranscript}</p>}
-          {/* VAD loading indicator */}
-          {vadState.isLoading && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Loading speech detection...
-            </p>
-          )}
-        </div>
-      )}
-
-      {/* Input mode toggle and text input */}
-      {sessionState === 'recording' && (
-        <div className="mt-4 w-full max-w-md">
-          {/* Voice/Text toggle */}
-          <div className="flex justify-center mb-3">
-            <div className="inline-flex rounded-lg border p-1 text-xs">
-              <button
-                onClick={() => setUseVoiceInput(true)}
-                className={`px-3 py-1 rounded-md transition-colors ${
-                  useVoiceInput
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Voice
-              </button>
-              <button
-                onClick={() => setUseVoiceInput(false)}
-                className={`px-3 py-1 rounded-md transition-colors ${
-                  !useVoiceInput
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Text
-              </button>
-            </div>
+        {sessionState === 'starting' && (
+          <div className="text-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+            <p className="mt-4 text-muted-foreground">Starting session...</p>
           </div>
+        )}
 
-          {/* STT Status */}
-          {useVoiceInput && (
-            <div className="text-center mb-3">
-              {sttState.isConnecting && (
-                <span className="text-xs text-muted-foreground">
-                  Connecting to speech recognition...
-                </span>
-              )}
-              {sttState.isConnected && (
-                <span className="text-xs text-emerald-600">
-                  Speech recognition active
-                </span>
-              )}
-              {sttState.error && (
-                <span className="text-xs text-amber-600">
-                  {sttState.error} - Type your response below
-                </span>
-              )}
-              {!sttState.isConnected &&
-                !sttState.isConnecting &&
-                !sttState.error && (
+        {(sessionState === 'recording' || sessionState === 'paused') && (
+          <SessionControls
+            isMuted={false}
+            isPaused={sessionState === 'paused'}
+            isEnding={isEndingSession || endMutation.isPending}
+            elapsedTime={elapsedTime}
+            minDuration={MIN_SESSION_DURATION}
+            onToggleMute={handleToggleMute}
+            onEndSession={handleEndSession}
+          />
+        )}
+
+        {/* Live Transcript Preview */}
+        {sessionState === 'recording' && (
+          <div className="mt-8 max-w-md text-center">
+            <p className="text-sm text-muted-foreground italic">
+              {isAISpeaking
+                ? 'AI is speaking...'
+                : currentSpeaker === 'user'
+                  ? 'Listening...'
+                  : "Speak whenever you're ready"}
+            </p>
+            {liveTranscript && <p className="mt-2 text-sm">{liveTranscript}</p>}
+            {/* VAD loading indicator */}
+            {vadState.isLoading && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Loading speech detection...
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Input mode toggle and text input */}
+        {sessionState === 'recording' && (
+          <div className="mt-4 w-full max-w-md">
+            {/* Voice/Text toggle */}
+            <div className="flex justify-center mb-3">
+              <div className="inline-flex rounded-lg border p-1 text-xs">
+                <button
+                  onClick={() => setUseVoiceInput(true)}
+                  className={`px-3 py-1 rounded-md transition-colors ${
+                    useVoiceInput
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Voice
+                </button>
+                <button
+                  onClick={() => setUseVoiceInput(false)}
+                  className={`px-3 py-1 rounded-md transition-colors ${
+                    !useVoiceInput
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Text
+                </button>
+              </div>
+            </div>
+
+            {/* STT Status */}
+            {useVoiceInput && (
+              <div className="text-center mb-3">
+                {sttState.isConnecting && (
                   <span className="text-xs text-muted-foreground">
-                    Type your response below
+                    Connecting to speech recognition...
                   </span>
                 )}
-            </div>
-          )}
+                {sttState.isConnected && (
+                  <span className="text-xs text-emerald-600">
+                    Speech recognition active
+                  </span>
+                )}
+                {sttState.error && (
+                  <span className="text-xs text-amber-600">
+                    {sttState.error} - Type your response below
+                  </span>
+                )}
+                {!sttState.isConnected &&
+                  !sttState.isConnecting &&
+                  !sttState.error && (
+                    <span className="text-xs text-muted-foreground">
+                      Type your response below
+                    </span>
+                  )}
+              </div>
+            )}
 
-          {/* Text input (always available as fallback) */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={liveTranscript}
-              onChange={(e) => setLiveTranscript(e.target.value)}
-              onKeyDown={(e) => {
-                if (
-                  e.key === 'Enter' &&
-                  liveTranscript.trim() &&
-                  session &&
-                  !sendMessageMutation.isPending
-                ) {
-                  handleUserSpeechEnd(liveTranscript)
-                  setLiveTranscript('')
-                  sttActions.clearTranscripts()
-                  pendingTranscriptRef.current = ''
+            {/* Text input (always available as fallback) */}
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={liveTranscript}
+                onChange={(e) => setLiveTranscript(e.target.value)}
+                onKeyDown={(e) => {
+                  if (
+                    e.key === 'Enter' &&
+                    liveTranscript.trim() &&
+                    session &&
+                    !sendMessageMutation.isPending
+                  ) {
+                    handleUserSpeechEnd(liveTranscript)
+                    setLiveTranscript('')
+                    sttActions.clearTranscripts()
+                    pendingTranscriptRef.current = ''
+                  }
+                }}
+                placeholder={
+                  useVoiceInput
+                    ? 'Speak or type your message...'
+                    : 'Type your message and press Enter...'
                 }
-              }}
-              placeholder={
-                useVoiceInput
-                  ? 'Speak or type your message...'
-                  : 'Type your message and press Enter...'
-              }
-              className="flex-1 px-4 py-2 border rounded-lg text-sm"
-              disabled={sendMessageMutation.isPending || isAISpeaking}
-            />
-            <Button
-              onClick={() => {
-                if (
-                  liveTranscript.trim() &&
-                  session &&
-                  !sendMessageMutation.isPending
-                ) {
-                  handleUserSpeechEnd(liveTranscript)
-                  setLiveTranscript('')
-                  sttActions.clearTranscripts()
-                  pendingTranscriptRef.current = ''
+                className="flex-1 px-4 py-2 border rounded-lg text-sm"
+                disabled={sendMessageMutation.isPending || isAISpeaking}
+              />
+              <Button
+                onClick={() => {
+                  if (
+                    liveTranscript.trim() &&
+                    session &&
+                    !sendMessageMutation.isPending
+                  ) {
+                    handleUserSpeechEnd(liveTranscript)
+                    setLiveTranscript('')
+                    sttActions.clearTranscripts()
+                    pendingTranscriptRef.current = ''
+                  }
+                }}
+                disabled={
+                  !liveTranscript.trim() ||
+                  sendMessageMutation.isPending ||
+                  isAISpeaking
                 }
-              }}
-              disabled={
-                !liveTranscript.trim() ||
-                sendMessageMutation.isPending ||
-                isAISpeaking
-              }
-              size="sm"
-            >
-              {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
-            </Button>
+                size="sm"
+              >
+                {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground text-center">
+              {useVoiceInput
+                ? 'Speak naturally - your voice will be transcribed automatically'
+                : 'Type your message and press Enter to send'}
+            </p>
           </div>
-          <p className="mt-2 text-xs text-muted-foreground text-center">
-            {useVoiceInput
-              ? 'Speak naturally - your voice will be transcribed automatically'
-              : 'Type your message and press Enter to send'}
-          </p>
-        </div>
-      )}
+        )}
       </div>
     </div>
   )
@@ -1384,7 +1386,7 @@ function TodaySession() {
 function CompletedSessionView({
   session,
 }: {
-  session: VoiceSession & { turns?: TranscriptTurn[] }
+  session: VoiceSession & { turns?: Array<TranscriptTurn> }
 }) {
   return (
     <div className="p-8 max-w-2xl mx-auto">
@@ -1435,7 +1437,7 @@ function CompletedSessionView({
                 <div
                   className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                     turn.speaker === 'user'
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-[#7e9ec9] text-white'
                       : 'bg-muted'
                   }`}
                 >

@@ -5,17 +5,19 @@
  * This handler uses h3's defineWebSocket for Nitro integration
  */
 
-import { defineWebSocket, type WebSocketPeer, type WebSocketMessage } from 'h3'
+import {   defineWebSocket } from 'h3'
 import { prisma } from '../../../../src/db'
 import {
-  streamChatCompletion,
-  type ChatMessage,
+  
+  streamChatCompletion
 } from '../../../../src/server/services/openrouter.service'
 import { streamSpeech } from '../../../../src/server/services/falai-streaming.service'
 import {
   buildConversationSystemPrompt,
   getRandomGreeting,
 } from '../../../../src/lib/prompts/conversation'
+import type {ChatMessage} from '../../../../src/server/services/openrouter.service';
+import type {WebSocketMessage, WebSocketPeer} from 'h3';
 import type { AIPersonality } from '../../../../src/types/voice-session'
 
 // ==========================================
@@ -70,8 +72,8 @@ const sessions = new Map<string, ConversationSession>()
 
 const SENTENCE_ENDINGS = /[.!?]+(?:\s|$)/
 
-function extractSentences(text: string): [string[], string] {
-  const sentences: string[] = []
+function extractSentences(text: string): [Array<string>, string] {
+  const sentences: Array<string> = []
   let remaining = text
 
   let match: RegExpExecArray | null
@@ -247,7 +249,7 @@ export default defineWebSocket({
             session.userName,
           )
 
-          const llmMessages: ChatMessage[] = [
+          const llmMessages: Array<ChatMessage> = [
             { role: 'system', content: systemPrompt },
             ...session.messages.map((m) => ({
               role:
@@ -261,7 +263,7 @@ export default defineWebSocket({
           let accumulatedText = ''
           let fullText = ''
           let sentenceCount = 0
-          const audioPromises: Promise<void>[] = []
+          const audioPromises: Array<Promise<void>> = []
 
           // Process a sentence - generate and stream TTS
           const processSentence = async (sentence: string, index: number) => {

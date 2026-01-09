@@ -7,20 +7,21 @@ import { createFileRoute } from '@tanstack/react-router'
 import { auth } from '../../../lib/auth'
 import { prisma } from '../../../db'
 import {
-  streamChatCompletion,
-  type ChatMessage,
+  
+  streamChatCompletion
 } from '../../../server/services/openrouter.service'
 import { streamSpeech } from '../../../server/services/falai-streaming.service'
 import {
-  buildConversationSystemPrompt,
   buildConversationContext,
+  buildConversationSystemPrompt,
 } from '../../../lib/prompts/conversation'
 import {
-  buildReflectionSystemPrompt,
   buildReflectionContext,
+  buildReflectionSystemPrompt,
 } from '../../../lib/prompts/reflection'
-import type { AIPersonality, Language } from '../../../types/voice-session'
 import { getGeneration, setGeneration } from './cancel'
+import type {ChatMessage} from '../../../server/services/openrouter.service';
+import type { AIPersonality, Language } from '../../../types/voice-session'
 
 // Type for session turns (shared between voice and reflection sessions)
 interface SessionTurn {
@@ -37,8 +38,8 @@ interface SessionTurn {
 
 const SENTENCE_ENDINGS = /[.!?]+(?:\s|$)/
 
-function extractSentences(text: string): [string[], string] {
-  const sentences: string[] = []
+function extractSentences(text: string): [Array<string>, string] {
+  const sentences: Array<string> = []
   let remaining = text
 
   let match: RegExpExecArray | null
@@ -89,7 +90,7 @@ export const Route = createFileRoute('/api/stream/conversation')({
 
         // Get voice session or reflection session
         // First try voice session (memories)
-        let voiceSession = await prisma.voiceSession.findFirst({
+        const voiceSession = await prisma.voiceSession.findFirst({
           where: {
             id: sessionId,
             userId: session.user.id,
@@ -167,7 +168,7 @@ export const Route = createFileRoute('/api/stream/conversation')({
           conversationHistory = buildConversationContext(sessionTurns)
         }
 
-        const messages: ChatMessage[] = [
+        const messages: Array<ChatMessage> = [
           { role: 'system', content: systemPrompt },
           ...conversationHistory,
           { role: 'user', content: userMessage },
@@ -259,7 +260,7 @@ export const Route = createFileRoute('/api/stream/conversation')({
               let accumulatedText = ''
               let processedSentenceCount = 0
               let fullText = ''
-              const audioPromises: Promise<void>[] = []
+              const audioPromises: Array<Promise<void>> = []
 
               // Check if this stream has been cancelled (barge-in)
               const isCancelled = () =>

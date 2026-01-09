@@ -3,7 +3,7 @@
  * Handles audio playback with browser autoplay policy handling
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export interface AudioPlayerState {
   /** Whether audio is currently playing */

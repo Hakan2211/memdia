@@ -1,23 +1,24 @@
-import { Link, useNavigate, useLocation } from '@tanstack/react-router'
+import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
   Lightbulb,
+  LogOut,
   MessageCircle,
   Mic,
   Shield,
   User,
-  LogOut,
 } from 'lucide-react'
+import { signOut } from '../lib/auth-client'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
   useSidebar,
 } from './ui/sidebar'
 import { Button } from './ui/button'
@@ -27,7 +28,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
-import { signOut } from '../lib/auth-client'
 
 interface AppUser {
   id: string

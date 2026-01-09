@@ -22,7 +22,7 @@ export interface ArchivalResult {
   sessionId: string
   success: boolean
   turnsArchived: number
-  errors: string[]
+  errors: Array<string>
   duration: number
 }
 
@@ -59,7 +59,7 @@ export async function archiveSession(
   sessionId: string,
 ): Promise<ArchivalResult> {
   const startTime = Date.now()
-  const errors: string[] = []
+  const errors: Array<string> = []
   let turnsArchived = 0
 
   console.log(`[Archival] Starting archival for session: ${sessionId}`)
@@ -244,9 +244,9 @@ export async function archiveSession(
  * Useful for catching up on any sessions that weren't archived
  */
 export async function archiveSessionsBatch(
-  sessionIds: string[],
-): Promise<ArchivalResult[]> {
-  const results: ArchivalResult[] = []
+  sessionIds: Array<string>,
+): Promise<Array<ArchivalResult>> {
+  const results: Array<ArchivalResult> = []
 
   for (const sessionId of sessionIds) {
     const result = await archiveSession(sessionId)
@@ -265,7 +265,7 @@ export async function archiveSessionsBatch(
  */
 export async function findSessionsNeedingArchival(
   limit: number = 10,
-): Promise<string[]> {
+): Promise<Array<string>> {
   const sessions = await prisma.voiceSession.findMany({
     where: {
       status: 'completed',

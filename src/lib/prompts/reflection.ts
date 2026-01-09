@@ -4,8 +4,8 @@
  * More therapeutic and probing than the shorter memory sessions
  */
 
-import type { AIPersonality, Language } from '../../types/voice-session'
 import { LANGUAGE_LABELS } from '../../types/voice-session'
+import type { AIPersonality, Language } from '../../types/voice-session'
 
 /**
  * Base context for reflections - more therapeutic and in-depth than memories
@@ -104,7 +104,7 @@ Make them feel they have the space and time to really explore what's on their mi
  * Reflection-specific greetings - more therapeutic and inviting than memory greetings
  * These signal to the user that this is a space for deeper exploration
  */
-export const REFLECTION_GREETINGS_BY_LANGUAGE: Record<Language, string[]> = {
+export const REFLECTION_GREETINGS_BY_LANGUAGE: Record<Language, Array<string>> = {
   // English
   en: [
     "Take your time. What's been weighing on your mind?",
@@ -522,7 +522,7 @@ export function getRandomReflectionGreeting(language: Language = 'en'): string {
     REFLECTION_GREETINGS_BY_LANGUAGE[language] ??
     REFLECTION_GREETINGS_BY_LANGUAGE.en
   const index = Math.floor(Math.random() * greetings.length)
-  return greetings[index]!
+  return greetings[index]
 }
 
 /**

@@ -5,29 +5,28 @@
  */
 
 import {
-  createFileRoute,
-  Outlet,
   Link,
-  useNavigate,
+  Outlet,
+  createFileRoute,
   redirect,
   useLocation,
+  useNavigate,
   useParams,
 } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import {
-  Calendar,
-  Clock,
-  Home,
-} from 'lucide-react'
+import { Calendar, Clock, Home } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/ui/button'
 import {
-  getSessionsForMonthFn,
   getRecentSessionsFn,
+  getSessionsForMonthFn,
 } from '../../server/session.fn'
 import { cn } from '../../lib/utils'
-import { Calendar as CalendarComponent, CalendarDayButton } from '../../components/ui/calendar'
+import {
+  Calendar as CalendarComponent,
+  CalendarDayButton,
+} from '../../components/ui/calendar'
 
 export const Route = createFileRoute('/_app/memories')({
   component: MemoriesLayout,
@@ -42,14 +41,14 @@ export const Route = createFileRoute('/_app/memories')({
 function MemoriesLayout() {
   const navigate = useNavigate()
   // Use location/params to determine current date selection
-  const params = useParams({ strict: false }) as { date?: string }
+  const params = useParams({ strict: false })
   const location = useLocation()
-  
+
   // Parse currently selected date from URL
   const selectedDate = (() => {
     // If on /memories/today, it's today
     if (location.pathname.endsWith('/today')) {
-       return new Date()
+      return new Date()
     }
     // If on /memories/YYYY-MM-DD
     if (params.date) {
@@ -59,7 +58,9 @@ function MemoriesLayout() {
     return undefined
   })()
 
-  const [currentMonth, setCurrentMonth] = useState(() => selectedDate || new Date())
+  const [currentMonth, setCurrentMonth] = useState(
+    () => selectedDate || new Date(),
+  )
 
   const year = currentMonth.getFullYear()
   const month = currentMonth.getMonth() + 1
@@ -75,7 +76,6 @@ function MemoriesLayout() {
     queryKey: ['sessions', 'recent'],
     queryFn: () => getRecentSessionsFn({ data: { limit: 10 } }),
   })
-
 
   const goToToday = () => {
     setCurrentMonth(new Date())
@@ -107,11 +107,11 @@ function MemoriesLayout() {
             }}
             className="w-full flex justify-center p-3 [--cell-size:2.6rem] md:[--cell-size:2.9rem]"
             classNames={{
-              month: "space-y-4 w-full",
-              table: "w-full border-collapse space-y-1",
-              head_row: "flex w-full justify-between",
-              row: "flex w-full mt-2 justify-between",
-              cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
+              month: 'space-y-4 w-full',
+              table: 'w-full border-collapse space-y-1',
+              head_row: 'flex w-full justify-between',
+              row: 'flex w-full mt-2 justify-between',
+              cell: 'relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md',
             }}
             components={{
               DayButton: (props) => {
@@ -119,27 +119,29 @@ function MemoriesLayout() {
                 const date = day.date
                 const dateStr = format(date, 'yyyy-MM-dd')
                 // Safe access to sessionsByDate
-                const session = sessionsByDate ? sessionsByDate[dateStr] : undefined
+                const session = sessionsByDate
+                  ? sessionsByDate[dateStr]
+                  : undefined
                 const hasSession = !!session
-                
+
                 return (
                   <CalendarDayButton {...props}>
                     <div className="relative flex items-center justify-center w-full h-full">
-                       {date.getDate()}
-                       {hasSession && (
-                         <span
-                           className={cn(
-                             'absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full',
-                             session?.status === 'completed'
-                               ? 'bg-stone-500'
-                               : 'bg-stone-300',
-                           )}
-                         />
-                       )}
+                      {date.getDate()}
+                      {hasSession && (
+                        <span
+                          className={cn(
+                            'absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full',
+                            session?.status === 'completed'
+                              ? 'bg-stone-500'
+                              : 'bg-stone-300',
+                          )}
+                        />
+                      )}
                     </div>
                   </CalendarDayButton>
                 )
-              }
+              },
             }}
           />
         </div>
@@ -156,7 +158,6 @@ function MemoriesLayout() {
             Start Memory
           </Button>
         </div>
-
 
         {/* Recent Sessions List */}
         <div className="flex-1 overflow-auto p-4">
@@ -210,8 +211,6 @@ function MemoriesLayout() {
             )}
           </div>
         </div>
-
-
       </aside>
 
       {/* Main Content */}

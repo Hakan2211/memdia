@@ -1,8 +1,4 @@
-import {
-  Outlet,
-  createFileRoute,
-  redirect,
-} from '@tanstack/react-router'
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { getSessionFn } from '../server/auth.fn'
 import { useSession } from '../lib/auth-client'
 import {
@@ -10,7 +6,11 @@ import {
   TrialExpiredBanner,
 } from '../components/common/TrialBanner'
 import { getOnboardingStatusFn } from '../server/session.fn'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '../components/ui/sidebar'
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '../components/ui/sidebar'
 import { AppSidebar } from '../components/app-sidebar'
 import { Separator } from '../components/ui/separator'
 
@@ -85,4 +85,3 @@ function AppLayout() {
     </SidebarProvider>
   )
 }
-

@@ -4,29 +4,23 @@
  */
 
 import {
+  Link,
   Outlet,
   createFileRoute,
-  Link,
   useLocation,
 } from '@tanstack/react-router'
-import { z } from 'zod'
-import { cn } from '../../lib/utils'
 import {
-  LayoutDashboard,
   CheckSquare,
-  Users,
+  LayoutDashboard,
+  Lightbulb,
   Smile,
   Tag,
-  Lightbulb,
+  Users,
 } from 'lucide-react'
-
-const insightsSearchSchema = z.object({
-  mock: z.boolean().optional(),
-})
+import { cn } from '../../lib/utils'
 
 export const Route = createFileRoute('/_app/insights')({
   component: InsightsLayout,
-  validateSearch: insightsSearchSchema,
 })
 
 const TABS = [

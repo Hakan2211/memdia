@@ -5,7 +5,7 @@
  * Uses nova-3 model with proper browser WebSocket authentication
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { getDeepgramKeyFn } from '../server/deepgram.fn'
 
 export interface DeepgramSTTState {
@@ -562,8 +562,8 @@ export async function convertToLinear16(
         const srcIndexCeil = Math.min(srcIndexFloor + 1, channelData.length - 1)
         const fraction = srcIndex - srcIndexFloor
         samples[i] =
-          channelData[srcIndexFloor]! * (1 - fraction) +
-          channelData[srcIndexCeil]! * fraction
+          channelData[srcIndexFloor] * (1 - fraction) +
+          channelData[srcIndexCeil] * fraction
       }
     }
 
@@ -571,7 +571,7 @@ export async function convertToLinear16(
     const int16Array = new Int16Array(samples.length)
     for (let i = 0; i < samples.length; i++) {
       // Clamp and convert
-      const sample = Math.max(-1, Math.min(1, samples[i]!))
+      const sample = Math.max(-1, Math.min(1, samples[i]))
       int16Array[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff
     }
 

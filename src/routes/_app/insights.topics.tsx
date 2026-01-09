@@ -3,14 +3,12 @@
  * View topics mentioned in reflections
  */
 
-import { createFileRoute, getRouteApi } from '@tanstack/react-router'
+import { Link, createFileRoute  } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
-import { getTopicsFn, getSessionsByTopicFn } from '../../server/insights.fn'
-import {
-  MOCK_TOPICS,
-  MOCK_SESSIONS_BY_TOPIC,
-} from '../../lib/mock/insights-mock-data'
+import { Calendar, Tag } from 'lucide-react'
+import { format } from 'date-fns'
+import { getSessionsByTopicFn, getTopicsFn } from '../../server/insights.fn'
 import { TopicPill } from '../../components/insights/topic-pill'
 import { MoodBadge } from '../../components/insights/mood-badge'
 import {
@@ -26,31 +24,23 @@ import {
   DialogTitle,
 } from '../../components/ui/dialog'
 import { Skeleton } from '../../components/ui/skeleton'
-import { Tag, Calendar } from 'lucide-react'
-import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_app/insights/topics')({
   component: TopicsTab,
 })
 
-const parentRoute = getRouteApi('/_app/insights')
-
 function TopicsTab() {
-  const { mock } = parentRoute.useSearch()
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null)
 
   const { data: topics, isLoading } = useQuery({
-    queryKey: ['insights', 'topics', mock],
-    queryFn: () => (mock ? Promise.resolve(MOCK_TOPICS) : getTopicsFn()),
+    queryKey: ['insights', 'topics'],
+    queryFn: () => getTopicsFn(),
   })
 
   const { data: topicSessions, isLoading: sessionsLoading } = useQuery({
-    queryKey: ['insights', 'topics', selectedTopic, mock],
+    queryKey: ['insights', 'topics', selectedTopic],
     queryFn: () => {
       if (!selectedTopic) return null
-      if (mock)
-        return Promise.resolve(MOCK_SESSIONS_BY_TOPIC[selectedTopic] || [])
       return getSessionsByTopicFn({ data: { topic: selectedTopic } })
     },
     enabled: !!selectedTopic,

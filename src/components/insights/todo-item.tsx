@@ -3,10 +3,10 @@
  * Displays todo with checkbox, priority, and due date
  */
 
+import { Calendar, MessageSquare } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { Checkbox } from '../ui/checkbox'
 import { Badge } from '../ui/badge'
-import { Calendar, MessageSquare } from 'lucide-react'
 import type { TodoPriority } from '../../types/insights'
 
 interface TodoItemProps {

@@ -3,8 +3,8 @@
  * System prompts for the AI companion during voice sessions
  */
 
-import type { AIPersonality, Language } from '../../types/voice-session'
 import { LANGUAGE_LABELS } from '../../types/voice-session'
+import type { AIPersonality, Language } from '../../types/voice-session'
 
 /**
  * Base context that applies to all personalities
@@ -133,7 +133,7 @@ export const OPENING_GREETINGS = [
  * Greetings for all supported languages
  * Each language has 8 natural, conversational greetings
  */
-export const GREETINGS_BY_LANGUAGE: Record<Language, string[]> = {
+export const GREETINGS_BY_LANGUAGE: Record<Language, Array<string>> = {
   // ==========================================
   // Multilingual Languages (code-switching supported)
   // ==========================================
@@ -548,7 +548,7 @@ export const GREETINGS_BY_LANGUAGE: Record<Language, string[]> = {
 export function getRandomGreeting(language: Language = 'en'): string {
   const greetings = GREETINGS_BY_LANGUAGE[language] ?? GREETINGS_BY_LANGUAGE.en
   const index = Math.floor(Math.random() * greetings.length)
-  return greetings[index]!
+  return greetings[index]
 }
 
 /**

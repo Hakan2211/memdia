@@ -51,7 +51,7 @@ export function TopicPill({
 }
 
 interface TopicListProps {
-  topics: string[] | { topic: string; count?: number }[]
+  topics: Array<string> | Array<{ topic: string; count?: number }>
   onTopicClick?: (topic: string) => void
   selectedTopic?: string
   maxVisible?: number

@@ -23,7 +23,11 @@ const config = defineConfig({
   ],
   build: {
     rollupOptions: {
-      external: ['@prisma/client/runtime/library', 'better-sqlite3'],
+      external: [
+        '@prisma/client/runtime/library',
+        '@prisma/adapter-better-sqlite3',
+        'better-sqlite3',
+      ],
     },
   },
   ssr: {

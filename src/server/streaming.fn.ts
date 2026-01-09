@@ -5,19 +5,20 @@
 
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
-import { authMiddleware } from './middleware'
 import { prisma } from '../db'
 import {
-  streamChatCompletion,
-  type ChatMessage,
+  buildConversationContext,
+  buildConversationSystemPrompt,
+} from '../lib/prompts/conversation'
+import { authMiddleware } from './middleware'
+import {
+  
+  streamChatCompletion
 } from './services/openrouter.service'
 import { generateSpeech } from './services/falai.service'
 import { uploadAudio } from './services/bunny.service'
+import type {ChatMessage} from './services/openrouter.service';
 // NOTE: uploadAudio only used for user audio; AI audio uses fal.ai URLs directly
-import {
-  buildConversationSystemPrompt,
-  buildConversationContext,
-} from '../lib/prompts/conversation'
 import type { AIPersonality } from '../types/voice-session'
 
 // ==========================================
@@ -61,8 +62,8 @@ const SENTENCE_ENDINGS = /[.!?]+(?:\s|$)/
  * Extract complete sentences from accumulated text
  * Returns [completeSentences[], remainingText]
  */
-function extractSentences(text: string): [string[], string] {
-  const sentences: string[] = []
+function extractSentences(text: string): [Array<string>, string] {
+  const sentences: Array<string> = []
   let remaining = text
 
   let match: RegExpExecArray | null
@@ -137,7 +138,7 @@ export const streamMessageFn = createServerFn({ method: 'POST' })
       })),
     )
 
-    const messages: ChatMessage[] = [
+    const messages: Array<ChatMessage> = [
       { role: 'system', content: systemPrompt },
       ...conversationHistory,
       { role: 'user', content: data.userMessage },
@@ -188,7 +189,7 @@ export const streamMessageFn = createServerFn({ method: 'POST' })
     // Track streaming state
     let accumulatedText = ''
     let processedSentenceCount = 0
-    const audioChunks: StreamingAudioChunk[] = []
+    const audioChunks: Array<StreamingAudioChunk> = []
     let firstAudioResolve: ((url: string | null) => void) | null = null
     const firstAudioPromise = new Promise<string | null>((resolve) => {
       firstAudioResolve = resolve
@@ -240,7 +241,7 @@ export const streamMessageFn = createServerFn({ method: 'POST' })
     }
 
     // Queue for sentence processing
-    const sentenceQueue: Promise<StreamingAudioChunk | null>[] = []
+    const sentenceQueue: Array<Promise<StreamingAudioChunk | null>> = []
 
     // Stream LLM response
     const llmStartTime = Date.now()

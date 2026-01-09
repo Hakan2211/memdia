@@ -69,7 +69,7 @@ const MOCK_OPENROUTER = process.env.MOCK_OPENROUTER === 'true'
  * Generate a streaming chat completion
  */
 export async function streamChatCompletion(
-  messages: ChatMessage[],
+  messages: Array<ChatMessage>,
   callbacks: StreamCallbacks,
   config?: OpenRouterConfig,
 ): Promise<void> {
@@ -173,7 +173,7 @@ export async function streamChatCompletion(
  * Generate a non-streaming chat completion
  */
 export async function chatCompletion(
-  messages: ChatMessage[],
+  messages: Array<ChatMessage>,
   config?: OpenRouterConfig,
 ): Promise<string> {
   const apiKey = config?.apiKey || process.env.OPENROUTER_API_KEY
@@ -233,7 +233,7 @@ export async function chatCompletion(
  * Mock streaming completion for development
  */
 async function mockStreamCompletion(
-  messages: ChatMessage[],
+  messages: Array<ChatMessage>,
   callbacks: StreamCallbacks,
 ): Promise<void> {
   console.log('[OpenRouter] Running in mock mode')
@@ -253,7 +253,7 @@ async function mockStreamCompletion(
   const responseIndex = lastUserMessage
     ? Math.abs(lastUserMessage.length % mockResponses.length)
     : 0
-  const response = mockResponses[responseIndex]!
+  const response = mockResponses[responseIndex]
 
   // Simulate streaming with delays
   const words = response.split(' ')
@@ -272,7 +272,7 @@ async function mockStreamCompletion(
 /**
  * Mock non-streaming completion for development
  */
-async function mockCompletion(messages: ChatMessage[]): Promise<string> {
+async function mockCompletion(messages: Array<ChatMessage>): Promise<string> {
   console.log('[OpenRouter] Running in mock mode (non-streaming)')
 
   // Simulate API delay

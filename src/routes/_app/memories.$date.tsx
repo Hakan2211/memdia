@@ -4,13 +4,13 @@
  */
 
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format, parseISO } from 'date-fns'
-import { ArrowLeft, Trash2, Clock } from 'lucide-react'
+import { ArrowLeft, Clock, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '../../components/ui/button'
-import { getSessionByDateFn, deleteSessionFn } from '../../server/session.fn'
+import { deleteSessionFn, getSessionByDateFn } from '../../server/session.fn'
 import type { TranscriptTurn } from '../../types/voice-session'
 
 export const Route = createFileRoute('/_app/memories/$date')({
@@ -241,7 +241,7 @@ function SessionStatusBadge({ status }: { status: string }) {
   )
 }
 
-function TranscriptView({ turns }: { turns: TranscriptTurn[] }) {
+function TranscriptView({ turns }: { turns: Array<TranscriptTurn> }) {
   return (
     <div className="space-y-4">
       {turns.map((turn) => (
@@ -251,9 +251,7 @@ function TranscriptView({ turns }: { turns: TranscriptTurn[] }) {
         >
           <div
             className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-              turn.speaker === 'user'
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted'
+              turn.speaker === 'user' ? 'bg-[#7e9ec9] text-white' : 'bg-muted'
             }`}
           >
             <p className="text-sm">{turn.text}</p>

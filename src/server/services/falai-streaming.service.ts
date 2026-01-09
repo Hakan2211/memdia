@@ -95,7 +95,7 @@ export async function* streamSpeech(
 
     let chunkCount = 0
     // Accumulate binary chunks for streaming APIs that return raw audio bytes
-    const binaryChunks: Uint8Array[] = []
+    const binaryChunks: Array<Uint8Array> = []
 
     // Process streaming events
     for await (const event of stream) {

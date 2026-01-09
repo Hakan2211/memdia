@@ -3,17 +3,17 @@
  * Displays a reflection entry in timeline format
  */
 
+import { Link } from '@tanstack/react-router'
+import { format } from 'date-fns'
 import { cn } from '../../lib/utils'
 import { MoodBadge, MoodDot } from './mood-badge'
 import { TopicPill } from './topic-pill'
 import type { Mood } from '../../types/insights'
-import { Link } from '@tanstack/react-router'
-import { format } from 'date-fns'
 
 interface TimelineItemProps {
   date: Date
   mood: Mood
-  topics: string[]
+  topics: Array<string>
   summaryPreview?: string
   onClick?: () => void
   className?: string

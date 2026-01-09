@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -17,18 +17,18 @@ import { useSession } from '../../lib/auth-client'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
+import {
+  MONOLINGUAL_LANGUAGES,
+  MONOLINGUAL_LANGUAGE_LABELS,
+  MULTILINGUAL_LANGUAGES,
+  MULTILINGUAL_LANGUAGE_LABELS,
+  isMultilingualLanguage,
+  requiresNova2Model,
+} from '../../types/voice-session'
 import type {
   AIPersonality,
   ImageStyle,
   Language,
-} from '../../types/voice-session'
-import {
-  MULTILINGUAL_LANGUAGES,
-  MONOLINGUAL_LANGUAGES,
-  MULTILINGUAL_LANGUAGE_LABELS,
-  MONOLINGUAL_LANGUAGE_LABELS,
-  isMultilingualLanguage,
-  requiresNova2Model,
 } from '../../types/voice-session'
 import 'flag-icons/css/flag-icons.min.css'
 
@@ -285,7 +285,9 @@ function ProfilePage() {
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="font-medium">
-                    {subscription?.status === 'active' ? 'Pro Plan' : 'Free Plan'}
+                    {subscription?.status === 'active'
+                      ? 'Pro Plan'
+                      : 'Free Plan'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {subscription?.status === 'active'
@@ -312,7 +314,9 @@ function ProfilePage() {
                 disabled={portalMutation.isPending}
                 className="w-full"
               >
-                {portalMutation.isPending ? 'Loading...' : 'Manage Subscription'}
+                {portalMutation.isPending
+                  ? 'Loading...'
+                  : 'Manage Subscription'}
               </Button>
             ) : (
               <Button
@@ -412,7 +416,9 @@ function ProfilePage() {
 
               {/* Image Style */}
               <div className="space-y-3">
-                <Label className="text-sm font-medium">Memory Image Style</Label>
+                <Label className="text-sm font-medium">
+                  Memory Image Style
+                </Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                   {[
                     {
@@ -536,7 +542,9 @@ function ProfilePage() {
                   {/* Monolingual Section */}
                   <div className="p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-sm font-medium">Single Language</span>
+                      <span className="text-sm font-medium">
+                        Single Language
+                      </span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-3">
                       Optimized for single-language conversations

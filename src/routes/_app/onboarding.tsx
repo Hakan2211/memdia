@@ -7,14 +7,14 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import {
-  Mic,
+  Check,
+  ChevronRight,
+  Clock,
   Globe,
+  Languages,
+  Mic,
   Palette,
   Sparkles,
-  ChevronRight,
-  Check,
-  Clock,
-  Languages,
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Label } from '../../components/ui/label'
@@ -30,18 +30,18 @@ import {
   getUserPreferencesFn,
   updateUserPreferencesFn,
 } from '../../server/session.fn'
+import {
+  MONOLINGUAL_LANGUAGES,
+  MONOLINGUAL_LANGUAGE_LABELS,
+  MULTILINGUAL_LANGUAGES,
+  MULTILINGUAL_LANGUAGE_LABELS,
+  isMultilingualLanguage,
+  requiresNova2Model,
+} from '../../types/voice-session'
 import type {
   AIPersonality,
   ImageStyle,
   Language,
-} from '../../types/voice-session'
-import {
-  MULTILINGUAL_LANGUAGES,
-  MONOLINGUAL_LANGUAGES,
-  MULTILINGUAL_LANGUAGE_LABELS,
-  MONOLINGUAL_LANGUAGE_LABELS,
-  isMultilingualLanguage,
-  requiresNova2Model,
 } from '../../types/voice-session'
 import 'flag-icons/css/flag-icons.min.css'
 
@@ -98,7 +98,7 @@ type OnboardingStep =
   | 'complete'
 
 // All supported languages (multilingual + monolingual)
-const ALL_SUPPORTED_LANGUAGES: Language[] = [
+const ALL_SUPPORTED_LANGUAGES: Array<Language> = [
   ...MULTILINGUAL_LANGUAGES,
   ...MONOLINGUAL_LANGUAGES,
 ]
@@ -127,11 +127,11 @@ function detectBrowserLanguage(): Language {
   return 'en'
 }
 
-const IMAGE_STYLES: {
+const IMAGE_STYLES: Array<{
   value: ImageStyle
   label: string
   description: string
-}[] = [
+}> = [
   {
     value: 'realistic',
     label: 'Realistic',
@@ -159,11 +159,11 @@ const IMAGE_STYLES: {
   },
 ]
 
-const AI_PERSONALITIES: {
+const AI_PERSONALITIES: Array<{
   value: AIPersonality
   label: string
   description: string
-}[] = [
+}> = [
   {
     value: 'empathetic',
     label: 'Empathetic',
@@ -393,10 +393,14 @@ function OnboardingPage() {
                 Welcome to Memdia
               </h1>
               <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-                Your daily voice companion for reflection and mindfulness.
-                Let's customize your experience in just a few steps.
+                Your daily voice companion for reflection and mindfulness. Let's
+                customize your experience in just a few steps.
               </p>
-              <Button onClick={handleNext} size="lg" className="w-full text-base">
+              <Button
+                onClick={handleNext}
+                size="lg"
+                className="w-full text-base"
+              >
                 Get Started
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
@@ -427,7 +431,8 @@ function OnboardingPage() {
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                     {MULTILINGUAL_LANGUAGES.map((lang) => {
-                      const { name, native } = MULTILINGUAL_LANGUAGE_LABELS[lang]
+                      const { name, native } =
+                        MULTILINGUAL_LANGUAGE_LABELS[lang]
                       const flagCode = LANGUAGE_TO_FLAG[lang]
                       return (
                         <button
@@ -660,7 +665,9 @@ function OnboardingPage() {
                             : 'border-muted hover:border-primary/30 hover:bg-accent/50'
                         }`}
                       >
-                        <div className="font-medium text-sm mb-1">{s.label}</div>
+                        <div className="font-medium text-sm mb-1">
+                          {s.label}
+                        </div>
                         <div className="text-xs text-muted-foreground leading-tight">
                           {s.description}
                         </div>

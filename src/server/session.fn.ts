@@ -13,10 +13,10 @@ import {
   ensureTrialInitialized,
 } from './services/subscription.service'
 import type {
-  SessionStatus,
-  VoiceSession,
-  TranscriptTurn,
   ImageStyle,
+  SessionStatus,
+  TranscriptTurn,
+  VoiceSession,
 } from '../types/voice-session'
 
 // ==========================================
@@ -85,7 +85,7 @@ export const getTodaySessionFn = createServerFn({ method: 'GET' })
       },
     })
 
-    return session as (VoiceSession & { turns: TranscriptTurn[] }) | null
+    return session as (VoiceSession & { turns: Array<TranscriptTurn> }) | null
   })
 
 // ==========================================
@@ -112,7 +112,7 @@ export const getSessionByIdFn = createServerFn({ method: 'GET' })
       throw new Error('Session not found')
     }
 
-    return session as VoiceSession & { turns: TranscriptTurn[] }
+    return session as VoiceSession & { turns: Array<TranscriptTurn> }
   })
 
 // ==========================================
@@ -139,7 +139,7 @@ export const getSessionByDateFn = createServerFn({ method: 'GET' })
       },
     })
 
-    return session as (VoiceSession & { turns: TranscriptTurn[] }) | null
+    return session as (VoiceSession & { turns: Array<TranscriptTurn> }) | null
   })
 
 // ==========================================

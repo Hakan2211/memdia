@@ -370,7 +370,7 @@ interface FileInfo {
 /**
  * List files in a directory
  */
-export async function listFiles(directoryPath: string): Promise<FileInfo[]> {
+export async function listFiles(directoryPath: string): Promise<Array<FileInfo>> {
   const config = getConfig()
   validateConfig(config)
 

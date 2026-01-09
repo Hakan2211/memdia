@@ -3,10 +3,10 @@
  * View categorized insights from reflections
  */
 
-import { createFileRoute, getRouteApi } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Lightbulb } from 'lucide-react'
 import { getInsightsByCategoryFn } from '../../server/insights.fn'
-import { MOCK_INSIGHTS_BY_CATEGORY } from '../../lib/mock/insights-mock-data'
 import { InsightCard } from '../../components/insights/insight-card'
 import {
   Card,
@@ -15,17 +15,14 @@ import {
   CardTitle,
 } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
-import { Lightbulb } from 'lucide-react'
-import type { InsightCategory } from '../../types/insights'
 import { INSIGHT_CATEGORY_META } from '../../types/insights'
+import type { InsightCategory } from '../../types/insights'
 
 export const Route = createFileRoute('/_app/insights/insights')({
   component: InsightsTab,
 })
 
-const parentRoute = getRouteApi('/_app/insights')
-
-const CATEGORY_ORDER: InsightCategory[] = [
+const CATEGORY_ORDER: Array<InsightCategory> = [
   'realization',
   'goal',
   'gratitude',
@@ -37,14 +34,9 @@ const CATEGORY_ORDER: InsightCategory[] = [
 ]
 
 function InsightsTab() {
-  const { mock } = parentRoute.useSearch()
-
   const { data: byCategory, isLoading } = useQuery({
-    queryKey: ['insights', 'insights', 'byCategory', mock],
-    queryFn: () =>
-      mock
-        ? Promise.resolve(MOCK_INSIGHTS_BY_CATEGORY)
-        : getInsightsByCategoryFn(),
+    queryKey: ['insights', 'insights', 'byCategory'],
+    queryFn: () => getInsightsByCategoryFn(),
   })
 
   if (isLoading) {

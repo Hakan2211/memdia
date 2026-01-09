@@ -3,16 +3,17 @@
  * Manage todos extracted from reflections + manual creation
  */
 
-import { createFileRoute, getRouteApi } from '@tanstack/react-router'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { createFileRoute } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { CheckSquare, Plus, Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 import {
-  getTodosFn,
   createTodoFn,
-  updateTodoFn,
   deleteTodoFn,
+  getTodosFn,
+  updateTodoFn,
 } from '../../server/insights.fn'
-import { MOCK_TODOS } from '../../lib/mock/insights-mock-data'
 import { TodoItem } from '../../components/insights/todo-item'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
@@ -23,24 +24,19 @@ import {
   CardTitle,
 } from '../../components/ui/card'
 import { Skeleton } from '../../components/ui/skeleton'
-import { Plus, CheckSquare, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
 
 export const Route = createFileRoute('/_app/insights/todos')({
   component: TodosTab,
 })
 
-const parentRoute = getRouteApi('/_app/insights')
-
 function TodosTab() {
-  const { mock } = parentRoute.useSearch()
   const queryClient = useQueryClient()
   const [newTodoText, setNewTodoText] = useState('')
   const [showCompleted, setShowCompleted] = useState(false)
 
   const { data: todos, isLoading } = useQuery({
-    queryKey: ['insights', 'todos', mock],
-    queryFn: () => (mock ? Promise.resolve(MOCK_TODOS) : getTodosFn()),
+    queryKey: ['insights', 'todos'],
+    queryFn: () => getTodosFn(),
   })
 
   const createMutation = useMutation({

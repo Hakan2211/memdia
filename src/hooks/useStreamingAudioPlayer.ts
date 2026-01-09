@@ -9,7 +9,7 @@
  * - Queue management for sequential playback
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export interface StreamingAudioPlayerState {
   /** Whether audio is currently playing */

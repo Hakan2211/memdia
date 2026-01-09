@@ -240,7 +240,7 @@ function createMockConnection(events: DeepgramEvents) {
     setTimeout(() => {
       if (!isOpen) return
       events.onTranscript({
-        text: mockTexts[mockTextIndex]!.slice(0, 10),
+        text: mockTexts[mockTextIndex].slice(0, 10),
         isFinal: false,
         confidence: 0.8,
         start: 0,
@@ -253,7 +253,7 @@ function createMockConnection(events: DeepgramEvents) {
     setTimeout(() => {
       if (!isOpen) return
       events.onTranscript({
-        text: mockTexts[mockTextIndex]!,
+        text: mockTexts[mockTextIndex],
         isFinal: true,
         confidence: 0.95,
         start: 0,

@@ -5,8 +5,8 @@
 
 import { cn } from '../../lib/utils'
 import { Badge } from '../ui/badge'
-import type { Mood } from '../../types/insights'
 import { getMoodValence } from '../../types/insights'
+import type { Mood } from '../../types/insights'
 
 // Mood colors organized by valence
 const MOOD_COLORS: Record<Mood, string> = {

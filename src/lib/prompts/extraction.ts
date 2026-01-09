@@ -8,6 +8,16 @@ import {
   INSIGHT_CATEGORIES,
   RELATIONSHIP_TYPES,
 } from '../../types/insights'
+import { LANGUAGE_LABELS  } from '../../types/voice-session'
+import type {Language} from '../../types/voice-session';
+
+/**
+ * Get the English name of a language from its code
+ */
+function getLanguageName(code: string): string {
+  const labels = LANGUAGE_LABELS[code as Language]
+  return labels?.name || 'English'
+}
 
 // System prompt for insight extraction
 export const EXTRACTION_SYSTEM_PROMPT = `You are an expert at analyzing therapeutic reflection conversations and extracting structured insights.
@@ -122,8 +132,15 @@ If a category has no items, use an empty array.
 export function buildExtractionPrompt(
   summary: string,
   transcript: string,
+  language?: string,
 ): string {
-  return `Analyze this reflection conversation and extract structured insights.
+  // Add language instruction if non-English
+  const langInstruction =
+    language && language !== 'en'
+      ? `\n\nLANGUAGE: Output all extracted text content (insights, todo items, topics, context) in ${getLanguageName(language)}. Keep proper nouns/names in their original form. Mood keywords must remain in English (from the allowed list).`
+      : ''
+
+  return `Analyze this reflection conversation and extract structured insights.${langInstruction}
 
 ## Summary
 ${summary || 'No summary available.'}

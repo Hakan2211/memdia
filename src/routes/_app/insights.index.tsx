@@ -3,19 +3,18 @@
  * Dashboard view with stats and recent activity
  */
 
-import { createFileRoute, Link, getRouteApi } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { Calendar, CheckSquare, Smile, Users } from 'lucide-react'
 import {
   getInsightsOverviewFn,
   getReflectionTimelineFn,
 } from '../../server/insights.fn'
-import { MOCK_OVERVIEW, MOCK_TIMELINE } from '../../lib/mock/insights-mock-data'
 import { StatCard } from '../../components/insights/stat-card'
 import { MoodBadge } from '../../components/insights/mood-badge'
 import { TopicPill } from '../../components/insights/topic-pill'
 import { InsightItem } from '../../components/insights/insight-card'
 import { TimelineItem } from '../../components/insights/timeline-item'
-import { CheckSquare, Users, Smile, Calendar } from 'lucide-react'
 import { Skeleton } from '../../components/ui/skeleton'
 import {
   Card,
@@ -28,21 +27,15 @@ export const Route = createFileRoute('/_app/insights/')({
   component: OverviewTab,
 })
 
-const parentRoute = getRouteApi('/_app/insights')
-
 function OverviewTab() {
-  const { mock } = parentRoute.useSearch()
-
   const { data: overview, isLoading: overviewLoading } = useQuery({
-    queryKey: ['insights', 'overview', mock],
-    queryFn: () =>
-      mock ? Promise.resolve(MOCK_OVERVIEW) : getInsightsOverviewFn(),
+    queryKey: ['insights', 'overview'],
+    queryFn: () => getInsightsOverviewFn(),
   })
 
   const { data: timeline, isLoading: timelineLoading } = useQuery({
-    queryKey: ['insights', 'timeline', mock],
-    queryFn: () =>
-      mock ? Promise.resolve(MOCK_TIMELINE) : getReflectionTimelineFn(),
+    queryKey: ['insights', 'timeline'],
+    queryFn: () => getReflectionTimelineFn(),
   })
 
   if (overviewLoading) {

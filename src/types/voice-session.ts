@@ -121,7 +121,7 @@ export type Nova2OnlyLanguage = (typeof NOVA2_ONLY_LANGUAGES)[number]
  */
 export type Language = MultilingualLanguage | MonolingualLanguage
 
-export const SUPPORTED_LANGUAGES: Language[] = [
+export const SUPPORTED_LANGUAGES: Array<Language> = [
   ...MULTILINGUAL_LANGUAGES,
   ...MONOLINGUAL_LANGUAGES,
 ]
@@ -261,8 +261,8 @@ export const SESSION_CONFIG = {
 // ==========================================
 
 export const REFLECTION_CONFIG = {
-  /** Maximum reflection duration in seconds (10 minutes) */
-  MAX_DURATION_SECONDS: 600,
+  /** Maximum reflection duration in seconds - TEMPORARY: 3 minutes for testing (was 600 = 10 minutes) */
+  MAX_DURATION_SECONDS: 180,
 
   /** Hard cutoff grace period after timer ends (30 seconds) */
   HARD_CUTOFF_GRACE_SECONDS: 30,
@@ -316,7 +316,7 @@ export interface VoiceSession {
   completedAt: Date | null
   createdAt: Date
   updatedAt: Date
-  turns?: TranscriptTurn[]
+  turns?: Array<TranscriptTurn>
 }
 
 // ==========================================
@@ -368,11 +368,11 @@ export type ServerWSMessage =
 
 export interface SessionResponse {
   session: VoiceSession
-  turns: TranscriptTurn[]
+  turns: Array<TranscriptTurn>
 }
 
 export interface SessionsListResponse {
-  sessions: VoiceSession[]
+  sessions: Array<VoiceSession>
   hasMore: boolean
   nextCursor?: string
 }
@@ -397,13 +397,13 @@ export interface CalendarSessionsResponse {
 export interface AudioManifest {
   sessionId: string
   totalDuration: number
-  turns: {
+  turns: Array<{
     order: number
     speaker: Speaker
     audioUrl: string
     startTime: number
     duration: number
-  }[]
+  }>
 }
 
 // ==========================================
@@ -435,7 +435,7 @@ export interface ReflectionSession {
   completedAt: Date | null
   createdAt: Date
   updatedAt: Date
-  turns?: ReflectionTurn[]
+  turns?: Array<ReflectionTurn>
 }
 
 // ==========================================
@@ -444,11 +444,11 @@ export interface ReflectionSession {
 
 export interface ReflectionResponse {
   session: ReflectionSession
-  turns: ReflectionTurn[]
+  turns: Array<ReflectionTurn>
 }
 
 export interface ReflectionsListResponse {
-  sessions: ReflectionSession[]
+  sessions: Array<ReflectionSession>
   hasMore: boolean
   nextCursor?: string
 }

@@ -3,19 +3,19 @@
  * Displays insight quotes with category styling
  */
 
-import { cn } from '../../lib/utils'
 import {
-  Lightbulb,
-  Target,
-  Heart,
   AlertTriangle,
-  HelpCircle,
   BookOpen,
+  Heart,
+  HelpCircle,
+  Lightbulb,
   Sparkles,
   Star,
+  Target,
 } from 'lucide-react'
-import type { InsightCategory } from '../../types/insights'
+import { cn } from '../../lib/utils'
 import { INSIGHT_CATEGORY_META } from '../../types/insights'
+import type { InsightCategory } from '../../types/insights'
 
 // Icon mapping
 const CATEGORY_ICONS: Record<InsightCategory, React.ElementType> = {

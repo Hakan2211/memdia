@@ -5,7 +5,7 @@
  * Outputs raw 16-bit PCM audio at 16kHz suitable for Deepgram
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export interface AudioRecorderState {
   /** Whether the recorder is currently recording */
@@ -79,7 +79,7 @@ export function useAudioRecorder(
   const isSpeakingRef = useRef(false)
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isMutedRef = useRef(false)
-  const pcmBufferRef = useRef<Int16Array[]>([])
+  const pcmBufferRef = useRef<Array<Int16Array>>([])
   const lastChunkTimeRef = useRef<number>(0)
 
   // Store callbacks in refs to avoid stale closures
@@ -228,8 +228,8 @@ export function useAudioRecorder(
           const fraction = srcIndex - srcIndexFloor
 
           const sample =
-            inputData[srcIndexFloor]! * (1 - fraction) +
-            inputData[srcIndexCeil]! * fraction
+            inputData[srcIndexFloor] * (1 - fraction) +
+            inputData[srcIndexCeil] * fraction
 
           // Convert float32 [-1, 1] to int16 [-32768, 32767]
           const clampedSample = Math.max(-1, Math.min(1, sample))
@@ -383,15 +383,15 @@ export function useAudioRecorder(
  */
 export function useAudioSupport(): {
   isSupported: boolean
-  missingFeatures: string[]
+  missingFeatures: Array<string>
 } {
   const [support, setSupport] = useState({
     isSupported: true,
-    missingFeatures: [] as string[],
+    missingFeatures: [] as Array<string>,
   })
 
   useEffect(() => {
-    const missing: string[] = []
+    const missing: Array<string> = []
 
     if (!navigator.mediaDevices?.getUserMedia) {
       missing.push('getUserMedia')

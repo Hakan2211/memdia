@@ -7,17 +7,17 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { prisma } from '../db'
+import { REFLECTION_CONFIG } from '../types/voice-session'
 import { authMiddleware } from './middleware'
 import {
   checkSubscription,
   ensureTrialInitialized,
 } from './services/subscription.service'
 import type {
-  SessionStatus,
   ReflectionSession,
   ReflectionTurn,
+  SessionStatus,
 } from '../types/voice-session'
-import { REFLECTION_CONFIG } from '../types/voice-session'
 
 // ==========================================
 // Helper Functions
@@ -83,7 +83,7 @@ export const getTodayReflectionFn = createServerFn({ method: 'GET' })
       },
     })
 
-    return session as (ReflectionSession & { turns: ReflectionTurn[] }) | null
+    return session as (ReflectionSession & { turns: Array<ReflectionTurn> }) | null
   })
 
 // ==========================================
@@ -110,7 +110,7 @@ export const getReflectionByIdFn = createServerFn({ method: 'GET' })
       throw new Error('Reflection not found')
     }
 
-    return session as ReflectionSession & { turns: ReflectionTurn[] }
+    return session as ReflectionSession & { turns: Array<ReflectionTurn> }
   })
 
 // ==========================================
@@ -137,7 +137,7 @@ export const getReflectionByDateFn = createServerFn({ method: 'GET' })
       },
     })
 
-    return session as (ReflectionSession & { turns: ReflectionTurn[] }) | null
+    return session as (ReflectionSession & { turns: Array<ReflectionTurn> }) | null
   })
 
 // ==========================================

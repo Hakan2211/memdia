@@ -5,12 +5,13 @@
 
 import { prisma } from '../../db'
 import {
-  type SubscriptionCheckResult,
-  type SubscriptionStatus,
-  type SubscriptionTier,
-  TRIAL_CONFIG,
   SUBSCRIPTION_TIERS,
+  
+  
+  
+  TRIAL_CONFIG
 } from '../../types/subscription'
+import type {SubscriptionCheckResult, SubscriptionStatus, SubscriptionTier} from '../../types/subscription';
 
 /**
  * Initialize trial for a new user
