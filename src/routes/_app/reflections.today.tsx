@@ -964,7 +964,9 @@ function TodayReflection() {
       conversationStreamActions.cancel()
 
       try {
-        await cancelShortReflectionFn({ data: { sessionId: sessionRef.current.id } })
+        await cancelShortReflectionFn({
+          data: { sessionId: sessionRef.current.id },
+        })
       } catch (error) {
         console.error('Failed to cancel short reflection:', error)
       }

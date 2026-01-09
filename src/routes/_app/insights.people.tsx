@@ -3,7 +3,7 @@
  * View people mentioned in reflections with sentiment tracking
  */
 
-import { Link, createFileRoute  } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Calendar, MessageSquare, Users } from 'lucide-react'
@@ -146,10 +146,7 @@ function PeopleTab() {
                         <Link
                           to="/reflections/$date"
                           params={{
-                            date: format(
-                              new Date(mention.date),
-                              'yyyy-MM-dd',
-                            ),
+                            date: format(new Date(mention.date), 'yyyy-MM-dd'),
                           }}
                           className="text-sm font-medium hover:underline flex items-center gap-1"
                           onClick={() => setSelectedPersonId(null)}

@@ -1011,7 +1011,9 @@ function TodaySession() {
 
       // Cancel the short session (doesn't count as an attempt)
       try {
-        await cancelShortSessionFn({ data: { sessionId: sessionRef.current.id } })
+        await cancelShortSessionFn({
+          data: { sessionId: sessionRef.current.id },
+        })
       } catch (error) {
         console.error('Failed to cancel short session:', error)
       }
