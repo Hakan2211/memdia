@@ -72,7 +72,7 @@ export function PersonCard({
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Avatar placeholder */}
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7e9ec9]/10 text-[#7e9ec9] dark:bg-[#7e9ec9]/20 dark:text-[#7e9ec9]">
             <User className="h-5 w-5" />
           </div>
 

@@ -34,7 +34,7 @@ export function TopicPill({
       className={cn(
         'font-normal capitalize cursor-pointer transition-colors',
         selected
-          ? 'bg-violet-600 text-white hover:bg-violet-700'
+          ? 'bg-[#7e9ec9] text-white hover:bg-[#5a7ba6]'
           : 'bg-muted hover:bg-muted/80',
         sizeClasses[size],
         onClick && 'cursor-pointer',

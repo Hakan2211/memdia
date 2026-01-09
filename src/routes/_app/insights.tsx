@@ -68,7 +68,7 @@ function InsightsLayout() {
                 className={cn(
                   'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                   isActive
-                    ? 'border-violet-600 text-violet-600'
+                    ? 'border-[#7e9ec9] text-[#7e9ec9]'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border',
                 )}
               >
