@@ -5,19 +5,16 @@
  * This handler uses h3's defineWebSocket for Nitro integration
  */
 
-import {   defineWebSocket } from 'h3'
+import { defineWebSocket } from 'h3'
 import { prisma } from '../../../../src/db'
-import {
-  
-  streamChatCompletion
-} from '../../../../src/server/services/openrouter.service'
+import { streamChatCompletion } from '../../../../src/server/services/openrouter.service'
 import { streamSpeech } from '../../../../src/server/services/falai-streaming.service'
 import {
   buildConversationSystemPrompt,
   getRandomGreeting,
 } from '../../../../src/lib/prompts/conversation'
-import type {ChatMessage} from '../../../../src/server/services/openrouter.service';
-import type {WebSocketMessage, WebSocketPeer} from 'h3';
+import type { ChatMessage } from '../../../../src/server/services/openrouter.service'
+import type { WebSocketMessage, WebSocketPeer } from 'h3'
 import type { AIPersonality } from '../../../../src/types/voice-session'
 
 // ==========================================

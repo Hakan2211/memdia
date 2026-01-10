@@ -1,5 +1,6 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
 import { getSessionFn } from '../server/auth.fn'
+import { FloatingAudioToggle } from '@/components/audio/FloatingAudioToggle'
 
 /**
  * Auth Layout
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/_auth')({
 function AuthLayout() {
   return (
     <div className="grid min-h-screen place-items-center bg-muted/40 px-4">
+      <FloatingAudioToggle />
       <Outlet />
     </div>
   )

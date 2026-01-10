@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { AudioToggle } from '@/components/audio/AudioToggle'
 import { cn } from '@/lib/utils'
 
 export function LandingHeader() {
@@ -14,9 +15,10 @@ export function LandingHeader() {
   const headerBorderRadius = useTransform(scrollY, [0, 100], [0, 24])
 
   useEffect(() => {
-    return scrollY.onChange((latest) => {
+    const unsubscribe = scrollY.on('change', (latest) => {
       setIsScrolled(latest > 50)
     })
+    return unsubscribe
   }, [scrollY])
 
   const scrollToSection = (id: string) => {
@@ -56,7 +58,12 @@ export function LandingHeader() {
               <button
                 key={section}
                 onClick={() => scrollToSection(section)}
-                className="text-sm font-medium text-slate-600 hover:text-[#5a7ba6] transition-colors cursor-pointer relative group capitalize"
+                className={cn(
+                  'text-sm font-medium transition-colors cursor-pointer relative group capitalize',
+                  isScrolled
+                    ? 'text-slate-600 hover:text-[#5a7ba6]'
+                    : 'text-slate-200 hover:text-white',
+                )}
               >
                 {section.replace(/-/g, ' ')}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#5a7ba6] transition-all duration-300 group-hover:w-full" />
@@ -64,13 +71,19 @@ export function LandingHeader() {
             ))}
           </nav>
 
-          {/* Auth Buttons */}
+          {/* Audio Toggle & Auth Buttons */}
           <div className="flex items-center gap-3">
+            <AudioToggle variant={isScrolled ? 'dark' : 'light'} />
             <Link to="/login">
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-slate-600 hover:text-[#5a7ba6] hover:bg-[#7e9ec9]/10 cursor-pointer"
+                className={cn(
+                  'hover:text-[#5a7ba6] hover:bg-[#7e9ec9]/10 cursor-pointer',
+                  isScrolled
+                    ? 'text-slate-600'
+                    : 'text-slate-200 hover:text-white',
+                )}
               >
                 Sign in
               </Button>

@@ -34,10 +34,7 @@ export function CTASection() {
           </p>
 
           {/* CTA Button */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
+          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Link to="/signup">
               <button className="group relative inline-flex h-14 overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-2 focus:ring-[#7e9ec9] focus:ring-offset-2 focus:ring-offset-slate-900">
                 {/* Spinning gradient border */}

@@ -93,11 +93,7 @@ export function HowItWorksSection() {
   const isInView = useInView(ref, { once: true, amount: 0.2 })
 
   return (
-    <section
-      id="how-it-works"
-      className="py-20 lg:py-28 bg-slate-50"
-      ref={ref}
-    >
+    <section id="how-it-works" className="py-20 lg:py-28 bg-slate-50" ref={ref}>
       <div className="container mx-auto px-4 lg:px-8">
         {/* Header */}
         <motion.div
@@ -114,8 +110,8 @@ export function HowItWorksSection() {
             Works
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            A simple three-step process to transform your daily experiences
-            into meaningful insights.
+            A simple three-step process to transform your daily experiences into
+            meaningful insights.
           </p>
         </motion.div>
 

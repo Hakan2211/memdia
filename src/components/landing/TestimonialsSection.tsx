@@ -32,7 +32,7 @@ const testimonials = [
   },
   {
     quote:
-      "Being able to use it in Spanish means I can express myself naturally. The reflection sessions have helped me process a lot.",
+      'Being able to use it in Spanish means I can express myself naturally. The reflection sessions have helped me process a lot.',
     author: 'Carlos R.',
     role: 'Marketing Manager',
     duration: 'Using for 2 months',
@@ -75,7 +75,7 @@ export function TestimonialsSection() {
     stopAutoPlay()
     setDirection(-1)
     setCurrentIndex(
-      (prev) => (prev - 1 + testimonials.length) % testimonials.length
+      (prev) => (prev - 1 + testimonials.length) % testimonials.length,
     )
     startAutoPlay()
   }
@@ -203,7 +203,7 @@ export function TestimonialsSection() {
                   'w-2.5 h-2.5 rounded-full transition-all duration-300',
                   index === currentIndex
                     ? 'bg-[#7e9ec9] w-8'
-                    : 'bg-slate-300 hover:bg-slate-400'
+                    : 'bg-slate-300 hover:bg-slate-400',
                 )}
                 aria-label={`Go to testimonial ${index + 1}`}
               />

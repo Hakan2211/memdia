@@ -131,7 +131,7 @@ const PrismShaderMaterial = shaderMaterial(
       wob = mat2(c0, c1, c2, c0);
     }
 
-    const int STEPS = 100;
+    const int STEPS = 50;
     for (int i = 0; i < STEPS; i++) {
       p = vec3(f, z);
       p.xz = p.xz * wob;
@@ -172,22 +172,30 @@ declare module '@react-three/fiber' {
   }
 }
 
-function PrismPlane() {
+export function PrismPlane() {
   const materialRef = useRef<THREE.ShaderMaterial>(null)
 
   useFrame(({ clock, size }) => {
     if (materialRef.current) {
       materialRef.current.uniforms.iTime.value = clock.getElapsedTime()
-      materialRef.current.uniforms.iResolution.value.set(size.width, size.height)
+      materialRef.current.uniforms.iResolution.value.set(
+        size.width,
+        size.height,
+      )
       // Calculate pixel scale based on canvas height and scale factor
-      materialRef.current.uniforms.uPxScale.value = 1 / (size.height * 0.1 * SCALE)
+      materialRef.current.uniforms.uPxScale.value =
+        1 / (size.height * 0.1 * SCALE)
     }
   })
 
   return (
-    <mesh>
+    <mesh renderOrder={-1000}>
       <planeGeometry args={[2, 2]} />
-      <prismShaderMaterial ref={materialRef} />
+      <prismShaderMaterial
+        ref={materialRef}
+        depthTest={false}
+        depthWrite={false}
+      />
     </mesh>
   )
 }
@@ -198,7 +206,14 @@ export function PrismBackground() {
       <Canvas
         camera={{ position: [0, 0, 1], fov: 45 }}
         style={{ width: '100%', height: '100%' }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
+        gl={{
+          powerPreference: 'high-performance',
+          antialias: false,
+          stencil: false,
+          depth: false,
+        }}
+        frameloop="always"
       >
         <PrismPlane />
       </Canvas>

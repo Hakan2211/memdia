@@ -70,6 +70,7 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^4.0.6",
     "three": "^0.182.0",
+    "three-custom-shader-material": "6.3",
     "tw-animate-css": "^1.3.6",
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^4.1.11"
