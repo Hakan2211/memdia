@@ -10,7 +10,7 @@ import {
 } from 'react'
 import type { ReactNode } from 'react'
 
-const AUDIO_SRC = '/audio/ELEVEN KINGDOMS - Tears of Eternity.mp3'
+const AUDIO_SRC = '/audio/Contigo-quiero-estar.mp3'
 const STORAGE_KEY = 'memdia-bg-audio-enabled'
 
 export interface AudioAnalyzerData {
@@ -50,7 +50,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const audioContextRef = useRef<globalThis.AudioContext | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null)
-  const frequencyDataRef = useRef<Uint8Array | null>(null)
+  const frequencyDataRef = useRef<Uint8Array<ArrayBuffer> | null>(null)
   const processedDataRef = useRef<AudioAnalyzerData>({ ...IDLE_AUDIO_DATA })
 
   useEffect(() => {

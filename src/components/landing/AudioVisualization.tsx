@@ -240,6 +240,7 @@ function LivingCore() {
   const mesh = useRef<THREE.Mesh>(null)
   const materialRef = useRef<any>(null)
   const { valuesRef } = useAudioReactiveContext()
+  const timeRef = useRef(0)
 
   // Create base geometry with tangents - reduced subdivision for performance
   const geometry = useMemo(() => {
@@ -253,7 +254,7 @@ function LivingCore() {
     () => ({
       uTime: { value: 0 },
       uPositionFrequency: { value: 0.5 },
-      uTimeFrequency: { value: 0.4 },
+      uTimeFrequency: { value: 1.0 }, // Constant 1.0 - speed is baked into uTime accumulation
       uStrength: { value: 0.3 },
       uWarpPositionFrequency: { value: 0.38 },
       uWarpTimeFrequency: { value: 0.12 },
@@ -264,13 +265,14 @@ function LivingCore() {
     [],
   )
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (materialRef.current) {
       const values = valuesRef.current
-      materialRef.current.uniforms.uTime.value = clock.getElapsedTime()
+      // Accumulate time at audio-reactive rate (not multiply large time by variable)
+      // This way speed responds to audio, but no wild jumps from large time × variable
+      timeRef.current += delta * values.sphereTimeFrequency
+      materialRef.current.uniforms.uTime.value = timeRef.current
       materialRef.current.uniforms.uStrength.value = values.sphereStrength
-      materialRef.current.uniforms.uTimeFrequency.value =
-        values.sphereTimeFrequency
     }
   })
 
