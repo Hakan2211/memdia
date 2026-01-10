@@ -1,17 +1,29 @@
-import { useRef, useMemo, useState, useEffect, createContext, useContext } from 'react'
+import {
+  useRef,
+  useMemo,
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+} from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Mic } from 'lucide-react'
 import * as THREE from 'three'
 import CustomShaderMaterial from 'three-custom-shader-material'
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import { useAudioReactive, type AudioReactiveValues } from '@/hooks/useAudioReactive'
+import {
+  useAudioReactive,
+  type AudioReactiveValues,
+} from '@/hooks/useAudioReactive'
 
 // --- Audio Reactive Context ---
 interface AudioReactiveContextType {
   valuesRef: React.MutableRefObject<AudioReactiveValues>
 }
 
-const AudioReactiveContext = createContext<AudioReactiveContextType | null>(null)
+const AudioReactiveContext = createContext<AudioReactiveContextType | null>(
+  null,
+)
 
 function useAudioReactiveContext() {
   const context = useContext(AudioReactiveContext)
@@ -231,7 +243,7 @@ function LivingCore() {
 
   // Create base geometry with tangents - reduced subdivision for performance
   const geometry = useMemo(() => {
-    const icosahedron = new THREE.IcosahedronGeometry(1.5, 24) // Reduced from 32
+    const icosahedron = new THREE.IcosahedronGeometry(1.5, 64) // Reduced from 32
     const geo = mergeVertices(icosahedron)
     geo.computeTangents()
     return geo
@@ -257,7 +269,8 @@ function LivingCore() {
       const values = valuesRef.current
       materialRef.current.uniforms.uTime.value = clock.getElapsedTime()
       materialRef.current.uniforms.uStrength.value = values.sphereStrength
-      materialRef.current.uniforms.uTimeFrequency.value = values.sphereTimeFrequency
+      materialRef.current.uniforms.uTimeFrequency.value =
+        values.sphereTimeFrequency
     }
   })
 
@@ -281,6 +294,7 @@ function Particles() {
   const count = 30 // Reduced from 40
   const points = useRef<THREE.Points>(null)
   const { valuesRef } = useAudioReactiveContext()
+  const timeRef = useRef(0)
 
   const [positions, scales] = useMemo(() => {
     const pos = new Float32Array(count * 3)
@@ -314,12 +328,13 @@ function Particles() {
     return new THREE.CanvasTexture(canvas)
   }, [])
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (points.current) {
       const values = valuesRef.current
-      const t = clock.getElapsedTime() * values.particleRotationSpeed
-      points.current.rotation.y = t
-      points.current.rotation.x = t * 0.5
+      // Accumulate time scaled by rotation speed for smooth transitions
+      timeRef.current += delta * values.particleRotationSpeed
+      points.current.rotation.y = timeRef.current
+      points.current.rotation.x = timeRef.current * 0.5
     }
   })
 
@@ -351,13 +366,16 @@ function Particles() {
 function BreathingRings() {
   const group = useRef<THREE.Group>(null)
   const { valuesRef } = useAudioReactiveContext()
+  const timeRef = useRef(0)
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (group.current) {
       const values = valuesRef.current
-      const t = clock.getElapsedTime() * values.ringSpeedMultiplier
-      group.current.rotation.z = Math.sin(t * 0.2) * 0.2
-      group.current.rotation.x = Math.PI / 2 + Math.sin(t * 0.3) * 0.1
+      // Accumulate time scaled by speed multiplier for smooth transitions
+      timeRef.current += delta * values.ringSpeedMultiplier
+      group.current.rotation.z = Math.sin(timeRef.current * 0.2) * 0.2
+      group.current.rotation.x =
+        Math.PI / 2 + Math.sin(timeRef.current * 0.3) * 0.1
     }
   })
 
@@ -374,12 +392,14 @@ function Ring({ index, total }: { index: number; total: number }) {
   const mesh = useRef<THREE.Mesh>(null)
   const { valuesRef } = useAudioReactiveContext()
   const delay = index * (2 / total)
+  const timeRef = useRef(delay) // Start with delay offset
 
-  useFrame(({ clock }) => {
+  useFrame((_, delta) => {
     if (mesh.current) {
       const values = valuesRef.current
-      const t = clock.getElapsedTime() * values.ringSpeedMultiplier
-      const cycle = (t + delay) % 3
+      // Accumulate time scaled by speed multiplier for smooth transitions
+      timeRef.current += delta * values.ringSpeedMultiplier
+      const cycle = timeRef.current % 3
       const progress = cycle / 3
 
       const baseScale = 2 + progress * 2.5

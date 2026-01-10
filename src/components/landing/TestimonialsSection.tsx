@@ -11,7 +11,6 @@ const testimonials = [
       "Memdia has become my daily ritual. It's like having a thoughtful friend who really listens and helps me make sense of my days.",
     author: 'Sarah M.',
     role: 'Product Designer',
-    duration: 'Using for 3 months',
     avatar: 'SM',
   },
   {
@@ -19,7 +18,6 @@ const testimonials = [
       'The insights dashboard is incredible. I can actually see patterns in my mood and understand what affects my wellbeing.',
     author: 'James L.',
     role: 'Software Engineer',
-    duration: 'Using for 6 months',
     avatar: 'JL',
   },
   {
@@ -27,7 +25,6 @@ const testimonials = [
       "I've tried journaling apps before, but speaking feels so much more natural. The AI-generated images are a beautiful touch.",
     author: 'Maria K.',
     role: 'Therapist',
-    duration: 'Using for 4 months',
     avatar: 'MK',
   },
   {
@@ -35,7 +32,6 @@ const testimonials = [
       'Being able to use it in Spanish means I can express myself naturally. The reflection sessions have helped me process a lot.',
     author: 'Carlos R.',
     role: 'Marketing Manager',
-    duration: 'Using for 2 months',
     avatar: 'CR',
   },
   {
@@ -43,7 +39,6 @@ const testimonials = [
       'The 3-minute format is perfect for my busy schedule. Quick enough to do daily, meaningful enough to make a difference.',
     author: 'Emily W.',
     role: 'Startup Founder',
-    duration: 'Using for 5 months',
     avatar: 'EW',
   },
 ]
@@ -128,8 +123,8 @@ export function TestimonialsSection() {
             are saying
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Join thousands of people who are building a deeper understanding of
-            themselves.
+            Join hundreds of people who are capturing their memories and
+            reflecting by talking.
           </p>
         </motion.div>
 
@@ -138,21 +133,21 @@ export function TestimonialsSection() {
           {/* Navigation Arrows */}
           <button
             onClick={goToPrev}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-16 z-10 p-2 rounded-full bg-white border border-slate-200 shadow-md hover:shadow-lg transition-shadow"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 lg:-translate-x-20 z-10 p-3 rounded-full bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-slate-600 hover:text-[#7e9ec9]"
             aria-label="Previous testimonial"
           >
-            <ChevronLeft className="h-5 w-5 text-slate-600" />
+            <ChevronLeft className="h-6 w-6" />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-16 z-10 p-2 rounded-full bg-white border border-slate-200 shadow-md hover:shadow-lg transition-shadow"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 lg:translate-x-20 z-10 p-3 rounded-full bg-white/80 backdrop-blur-sm border border-slate-200/50 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 text-slate-600 hover:text-[#7e9ec9]"
             aria-label="Next testimonial"
           >
-            <ChevronRight className="h-5 w-5 text-slate-600" />
+            <ChevronRight className="h-6 w-6" />
           </button>
 
           {/* Testimonial Card */}
-          <div className="relative min-h-[280px] flex items-center justify-center">
+          <div className="relative min-h-[320px] flex items-center justify-center">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentIndex}
@@ -161,30 +156,33 @@ export function TestimonialsSection() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
                 className="w-full"
               >
-                <div className="relative rounded-2xl border border-slate-200 bg-white p-8 lg:p-10 shadow-lg">
+                <div className="relative rounded-3xl border border-white/50 bg-white/60 backdrop-blur-xl p-8 lg:p-12 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                   {/* Quote Icon */}
-                  <Quote className="absolute top-6 left-6 h-8 w-8 text-[#7e9ec9]/20" />
+                  <div className="absolute -top-5 -left-2 rotate-12 bg-white rounded-full p-2 shadow-sm border border-slate-100">
+                    <Quote className="h-8 w-8 text-[#7e9ec9] fill-[#7e9ec9]/10" />
+                  </div>
 
                   {/* Quote Text */}
-                  <p className="text-lg lg:text-xl text-slate-700 leading-relaxed mb-8 pt-4">
-                    "{testimonials[currentIndex].quote}"
-                  </p>
+                  <div className="relative z-10">
+                    <p className="text-xl lg:text-2xl font-medium text-slate-800 leading-relaxed mb-8 text-center italic">
+                      "{testimonials[currentIndex].quote}"
+                    </p>
 
-                  {/* Author */}
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] flex items-center justify-center text-white font-semibold">
-                      {testimonials[currentIndex].avatar}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-slate-900">
-                        {testimonials[currentIndex].author}
+                    {/* Author */}
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-[#7e9ec9]/25 ring-4 ring-white">
+                        {testimonials[currentIndex].avatar}
                       </div>
-                      <div className="text-sm text-slate-500">
-                        {testimonials[currentIndex].role} &middot;{' '}
-                        {testimonials[currentIndex].duration}
+                      <div className="text-center">
+                        <div className="font-bold text-slate-900 text-lg">
+                          {testimonials[currentIndex].author}
+                        </div>
+                        <div className="text-sm font-medium text-[#7e9ec9]">
+                          {testimonials[currentIndex].role}
+                        </div>
                       </div>
                     </div>
                   </div>

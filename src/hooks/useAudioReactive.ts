@@ -12,32 +12,19 @@ export interface AudioReactiveValues {
   particleRotationSpeed: number
 }
 
-// Spring state tracks both value and velocity for momentum
-interface SpringValue {
-  value: number
-  velocity: number
+// Smoothing configuration per property
+interface SmoothConfig {
+  speed: number // 0-1, higher = faster response
+  min: number // Minimum allowed value
+  max: number // Maximum allowed value
 }
 
-interface SpringState {
-  sphereStrength: SpringValue
-  sphereTimeFrequency: SpringValue
-  ringSpeedMultiplier: SpringValue
-  ringScaleMultiplier: SpringValue
-  particleRotationSpeed: SpringValue
-}
-
-// Spring configuration per property
-interface SpringConfig {
-  stiffness: number // Higher = faster response
-  damping: number // Higher = less oscillation
-}
-
-const SPRING_CONFIGS: Record<keyof AudioReactiveValues, SpringConfig> = {
-  sphereStrength: { stiffness: 150, damping: 12 }, // Fast, bouncy for bass
-  sphereTimeFrequency: { stiffness: 100, damping: 16 }, // Medium, smooth
-  ringSpeedMultiplier: { stiffness: 80, damping: 18 }, // Slower, flowing
-  ringScaleMultiplier: { stiffness: 120, damping: 14 }, // Snappy with bounce
-  particleRotationSpeed: { stiffness: 60, damping: 20 }, // Very smooth
+const SMOOTH_CONFIGS: Record<keyof AudioReactiveValues, SmoothConfig> = {
+  sphereStrength: { speed: 0.08, min: 0.1, max: 0.7 },
+  sphereTimeFrequency: { speed: 0.06, min: 0.15, max: 0.9 },
+  ringSpeedMultiplier: { speed: 0.05, min: 0.3, max: 3.0 },
+  ringScaleMultiplier: { speed: 0.07, min: 0.8, max: 1.6 },
+  particleRotationSpeed: { speed: 0.04, min: 0.03, max: 0.4 },
 }
 
 // Idle/rest values
@@ -49,52 +36,37 @@ const IDLE_VALUES: AudioReactiveValues = {
   particleRotationSpeed: 0.05,
 }
 
-// Create initial spring state from idle values
-function createInitialSpringState(): SpringState {
-  return {
-    sphereStrength: { value: IDLE_VALUES.sphereStrength, velocity: 0 },
-    sphereTimeFrequency: { value: IDLE_VALUES.sphereTimeFrequency, velocity: 0 },
-    ringSpeedMultiplier: { value: IDLE_VALUES.ringSpeedMultiplier, velocity: 0 },
-    ringScaleMultiplier: { value: IDLE_VALUES.ringScaleMultiplier, velocity: 0 },
-    particleRotationSpeed: { value: IDLE_VALUES.particleRotationSpeed, velocity: 0 },
-  }
-}
-
-// Spring physics update - simulates a damped harmonic oscillator
-function updateSpring(
-  current: SpringValue,
+// Simple exponential smoothing - no velocity, no accumulation possible
+function smoothValue(
+  current: number,
   target: number,
-  delta: number,
-  config: SpringConfig,
-): SpringValue {
-  // Clamp delta to prevent instability with large time steps
-  const dt = Math.min(delta, 0.033) // Cap at ~30fps worth of time
+  config: SmoothConfig,
+): number {
+  // Clamp target first to ensure we never chase an out-of-bounds value
+  const clampedTarget = Math.max(config.min, Math.min(config.max, target))
 
-  // Spring force: F = -k * (x - target)
-  const displacement = current.value - target
-  const springForce = -config.stiffness * displacement
+  // Exponential smoothing: moves current toward target by a fraction each frame
+  const newValue = current + (clampedTarget - current) * config.speed
 
-  // Damping force: F = -c * v
-  const dampingForce = -config.damping * current.velocity
-
-  // Total acceleration (mass = 1)
-  const acceleration = springForce + dampingForce
-
-  // Integrate velocity and position (semi-implicit Euler for stability)
-  const newVelocity = current.velocity + acceleration * dt
-  const newValue = current.value + newVelocity * dt
-
-  return { value: newValue, velocity: newVelocity }
+  // Clamp output as safety net - this value can NEVER exceed bounds
+  return Math.max(config.min, Math.min(config.max, newValue))
 }
 
 export function useAudioReactive() {
-  const { isPlaying, getAudioData } = useAudio()
-  const springState = useRef<SpringState>(createInitialSpringState())
+  const { isPlaying, getAudioData, loopCount } = useAudio()
+  const smoothedValues = useRef<AudioReactiveValues>({ ...IDLE_VALUES })
   const timeRef = useRef(0)
+  const lastLoopCountRef = useRef(loopCount)
 
   const update = useCallback(
     (delta: number): AudioReactiveValues => {
       timeRef.current += delta
+
+      // Reset smoothed values when audio loops back to the beginning
+      if (loopCount !== lastLoopCountRef.current) {
+        lastLoopCountRef.current = loopCount
+        smoothedValues.current = { ...IDLE_VALUES }
+      }
 
       // Calculate target values based on audio or idle state
       let targets: AudioReactiveValues
@@ -122,29 +94,24 @@ export function useAudioReactive() {
         }
       }
 
-      // Update each spring with its own configuration
-      const state = springState.current
-      const keys = Object.keys(SPRING_CONFIGS) as (keyof AudioReactiveValues)[]
+      // Update each value with exponential smoothing
+      const state = smoothedValues.current
+      const keys = Object.keys(SMOOTH_CONFIGS) as (keyof AudioReactiveValues)[]
 
       for (const key of keys) {
-        state[key] = updateSpring(
-          state[key],
-          targets[key],
-          delta,
-          SPRING_CONFIGS[key],
-        )
+        state[key] = smoothValue(state[key], targets[key], SMOOTH_CONFIGS[key])
       }
 
-      // Extract just the values for the return interface
+      // Return a copy of the current state
       return {
-        sphereStrength: state.sphereStrength.value,
-        sphereTimeFrequency: state.sphereTimeFrequency.value,
-        ringSpeedMultiplier: state.ringSpeedMultiplier.value,
-        ringScaleMultiplier: state.ringScaleMultiplier.value,
-        particleRotationSpeed: state.particleRotationSpeed.value,
+        sphereStrength: state.sphereStrength,
+        sphereTimeFrequency: state.sphereTimeFrequency,
+        ringSpeedMultiplier: state.ringSpeedMultiplier,
+        ringScaleMultiplier: state.ringScaleMultiplier,
+        particleRotationSpeed: state.particleRotationSpeed,
       }
     },
-    [isPlaying, getAudioData],
+    [isPlaying, getAudioData, loopCount],
   )
 
   return { update, isPlaying }

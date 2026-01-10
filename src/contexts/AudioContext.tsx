@@ -30,6 +30,7 @@ const IDLE_AUDIO_DATA: AudioAnalyzerData = {
 interface AudioContextType {
   isPlaying: boolean
   isLoaded: boolean
+  loopCount: number
   toggle: () => void
   getAudioData: () => AudioAnalyzerData
 }
@@ -40,6 +41,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [loopCount, setLoopCount] = useState(0)
+
+  // Refs for loop detection
+  const lastTimeRef = useRef(0)
 
   // Web Audio API refs for frequency analysis
   const audioContextRef = useRef<globalThis.AudioContext | null>(null)
@@ -60,14 +65,26 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     const handlePlay = () => setIsPlaying(true)
     const handlePause = () => setIsPlaying(false)
 
+    // Detect audio loop: when currentTime jumps backward significantly
+    const handleTimeUpdate = () => {
+      const currentTime = audio.currentTime
+      // If time jumped backward by more than 1 second, audio has looped
+      if (lastTimeRef.current - currentTime > 1) {
+        setLoopCount((prev) => prev + 1)
+      }
+      lastTimeRef.current = currentTime
+    }
+
     audio.addEventListener('canplaythrough', handleCanPlay)
     audio.addEventListener('play', handlePlay)
     audio.addEventListener('pause', handlePause)
+    audio.addEventListener('timeupdate', handleTimeUpdate)
 
     return () => {
       audio.removeEventListener('canplaythrough', handleCanPlay)
       audio.removeEventListener('play', handlePlay)
       audio.removeEventListener('pause', handlePause)
+      audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.pause()
       audio.src = ''
       // Clean up Web Audio API
@@ -176,7 +193,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   }, [isPlaying, initializeAnalyzer])
 
   return (
-    <AudioContext.Provider value={{ isPlaying, isLoaded, toggle, getAudioData }}>
+    <AudioContext.Provider
+      value={{ isPlaying, isLoaded, loopCount, toggle, getAudioData }}
+    >
       {children}
     </AudioContext.Provider>
   )

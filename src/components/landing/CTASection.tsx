@@ -29,8 +29,9 @@ export function CTASection() {
             ?
           </h2>
           <p className="text-lg text-slate-300 mb-10 max-w-xl mx-auto">
-            Join thousands of people who are building a deeper understanding of
-            themselves through daily voice journaling.
+            Join hundreds of people who are capturing and tracking their daily
+            memories and reflecting their thoughts, ideas and feelings by
+            talking.
           </p>
 
           {/* CTA Button */}
@@ -47,7 +48,7 @@ export function CTASection() {
                 />
                 {/* Button content */}
                 <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-900 px-10 py-1 text-base font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-slate-800 gap-2">
-                  Start Free Today
+                  Start Today for €19
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </button>
@@ -55,9 +56,7 @@ export function CTASection() {
           </motion.div>
 
           {/* Sub-text */}
-          <p className="mt-6 text-sm text-slate-400">
-            No credit card required. Cancel anytime.
-          </p>
+          <p className="mt-6 text-sm text-slate-400">Cancel anytime.</p>
         </motion.div>
       </div>
     </section>

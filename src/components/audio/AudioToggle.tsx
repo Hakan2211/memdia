@@ -14,14 +14,19 @@ interface AudioToggleProps {
   className?: string
 }
 
-export function AudioToggle({ variant = 'light', className }: AudioToggleProps) {
+export function AudioToggle({
+  variant = 'light',
+  className,
+}: AudioToggleProps) {
   const { isPlaying, isLoaded, toggle } = useAudio()
 
   const getBarColor = () => {
     if (variant === 'light') {
       return isPlaying ? 'bg-white' : 'bg-white/60 group-hover:bg-white/90'
     } else {
-      return isPlaying ? 'bg-[#5a7ba6]' : 'bg-slate-400 group-hover:bg-slate-600'
+      return isPlaying
+        ? 'bg-[#5a7ba6]'
+        : 'bg-slate-400 group-hover:bg-slate-600'
     }
   }
 
@@ -39,12 +44,17 @@ export function AudioToggle({ variant = 'light', className }: AudioToggleProps) 
           )}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          aria-label={isPlaying ? 'Pause background music' : 'Play background music'}
+          aria-label={
+            isPlaying ? 'Pause background music' : 'Play background music'
+          }
         >
           {[0, 1, 2, 3].map((i) => (
             <motion.span
               key={i}
-              className={cn('w-[3px] rounded-full transition-colors duration-300', getBarColor())}
+              className={cn(
+                'w-[3px] rounded-full transition-colors duration-300',
+                getBarColor(),
+              )}
               initial={{ height: 4 }}
               animate={
                 isPlaying

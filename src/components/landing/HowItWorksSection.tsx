@@ -40,32 +40,32 @@ function StepCard({
   const Icon = step.icon
 
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1 text-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.5, delay: index * 0.15 }}
-        className="relative z-10"
+        className="relative z-10 flex flex-col items-center"
       >
         {/* Step Number */}
-        <div className="mb-4 text-sm font-bold text-[#7e9ec9]">
+        <div className="mb-4 text-sm font-bold tracking-wider text-[#7e9ec9] uppercase">
           {step.number}
         </div>
 
         {/* Icon Circle */}
         <motion.div
           whileHover={{ scale: 1.05 }}
-          className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-lg shadow-[#7e9ec9]/30"
+          className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-xl shadow-[#7e9ec9]/20 ring-4 ring-white"
         >
           <Icon className="h-8 w-8 text-white" />
         </motion.div>
 
         {/* Content */}
-        <h3 className="mb-3 text-xl font-semibold text-slate-900">
+        <h3 className="mb-3 text-xl font-bold text-slate-900">
           {step.title}
         </h3>
-        <p className="text-slate-600 leading-relaxed">{step.description}</p>
+        <p className="text-slate-600 leading-relaxed max-w-sm mx-auto">{step.description}</p>
       </motion.div>
 
       {/* Connector Line (hidden on last item and mobile) */}
@@ -75,12 +75,12 @@ function StepCard({
           whileInView={{ scaleX: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8, delay: index * 0.15 + 0.3 }}
-          className="hidden lg:block absolute top-24 left-[calc(50%+40px)] right-0 h-0.5 origin-left"
+          className="hidden lg:block absolute top-[68px] left-[calc(50%+64px)] w-[calc(100%-128px)] h-0.5 origin-left"
         >
           <div className="h-full w-full bg-gradient-to-r from-[#7e9ec9] to-[#7e9ec9]/30" />
           {/* Arrow */}
           <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1">
-            <div className="w-2 h-2 border-t-2 border-r-2 border-[#7e9ec9]/30 rotate-45" />
+            <div className="w-2.5 h-2.5 border-t-2 border-r-2 border-[#7e9ec9]/50 rotate-45" />
           </div>
         </motion.div>
       )}

@@ -64,7 +64,9 @@ function LoginPage() {
   return (
     <div className="w-full max-w-md space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+        <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-[#5a7ba6] to-[#7e9ec9] bg-clip-text text-transparent">
+          Welcome back
+        </h1>
         <p className="mt-2 text-muted-foreground">
           Sign in to your account to continue
         </p>
@@ -148,7 +150,11 @@ function LoginPage() {
             )}
           </form.Field>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full bg-linear-to-r from-[#7e9ec9] to-[#5a7ba6] hover:opacity-90 transition-opacity text-white border-0"
+            disabled={loading}
+          >
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
@@ -195,7 +201,10 @@ function LoginPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         Don't have an account?{' '}
-        <Link to="/signup" className="font-medium text-primary hover:underline">
+        <Link
+          to="/signup"
+          className="font-medium text-[#5a7ba6] hover:text-[#7e9ec9] hover:underline"
+        >
           Sign up
         </Link>
       </p>
