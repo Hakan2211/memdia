@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import {
   Crown,
   Lightbulb,
@@ -10,6 +11,7 @@ import {
   User,
 } from 'lucide-react'
 import { signOut } from '../lib/auth-client'
+import { getSubscriptionFn } from '../server/billing.fn'
 import {
   Sidebar,
   SidebarContent,
@@ -66,7 +68,17 @@ export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
   const userName = user.name || 'User'
   const userEmail = user.email
   const userRole = user.role
-  const isPro = subscriptionTier === 'pro'
+
+  // Fetch subscription data via TanStack Query for reactive updates
+  // This ensures the sidebar updates immediately when subscription is upgraded
+  // without requiring a page refresh. Falls back to prop for SSR/initial render.
+  const { data: subscription } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: () => getSubscriptionFn(),
+  })
+
+  // Use query data as primary source, prop as fallback for SSR
+  const isPro = subscription?.tier === 'pro' || subscriptionTier === 'pro'
 
   const handleSignOut = async () => {
     await signOut()

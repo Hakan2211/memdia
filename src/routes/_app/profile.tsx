@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import { z } from 'zod'
 import { updateProfileFn } from '../../server/auth.fn'
 import {
@@ -166,19 +165,14 @@ function ProfilePage() {
 
   const upgradeMutation = useMutation({
     mutationFn: () => createUpgradeFn(),
-    onSuccess: async (data: UrlResponse) => {
-      // If URL is returned and different from current, redirect (e.g., to Stripe checkout)
+    onSuccess: (data: UrlResponse) => {
+      // If URL is returned, redirect (direct upgrade without checkout)
+      // Otherwise just refetch subscription data
       if (data.url !== window.location.href) {
         window.location.href = data.url
       } else {
-        // Upgrade was processed directly - refresh subscription data
-        await queryClient.invalidateQueries({ queryKey: ['subscription'] })
-        // Re-run route loaders to refresh subscription in context (for sidebar, etc.)
-        await router.invalidate()
-        // Show success toast
-        toast.success('Successfully upgraded to Pro!', {
-          description: 'You now have access to Reflections and Insights.',
-        })
+        void queryClient.invalidateQueries({ queryKey: ['subscription'] })
+        void router.invalidate()
       }
     },
   })

@@ -3,11 +3,8 @@
  * Shows when Starter tier users try to access Pro-only features (Reflections, Insights)
  */
 
-import { useState } from 'react'
-import { useRouter } from '@tanstack/react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
-import { Check, Crown, Loader2, Lock, Sparkles } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { Check, Crown, Lock, Sparkles } from 'lucide-react'
 import { createUpgradeFn } from '../server/billing.fn'
 import { SUBSCRIPTION_TIERS } from '../types/subscription'
 import { Button } from './ui/button'
@@ -30,42 +27,16 @@ export function UpgradeModal({
   onOpenChange,
   featureName,
 }: UpgradeModalProps) {
-  const router = useRouter()
-  const queryClient = useQueryClient()
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
   const upgradeMutation = useMutation({
     mutationFn: () => createUpgradeFn(),
-    onSuccess: async (data) => {
-      // If URL is returned and different from current, redirect (e.g., to Stripe checkout)
-      if (data.url && data.url !== window.location.href) {
+    onSuccess: (data) => {
+      if (data.url) {
         window.location.href = data.url
-      } else {
-        // Upgrade was processed directly - refresh subscription data
-        setIsRefreshing(true)
-        await queryClient.invalidateQueries({ queryKey: ['subscription'] })
-        // Re-run route loaders to refresh subscription in context
-        await router.invalidate()
-        setIsRefreshing(false)
-        // Show success toast
-        toast.success('Successfully upgraded to Pro!', {
-          description: 'You now have access to all Pro features.',
-        })
-        // Close modal
-        onOpenChange(false)
       }
     },
   })
 
-  const isLoading = upgradeMutation.isPending || isRefreshing
   const proTier = SUBSCRIPTION_TIERS.pro
-
-  // Helper to get button text based on state
-  const getButtonText = () => {
-    if (isRefreshing) return 'Unlocking...'
-    if (upgradeMutation.isPending) return 'Processing...'
-    return 'Upgrade to Pro'
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,22 +114,17 @@ export function UpgradeModal({
         <div className="flex flex-col gap-2">
           <Button
             onClick={() => upgradeMutation.mutate()}
-            disabled={isLoading}
+            disabled={upgradeMutation.isPending}
             className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600"
             size="lg"
           >
-            {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
-            )}
-            {getButtonText()}
+            <Sparkles className="mr-2 h-4 w-4" />
+            {upgradeMutation.isPending ? 'Processing...' : 'Upgrade to Pro'}
           </Button>
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
             className="w-full"
-            disabled={isLoading}
           >
             Maybe Later
           </Button>
@@ -210,39 +176,14 @@ export function ProFeatureGate({
  * Inline upgrade card (used in the overlay)
  */
 function ProUpgradeCard({ featureName }: { featureName: string }) {
-  const router = useRouter()
-  const queryClient = useQueryClient()
-  const [isRefreshing, setIsRefreshing] = useState(false)
-
   const upgradeMutation = useMutation({
     mutationFn: () => createUpgradeFn(),
-    onSuccess: async (data) => {
-      // If URL is returned and different from current, redirect (e.g., to Stripe checkout)
-      if (data.url && data.url !== window.location.href) {
+    onSuccess: (data) => {
+      if (data.url) {
         window.location.href = data.url
-      } else {
-        // Upgrade was processed directly - refresh subscription data
-        setIsRefreshing(true)
-        await queryClient.invalidateQueries({ queryKey: ['subscription'] })
-        // Re-run route loaders to refresh subscription in context
-        await router.invalidate()
-        setIsRefreshing(false)
-        // Show success toast
-        toast.success('Successfully upgraded to Pro!', {
-          description: `${featureName} is now unlocked.`,
-        })
       }
     },
   })
-
-  const isLoading = upgradeMutation.isPending || isRefreshing
-
-  // Helper to get button text based on state
-  const getButtonText = () => {
-    if (isRefreshing) return 'Unlocking...'
-    if (upgradeMutation.isPending) return 'Processing...'
-    return 'Upgrade to Pro'
-  }
 
   return (
     <div className="max-w-md w-full mx-4 p-6 rounded-xl border bg-card shadow-lg">
@@ -268,16 +209,12 @@ function ProUpgradeCard({ featureName }: { featureName: string }) {
 
         <Button
           onClick={() => upgradeMutation.mutate()}
-          disabled={isLoading}
+          disabled={upgradeMutation.isPending}
           className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600"
           size="lg"
         >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="mr-2 h-4 w-4" />
-          )}
-          {getButtonText()}
+          <Sparkles className="mr-2 h-4 w-4" />
+          {upgradeMutation.isPending ? 'Processing...' : 'Upgrade to Pro'}
         </Button>
       </div>
     </div>
