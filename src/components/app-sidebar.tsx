@@ -53,7 +53,7 @@ interface AppSidebarProps {
  */
 function ProBadge() {
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
       <Lock className="h-2.5 w-2.5" />
       <Crown className="h-2.5 w-2.5" />
       PRO

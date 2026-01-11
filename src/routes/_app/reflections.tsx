@@ -50,6 +50,7 @@ function ReflectionsLayoutWrapper() {
     <ProFeatureGate
       subscriptionTier={subscription?.tier ?? null}
       featureName="Reflections"
+      className="-m-6 h-[calc(100vh-4rem)]"
     >
       <ReflectionsLayout />
     </ProFeatureGate>
@@ -101,7 +102,7 @@ function ReflectionsLayout() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] -m-6">
+    <div className="flex h-full">
       {/* Sidebar */}
       <aside className="hidden w-80 shrink-0 border-r bg-muted/20 md:flex md:flex-col">
         {/* Calendar */}

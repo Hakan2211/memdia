@@ -42,8 +42,8 @@ export function UpgradeModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" showCloseButton={true}>
         <DialogHeader className="text-center sm:text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30">
-            <Crown className="h-8 w-8 text-purple-500" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30">
+            <Crown className="h-8 w-8 text-blue-500" />
           </div>
           <DialogTitle className="text-xl">Upgrade to Pro</DialogTitle>
           <DialogDescription className="text-base">
@@ -62,8 +62,8 @@ export function UpgradeModal({
           {/* Features */}
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/10">
-                <Check className="h-3 w-3 text-purple-500" />
+              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+                <Check className="h-3 w-3 text-blue-500" />
               </div>
               <div>
                 <p className="font-medium">10-minute voice sessions</p>
@@ -74,8 +74,8 @@ export function UpgradeModal({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/10">
-                <Check className="h-3 w-3 text-purple-500" />
+              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+                <Check className="h-3 w-3 text-blue-500" />
               </div>
               <div>
                 <p className="font-medium">Therapeutic Reflections</p>
@@ -86,8 +86,8 @@ export function UpgradeModal({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/10">
-                <Check className="h-3 w-3 text-purple-500" />
+              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+                <Check className="h-3 w-3 text-blue-500" />
               </div>
               <div>
                 <p className="font-medium">Insights Dashboard</p>
@@ -98,8 +98,8 @@ export function UpgradeModal({
             </div>
 
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-purple-500/10">
-                <Check className="h-3 w-3 text-purple-500" />
+              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
+                <Check className="h-3 w-3 text-blue-500" />
               </div>
               <div>
                 <p className="font-medium">Priority Support</p>
@@ -115,7 +115,7 @@ export function UpgradeModal({
           <Button
             onClick={() => upgradeMutation.mutate()}
             disabled={upgradeMutation.isPending}
-            className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600"
+            className="w-full bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
             size="lg"
           >
             <Sparkles className="mr-2 h-4 w-4" />
@@ -143,12 +143,14 @@ interface ProFeatureGateProps {
   children: React.ReactNode
   subscriptionTier: string | null
   featureName: string
+  className?: string
 }
 
 export function ProFeatureGate({
   children,
   subscriptionTier,
   featureName,
+  className,
 }: ProFeatureGateProps) {
   const isPro = subscriptionTier === 'pro'
 
@@ -158,14 +160,14 @@ export function ProFeatureGate({
 
   // Show content with overlay for non-Pro users
   return (
-    <div className="relative h-full">
+    <div className={`relative h-full ${className || ''}`}>
       {/* Blurred content preview */}
       <div className="h-full blur-sm pointer-events-none select-none opacity-50">
         {children}
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="absolute inset-0 flex items-center justify-center bg-linear-to-b from-background/50 to-background/95 backdrop-blur-md">
         <ProUpgradeCard featureName={featureName} />
       </div>
     </div>
@@ -186,10 +188,10 @@ function ProUpgradeCard({ featureName }: { featureName: string }) {
   })
 
   return (
-    <div className="max-w-md w-full mx-4 p-6 rounded-xl border bg-card shadow-lg">
+    <div className="max-w-md w-full mx-4 p-6 rounded-xl border bg-card shadow-2xl">
       <div className="text-center space-y-4">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-purple-600/20 border border-purple-500/30">
-          <Lock className="h-7 w-7 text-purple-500" />
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-br from-blue-500/20 to-blue-600/20 border border-blue-500/30">
+          <Lock className="h-7 w-7 text-blue-500" />
         </div>
 
         <div>
@@ -201,7 +203,7 @@ function ProUpgradeCard({ featureName }: { featureName: string }) {
         </div>
 
         <div className="flex items-center justify-center gap-1 text-sm text-muted-foreground">
-          <Crown className="h-4 w-4 text-purple-500" />
+          <Crown className="h-4 w-4 text-blue-500" />
           <span>
             <strong className="text-foreground">$29.99</strong>/month
           </span>
@@ -210,7 +212,7 @@ function ProUpgradeCard({ featureName }: { featureName: string }) {
         <Button
           onClick={() => upgradeMutation.mutate()}
           disabled={upgradeMutation.isPending}
-          className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600"
+          className="w-full bg-linear-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600"
           size="lg"
         >
           <Sparkles className="mr-2 h-4 w-4" />
