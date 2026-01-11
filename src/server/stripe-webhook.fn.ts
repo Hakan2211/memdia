@@ -82,9 +82,11 @@ export async function processStripeWebhook(
       const tier = session.metadata?.tier as 'starter' | 'pro' | undefined
 
       if (userId) {
-        // Get subscription to find the price and determine tier
+        // Get subscription to find the price, tier, and period end
         let determinedTier = tier
-        if (!determinedTier && session.subscription) {
+        let periodEnd: Date | null = null
+
+        if (session.subscription) {
           const subscriptionId =
             typeof session.subscription === 'string'
               ? session.subscription
@@ -92,8 +94,14 @@ export async function processStripeWebhook(
           const subscription =
             await stripe.subscriptions.retrieve(subscriptionId)
           const priceId = subscription.items.data[0]?.price.id
-          if (priceId) {
+          const currentPeriodEnd =
+            subscription.items.data[0]?.current_period_end
+
+          if (priceId && !determinedTier) {
             determinedTier = getTierFromPriceId(priceId) ?? 'starter'
+          }
+          if (currentPeriodEnd) {
+            periodEnd = new Date(currentPeriodEnd * 1000)
           }
         }
 
@@ -102,6 +110,7 @@ export async function processStripeWebhook(
           data: {
             subscriptionStatus: 'active',
             subscriptionTier: determinedTier ?? 'starter',
+            subscriptionPeriodEnd: periodEnd,
           },
         })
 
@@ -126,10 +135,18 @@ export async function processStripeWebhook(
       const customer = subscription.customer
       const customerId = typeof customer === 'string' ? customer : customer.id
 
+      console.log(
+        `[Stripe Webhook] customer.subscription.updated - customerId: ${customerId}`,
+      )
+
       if (customerId) {
         const user = await prisma.user.findFirst({
           where: { stripeCustomerId: customerId },
         })
+
+        console.log(
+          `[Stripe Webhook] Found user: ${user?.id ?? 'NOT FOUND'}, stripeCustomerId in DB: ${user?.stripeCustomerId ?? 'N/A'}`,
+        )
 
         if (user) {
           const priceId = subscription.items.data[0]?.price.id
@@ -140,14 +157,27 @@ export async function processStripeWebhook(
           const isDowngrade = previousTier === 'pro' && newTier === 'starter'
 
           // Track cancellation status and period end
-          // Access properties from the Stripe subscription object with proper null checks
-          const cancelAtPeriodEnd = subscription.cancel_at_period_end ?? false
-          const currentPeriodEnd = (
-            subscription as unknown as { current_period_end?: number }
-          ).current_period_end
-          const periodEnd = currentPeriodEnd
-            ? new Date(currentPeriodEnd * 1000)
+          // Stripe can use either cancel_at_period_end OR cancel_at to schedule cancellation
+          // - cancel_at_period_end: true = cancel at end of current billing period
+          // - cancel_at: timestamp = cancel at a specific date (used by Billing Portal)
+          const cancelAt = subscription.cancel_at
+          const cancelAtPeriodEnd =
+            subscription.cancel_at_period_end || cancelAt !== null
+
+          // Use cancel_at if available (more precise), otherwise use current_period_end
+          const currentPeriodEnd =
+            subscription.items.data[0]?.current_period_end
+          const periodEndTimestamp = cancelAt ?? currentPeriodEnd
+          const periodEnd = periodEndTimestamp
+            ? new Date(periodEndTimestamp * 1000)
             : null
+
+          console.log(
+            `[Stripe Webhook] cancel_at_period_end: ${subscription.cancel_at_period_end}, cancel_at: ${cancelAt}`,
+          )
+          console.log(
+            `[Stripe Webhook] Saving to DB - cancelAtPeriodEnd: ${cancelAtPeriodEnd}, periodEnd: ${periodEnd?.toISOString() ?? 'null'}`,
+          )
 
           await prisma.user.update({
             where: { id: user.id },
@@ -159,6 +189,10 @@ export async function processStripeWebhook(
               subscriptionPeriodEnd: periodEnd,
             },
           })
+
+          console.log(
+            `[Stripe Webhook] DB update completed for user ${user.id}`,
+          )
 
           // Log cancellation scheduling
           if (cancelAtPeriodEnd && !user.cancelAtPeriodEnd) {

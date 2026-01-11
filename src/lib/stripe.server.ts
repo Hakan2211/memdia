@@ -224,9 +224,11 @@ export async function handleStripeWebhook(
       const tier = session.metadata?.tier as SubscriptionTier | undefined
 
       if (userId) {
-        // Get subscription to find the price and determine tier
+        // Get subscription to find the price, tier, and period end
         let determinedTier = tier
-        if (!determinedTier && session.subscription) {
+        let periodEnd: Date | null = null
+
+        if (session.subscription) {
           const subscriptionId =
             typeof session.subscription === 'string'
               ? session.subscription
@@ -234,8 +236,14 @@ export async function handleStripeWebhook(
           const subscription =
             await stripe.subscriptions.retrieve(subscriptionId)
           const priceId = subscription.items.data[0]?.price.id
-          if (priceId) {
+          const currentPeriodEnd =
+            subscription.items.data[0]?.current_period_end
+
+          if (priceId && !determinedTier) {
             determinedTier = getTierFromPriceId(priceId) ?? 'starter'
+          }
+          if (currentPeriodEnd) {
+            periodEnd = new Date(currentPeriodEnd * 1000)
           }
         }
 
@@ -244,6 +252,7 @@ export async function handleStripeWebhook(
           data: {
             subscriptionStatus: 'active',
             subscriptionTier: determinedTier ?? 'starter',
+            subscriptionPeriodEnd: periodEnd,
           },
         })
 
@@ -283,13 +292,19 @@ export async function handleStripeWebhook(
           const isDowngrade = previousTier === 'pro' && newTier === 'starter'
 
           // Track cancellation status and period end
-          // Access properties from the Stripe subscription object with proper null checks
-          const cancelAtPeriodEnd = subscription.cancel_at_period_end ?? false
-          const currentPeriodEnd = (
-            subscription as unknown as { current_period_end?: number }
-          ).current_period_end
-          const periodEnd = currentPeriodEnd
-            ? new Date(currentPeriodEnd * 1000)
+          // Stripe can use either cancel_at_period_end OR cancel_at to schedule cancellation
+          // - cancel_at_period_end: true = cancel at end of current billing period
+          // - cancel_at: timestamp = cancel at a specific date (used by Billing Portal)
+          const cancelAt = subscription.cancel_at
+          const cancelAtPeriodEnd =
+            subscription.cancel_at_period_end || cancelAt !== null
+
+          // Use cancel_at if available (more precise), otherwise use current_period_end
+          const currentPeriodEnd =
+            subscription.items.data[0]?.current_period_end
+          const periodEndTimestamp = cancelAt ?? currentPeriodEnd
+          const periodEnd = periodEndTimestamp
+            ? new Date(periodEndTimestamp * 1000)
             : null
 
           await prisma.user.update({
