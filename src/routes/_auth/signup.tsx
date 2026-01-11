@@ -115,12 +115,12 @@ function SignupPage() {
               onClick={() => handleTierChange(tier)}
               className={`relative p-6 rounded-xl border-2 text-left transition-all ${
                 isSelected
-                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
-                  : 'border-muted hover:border-primary/30 hover:bg-accent/50'
+                  ? 'border-[#7e9ec9] bg-[#7e9ec9]/5 ring-2 ring-[#7e9ec9]/20'
+                  : 'border-muted hover:border-[#7e9ec9]/30 hover:bg-accent/50'
               }`}
             >
               {tier === 'pro' && (
-                <div className="absolute -top-3 right-4 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                <div className="absolute -top-3 right-4 rounded-full bg-[#7e9ec9] px-3 py-1 text-xs font-medium text-white shadow-sm">
                   Best Value
                 </div>
               )}
@@ -134,7 +134,9 @@ function SignupPage() {
                 </div>
                 <div
                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    isSelected ? 'border-primary bg-primary' : 'border-muted'
+                    isSelected
+                      ? 'border-[#7e9ec9] bg-[#7e9ec9]'
+                      : 'border-muted'
                   }`}
                 >
                   {isSelected && (
@@ -153,7 +155,7 @@ function SignupPage() {
               <ul className="space-y-2">
                 {tierInfo.features.slice(0, 4).map((feature, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    <Check className="w-4 h-4 text-[#7e9ec9] shrink-0" />
                     <span>{feature}</span>
                   </li>
                 ))}
@@ -289,6 +291,7 @@ function SignupPage() {
           </p>
         </form>
 
+        {/* Google OAuth - Phase 2
         <div className="mt-6">
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -330,6 +333,7 @@ function SignupPage() {
             Google
           </Button>
         </div>
+        */}
       </div>
 
       <p className="text-center text-sm text-muted-foreground">

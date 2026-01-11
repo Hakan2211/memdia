@@ -34,11 +34,9 @@ export const SUBSCRIPTION_TIERS: Record<
     description: 'Perfect for daily check-ins',
     features: [
       '3-minute daily voice check-ins',
-      '10-minute reflection sessions',
       'AI-generated memory images',
       'Full transcripts & summaries',
       'Calendar view & history',
-      'Export your data',
     ],
   },
   pro: {
@@ -48,13 +46,11 @@ export const SUBSCRIPTION_TIERS: Record<
     priceMonthly: 29.99,
     description: 'For deeper daily reflections',
     features: [
-      '10-minute daily voice check-ins',
+      'Everything in Starter',
       '10-minute reflection sessions',
-      'AI-generated memory images',
-      'Full transcripts & summaries',
-      'Calendar view & history',
-      'Export your data',
-      'Priority support',
+      'Insights Dashboard',
+      'Automatic Information Extraction to Insight Dashboard',
+      'Tracking your mood, topics, insights, todos, and people over time',
     ],
   },
 }

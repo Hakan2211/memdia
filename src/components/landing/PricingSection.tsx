@@ -107,7 +107,11 @@ function PricingCard({
         </p>
 
         {/* CTA Button */}
-        <Link to="/signup" className="block mb-8 w-full">
+        <Link
+          to="/signup"
+          search={{ tier: plan.name.toLowerCase() as 'starter' | 'pro' }}
+          className="block mb-8 w-full"
+        >
           <Button
             size="lg"
             className={cn(
