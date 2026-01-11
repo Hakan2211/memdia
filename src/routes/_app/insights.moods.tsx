@@ -3,7 +3,7 @@
  * View mood history and distribution charts
  */
 
-import { Link, createFileRoute  } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { Smile } from 'lucide-react'
 import { format } from 'date-fns'

@@ -1,20 +1,18 @@
 import {
-  useRef,
-  useMemo,
-  useState,
-  useEffect,
   createContext,
   useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
 } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Mic } from 'lucide-react'
 import * as THREE from 'three'
 import CustomShaderMaterial from 'three-custom-shader-material'
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
-import {
-  useAudioReactive,
-  type AudioReactiveValues,
-} from '@/hooks/useAudioReactive'
+import type { AudioReactiveValues } from '@/hooks/useAudioReactive'
+import { useAudioReactive } from '@/hooks/useAudioReactive'
 
 // --- Audio Reactive Context ---
 interface AudioReactiveContextType {

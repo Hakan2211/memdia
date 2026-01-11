@@ -40,6 +40,10 @@ const config = defineConfig({
   optimizeDeps: {
     exclude: ['@tanstack/start-server-core', '@tanstack/react-start'],
   },
+  server: {
+    // Allow ngrok and other tunnel services for webhook testing in development
+    allowedHosts: ['localhost', '.ngrok-free.app', '.ngrok.io'],
+  },
 })
 
 export default config

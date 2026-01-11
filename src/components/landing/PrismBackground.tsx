@@ -1,7 +1,8 @@
 import { useRef } from 'react'
-import { Canvas, useFrame, extend, type ThreeElement } from '@react-three/fiber'
+import { Canvas, extend, useFrame } from '@react-three/fiber'
 import { shaderMaterial } from '@react-three/drei'
 import * as THREE from 'three'
+import type { ThreeElement } from '@react-three/fiber'
 
 // User's parameters
 const HEIGHT = 4.5

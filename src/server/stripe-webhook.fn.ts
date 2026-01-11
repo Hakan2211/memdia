@@ -1,43 +1,31 @@
-import Stripe from 'stripe'
-import { prisma } from '../db'
-import { getTierFromPriceId } from '../types/subscription'
-import type {
-  SubscriptionEventType,
-  SubscriptionTier,
-} from '../types/subscription'
-
 /**
- * Stripe Adapter Pattern
- * - When MOCK_PAYMENTS=true or no STRIPE_SECRET_KEY, returns mock responses
- * - This allows development without Stripe credentials
+ * Stripe Webhook Handler
+ *
+ * This file contains the logic for processing Stripe webhook events.
+ * It's called by the API route handler.
  */
 
-const MOCK_PAYMENTS = process.env.MOCK_PAYMENTS === 'true'
+import Stripe from 'stripe'
+import { prisma } from '../db'
 
-// Initialize Stripe only if we have a key and not in mock mode
+// Initialize Stripe
 function getStripeClient(): Stripe | null {
-  if (MOCK_PAYMENTS) return null
+  if (process.env.MOCK_PAYMENTS === 'true') return null
   if (!process.env.STRIPE_SECRET_KEY) return null
   return new Stripe(process.env.STRIPE_SECRET_KEY)
 }
 
-export interface CheckoutResult {
-  url: string
+// Get tier from price ID
+function getTierFromPriceId(priceId: string): 'starter' | 'pro' | null {
+  if (priceId === process.env.STRIPE_STARTER_MONTHLY_PRICE_ID) return 'starter'
+  if (priceId === process.env.STRIPE_PRO_MONTHLY_PRICE_ID) return 'pro'
+  return null
 }
 
-export interface SubscriptionStatusResult {
-  status: 'active' | 'canceled' | 'past_due' | 'none'
-  tier: SubscriptionTier | null
-  periodEnd: Date | null
-  cancelAtPeriodEnd: boolean
-}
-
-/**
- * Log a subscription event for audit purposes
- */
+// Log subscription event
 async function logSubscriptionEvent(
   userId: string,
-  event: SubscriptionEventType,
+  event: string,
   options: {
     fromTier?: string | null
     toTier?: string | null
@@ -60,146 +48,15 @@ async function logSubscriptionEvent(
 }
 
 /**
- * Create a Stripe checkout session for subscription
+ * Process Stripe webhook event
  */
-export async function createCheckoutSession(
-  userId: string,
-  priceId: string,
-  successUrl: string,
-  cancelUrl: string,
-): Promise<CheckoutResult> {
-  const stripe = getStripeClient()
-  const tier = getTierFromPriceId(priceId)
-
-  if (!stripe) {
-    console.log(
-      `[MOCK STRIPE] Created checkout session for user: ${userId}, tier: ${tier}`,
-    )
-    // In mock mode, update user directly
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        subscriptionStatus: 'active',
-        subscriptionTier: tier,
-      },
-    })
-    await logSubscriptionEvent(userId, 'subscribed', { toTier: tier })
-    return { url: `${successUrl}?session_id=mock_session_${Date.now()}` }
-  }
-
-  // Get or create Stripe customer
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) throw new Error('User not found')
-
-  let customerId = user.stripeCustomerId
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: user.name ?? undefined,
-      metadata: { userId },
-    })
-    customerId = customer.id
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { stripeCustomerId: customerId },
-    })
-  }
-
-  const session = await stripe.checkout.sessions.create({
-    customer: customerId,
-    payment_method_types: ['card'],
-    line_items: [{ price: priceId, quantity: 1 }],
-    mode: 'subscription',
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    metadata: { userId, tier: tier ?? 'unknown' },
-  })
-
-  if (!session.url) {
-    throw new Error('Failed to create checkout session')
-  }
-
-  return { url: session.url }
-}
-
-/**
- * Get subscription status for a user
- */
-export async function getSubscriptionStatus(
-  userId: string,
-): Promise<SubscriptionStatusResult> {
-  const stripe = getStripeClient()
-
-  if (!stripe) {
-    // In mock mode, check the database directly
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        subscriptionStatus: true,
-        subscriptionTier: true,
-        subscriptionPeriodEnd: true,
-        cancelAtPeriodEnd: true,
-      },
-    })
-
-    if (user?.subscriptionStatus === 'active') {
-      return {
-        status: 'active',
-        tier: (user.subscriptionTier as SubscriptionTier) ?? 'starter',
-        periodEnd: user.subscriptionPeriodEnd,
-        cancelAtPeriodEnd: user.cancelAtPeriodEnd,
-      }
-    }
-    return {
-      status: 'none',
-      tier: null,
-      periodEnd: null,
-      cancelAtPeriodEnd: false,
-    }
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      subscriptionStatus: true,
-      subscriptionTier: true,
-      subscriptionPeriodEnd: true,
-      cancelAtPeriodEnd: true,
-    },
-  })
-
-  if (!user?.subscriptionStatus || user.subscriptionStatus === 'none') {
-    return {
-      status: 'none',
-      tier: null,
-      periodEnd: null,
-      cancelAtPeriodEnd: false,
-    }
-  }
-
-  return {
-    status: user.subscriptionStatus as SubscriptionStatusResult['status'],
-    tier:
-      user.subscriptionStatus === 'active'
-        ? ((user.subscriptionTier as SubscriptionTier) ?? null)
-        : null,
-    periodEnd: user.subscriptionPeriodEnd,
-    cancelAtPeriodEnd: user.cancelAtPeriodEnd,
-  }
-}
-
-/**
- * Handle Stripe webhook events
- * Called by the webhook API endpoint
- */
-export async function handleStripeWebhook(
+export async function processStripeWebhook(
   payload: string,
   signature: string,
 ): Promise<{ received: boolean }> {
   const stripe = getStripeClient()
 
+  // Mock mode - just acknowledge
   if (!stripe) {
     console.log('[MOCK STRIPE] Webhook received')
     return { received: true }
@@ -209,19 +66,20 @@ export async function handleStripeWebhook(
     throw new Error('Stripe webhook secret not configured')
   }
 
-  const event = stripe.webhooks.constructEvent(
+  // Verify and construct event
+  const stripeEvent = stripe.webhooks.constructEvent(
     payload,
     signature,
     process.env.STRIPE_WEBHOOK_SECRET,
   )
 
-  console.log(`[Stripe Webhook] Received event: ${event.type}`)
+  console.log(`[Stripe Webhook] Received event: ${stripeEvent.type}`)
 
-  switch (event.type) {
+  switch (stripeEvent.type) {
     case 'checkout.session.completed': {
-      const session = event.data.object
+      const session = stripeEvent.data.object
       const userId = session.metadata?.userId
-      const tier = session.metadata?.tier as SubscriptionTier | undefined
+      const tier = session.metadata?.tier as 'starter' | 'pro' | undefined
 
       if (userId) {
         // Get subscription to find the price and determine tier
@@ -249,7 +107,7 @@ export async function handleStripeWebhook(
 
         await logSubscriptionEvent(userId, 'subscribed', {
           toTier: determinedTier ?? 'starter',
-          stripeEventId: event.id,
+          stripeEventId: stripeEvent.id,
           stripeSubscriptionId:
             typeof session.subscription === 'string'
               ? session.subscription
@@ -264,7 +122,7 @@ export async function handleStripeWebhook(
     }
 
     case 'customer.subscription.updated': {
-      const subscription = event.data.object
+      const subscription = stripeEvent.data.object
       const customer = subscription.customer
       const customerId = typeof customer === 'string' ? customer : customer.id
 
@@ -276,9 +134,8 @@ export async function handleStripeWebhook(
         if (user) {
           const priceId = subscription.items.data[0]?.price.id
           const newTier = priceId ? getTierFromPriceId(priceId) : null
-          const previousTier = user.subscriptionTier as SubscriptionTier | null
+          const previousTier = user.subscriptionTier as 'starter' | 'pro' | null
 
-          // Check if this is an upgrade or downgrade
           const isUpgrade = previousTier === 'starter' && newTier === 'pro'
           const isDowngrade = previousTier === 'pro' && newTier === 'starter'
 
@@ -307,7 +164,7 @@ export async function handleStripeWebhook(
           if (cancelAtPeriodEnd && !user.cancelAtPeriodEnd) {
             await logSubscriptionEvent(user.id, 'canceled', {
               fromTier: newTier,
-              stripeEventId: event.id,
+              stripeEventId: stripeEvent.id,
               stripeSubscriptionId: subscription.id,
               metadata: {
                 scheduledCancellation: true,
@@ -321,7 +178,7 @@ export async function handleStripeWebhook(
             // User resumed their subscription
             await logSubscriptionEvent(user.id, 'reactivated', {
               toTier: newTier,
-              stripeEventId: event.id,
+              stripeEventId: stripeEvent.id,
               stripeSubscriptionId: subscription.id,
               metadata: { resumedSubscription: true },
             })
@@ -330,7 +187,7 @@ export async function handleStripeWebhook(
             await logSubscriptionEvent(user.id, 'upgraded', {
               fromTier: previousTier,
               toTier: newTier,
-              stripeEventId: event.id,
+              stripeEventId: stripeEvent.id,
               stripeSubscriptionId: subscription.id,
             })
             console.log(
@@ -340,7 +197,7 @@ export async function handleStripeWebhook(
             await logSubscriptionEvent(user.id, 'downgraded', {
               fromTier: previousTier,
               toTier: newTier,
-              stripeEventId: event.id,
+              stripeEventId: stripeEvent.id,
               stripeSubscriptionId: subscription.id,
             })
             console.log(
@@ -353,7 +210,7 @@ export async function handleStripeWebhook(
     }
 
     case 'customer.subscription.deleted': {
-      const subscription = event.data.object
+      const subscription = stripeEvent.data.object
       const customer = subscription.customer
       const customerId = typeof customer === 'string' ? customer : customer.id
 
@@ -363,19 +220,16 @@ export async function handleStripeWebhook(
         })
 
         if (user) {
-          const previousTier = user.subscriptionTier as SubscriptionTier | null
+          const previousTier = user.subscriptionTier as 'starter' | 'pro' | null
 
           await prisma.user.update({
             where: { id: user.id },
-            data: {
-              subscriptionStatus: 'canceled',
-              // Keep the tier for reference, but mark as canceled
-            },
+            data: { subscriptionStatus: 'canceled' },
           })
 
           await logSubscriptionEvent(user.id, 'canceled', {
             fromTier: previousTier,
-            stripeEventId: event.id,
+            stripeEventId: stripeEvent.id,
             stripeSubscriptionId: subscription.id,
           })
 
@@ -386,7 +240,7 @@ export async function handleStripeWebhook(
     }
 
     case 'invoice.payment_failed': {
-      const invoice = event.data.object
+      const invoice = stripeEvent.data.object
       const invoiceCustomer = invoice.customer
       if (!invoiceCustomer) break
 
@@ -407,7 +261,7 @@ export async function handleStripeWebhook(
           })
 
           await logSubscriptionEvent(user.id, 'payment_failed', {
-            stripeEventId: event.id,
+            stripeEventId: stripeEvent.id,
             metadata: { invoiceId: invoice.id },
           })
 
@@ -418,7 +272,7 @@ export async function handleStripeWebhook(
     }
 
     case 'invoice.payment_succeeded': {
-      const invoice = event.data.object
+      const invoice = stripeEvent.data.object
       const invoiceCustomer = invoice.customer
       if (!invoiceCustomer) break
 
@@ -433,7 +287,6 @@ export async function handleStripeWebhook(
         })
 
         if (user) {
-          // Ensure status is active after successful payment
           if (user.subscriptionStatus === 'past_due') {
             await prisma.user.update({
               where: { id: user.id },
@@ -442,7 +295,7 @@ export async function handleStripeWebhook(
 
             await logSubscriptionEvent(user.id, 'reactivated', {
               toTier: user.subscriptionTier,
-              stripeEventId: event.id,
+              stripeEventId: stripeEvent.id,
             })
 
             console.log(
@@ -450,7 +303,7 @@ export async function handleStripeWebhook(
             )
           } else {
             await logSubscriptionEvent(user.id, 'payment_succeeded', {
-              stripeEventId: event.id,
+              stripeEventId: stripeEvent.id,
               metadata: { invoiceId: invoice.id },
             })
           }
@@ -461,96 +314,4 @@ export async function handleStripeWebhook(
   }
 
   return { received: true }
-}
-
-/**
- * Create a Stripe billing portal session for subscription management
- */
-export async function createBillingPortalSession(
-  userId: string,
-  returnUrl: string,
-): Promise<{ url: string }> {
-  const stripe = getStripeClient()
-
-  if (!stripe) {
-    console.log(`[MOCK STRIPE] Created billing portal for user: ${userId}`)
-    return { url: returnUrl }
-  }
-
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user?.stripeCustomerId) {
-    throw new Error('No Stripe customer found for user')
-  }
-
-  const session = await stripe.billingPortal.sessions.create({
-    customer: user.stripeCustomerId,
-    return_url: returnUrl,
-  })
-
-  return { url: session.url }
-}
-
-/**
- * Create an upgrade checkout session (from starter to pro)
- */
-export async function createUpgradeSession(
-  userId: string,
-  successUrl: string,
-  _cancelUrl: string,
-): Promise<CheckoutResult> {
-  const stripe = getStripeClient()
-  const proPriceId = process.env.STRIPE_PRO_MONTHLY_PRICE_ID
-
-  if (!proPriceId) {
-    throw new Error('Pro price ID not configured')
-  }
-
-  if (!stripe) {
-    console.log(`[MOCK STRIPE] Created upgrade session for user: ${userId}`)
-    await prisma.user.update({
-      where: { id: userId },
-      data: { subscriptionTier: 'pro' },
-    })
-    await logSubscriptionEvent(userId, 'upgraded', {
-      fromTier: 'starter',
-      toTier: 'pro',
-    })
-    return { url: `${successUrl}?upgraded=true` }
-  }
-
-  const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user?.stripeCustomerId) {
-    throw new Error('No Stripe customer found for user')
-  }
-
-  // Get current subscription
-  const subscriptions = await stripe.subscriptions.list({
-    customer: user.stripeCustomerId,
-    status: 'active',
-    limit: 1,
-  })
-
-  const currentSubscription = subscriptions.data[0]
-  if (!currentSubscription) {
-    throw new Error('No active subscription found')
-  }
-
-  // Update the subscription to the new price
-  const subscriptionItem = currentSubscription.items.data[0]
-  if (!subscriptionItem) {
-    throw new Error('No subscription item found')
-  }
-
-  await stripe.subscriptions.update(currentSubscription.id, {
-    items: [
-      {
-        id: subscriptionItem.id,
-        price: proPriceId,
-      },
-    ],
-    proration_behavior: 'create_prorations',
-  })
-
-  // The webhook will handle logging the upgrade
-  return { url: successUrl }
 }

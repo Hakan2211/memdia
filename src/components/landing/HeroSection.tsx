@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import { Globe, Shield } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { HeroCanvas } from './HeroCanvas'
 import { AudioVisualization } from './AudioVisualization'
+import { Button } from '@/components/ui/button'
 
 export function HeroSection() {
   const scrollToSection = (id: string) => {

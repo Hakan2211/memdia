@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Mic, Heart, BarChart3, Image, Brain, Sparkles } from 'lucide-react'
+import { BarChart3, Brain, Heart, Image, Mic, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const features = [

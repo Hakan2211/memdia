@@ -73,6 +73,7 @@ export const ModelName = {
   Todo: 'Todo',
   Person: 'Person',
   PersonMention: 'PersonMention',
+  SubscriptionEvent: 'SubscriptionEvent',
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -97,7 +98,9 @@ export const UserScalarFieldEnum = {
   role: 'role',
   stripeCustomerId: 'stripeCustomerId',
   subscriptionStatus: 'subscriptionStatus',
-  trialEndsAt: 'trialEndsAt',
+  subscriptionTier: 'subscriptionTier',
+  subscriptionPeriodEnd: 'subscriptionPeriodEnd',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
   onboardingComplete: 'onboardingComplete',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -356,6 +359,21 @@ export const PersonMentionScalarFieldEnum = {
 
 export type PersonMentionScalarFieldEnum =
   (typeof PersonMentionScalarFieldEnum)[keyof typeof PersonMentionScalarFieldEnum]
+
+export const SubscriptionEventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  event: 'event',
+  fromTier: 'fromTier',
+  toTier: 'toTier',
+  metadata: 'metadata',
+  stripeEventId: 'stripeEventId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  createdAt: 'createdAt',
+} as const
+
+export type SubscriptionEventScalarFieldEnum =
+  (typeof SubscriptionEventScalarFieldEnum)[keyof typeof SubscriptionEventScalarFieldEnum]
 
 export const SortOrder = {
   asc: 'asc',

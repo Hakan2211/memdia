@@ -9,10 +9,7 @@ import { format } from 'date-fns'
 import { prisma } from '../db'
 import { REFLECTION_CONFIG } from '../types/voice-session'
 import { authMiddleware } from './middleware'
-import {
-  checkSubscription,
-  ensureTrialInitialized,
-} from './services/subscription.service'
+import { checkSubscription } from './services/subscription.service'
 import type {
   ReflectionSession,
   ReflectionTurn,
@@ -83,7 +80,9 @@ export const getTodayReflectionFn = createServerFn({ method: 'GET' })
       },
     })
 
-    return session as (ReflectionSession & { turns: Array<ReflectionTurn> }) | null
+    return session as
+      | (ReflectionSession & { turns: Array<ReflectionTurn> })
+      | null
   })
 
 // ==========================================
@@ -137,7 +136,9 @@ export const getReflectionByDateFn = createServerFn({ method: 'GET' })
       },
     })
 
-    return session as (ReflectionSession & { turns: Array<ReflectionTurn> }) | null
+    return session as
+      | (ReflectionSession & { turns: Array<ReflectionTurn> })
+      | null
   })
 
 // ==========================================
@@ -189,17 +190,16 @@ export const checkReflectionAvailabilityFn = createServerFn({ method: 'GET' })
 export const startReflectionFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    // Ensure trial is initialized
-    await ensureTrialInitialized(context.user.id)
-
     // Check subscription
     const subCheck = await checkSubscription(context.user.id)
     if (!subCheck.canCreateSession) {
-      throw new Error(
-        subCheck.blockedReason === 'trial_expired'
-          ? 'Your free trial has ended. Please subscribe to continue.'
-          : 'Subscription required to create sessions.',
-      )
+      const message =
+        subCheck.blockedReason === 'past_due'
+          ? 'Your payment is past due. Please update your payment method.'
+          : subCheck.blockedReason === 'subscription_canceled'
+            ? 'Your subscription has been canceled. Please resubscribe to continue.'
+            : 'Active subscription required to create sessions.'
+      throw new Error(message)
     }
 
     const today = getStartOfDay()

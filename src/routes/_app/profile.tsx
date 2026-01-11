@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { z } from 'zod'
 import { updateProfileFn } from '../../server/auth.fn'
 import {
   createBillingPortalFn,
   createCheckoutFn,
+  createUpgradeFn,
   getSubscriptionFn,
 } from '../../server/billing.fn'
+import { SUBSCRIPTION_TIERS } from '../../types/subscription'
 import {
   getUserPreferencesFn,
   updateUserPreferencesFn,
@@ -98,6 +101,7 @@ function ProfilePage() {
   const routeContext = Route.useRouteContext()
   const { data: session } = useSession()
   const queryClient = useQueryClient()
+  const router = useRouter()
   const [success, setSuccess] = useState(false)
 
   // User from session takes precedence, fallback to route context
@@ -157,6 +161,25 @@ function ProfilePage() {
     mutationFn: () => createBillingPortalFn(),
     onSuccess: (data: UrlResponse) => {
       window.location.href = data.url
+    },
+  })
+
+  const upgradeMutation = useMutation({
+    mutationFn: () => createUpgradeFn(),
+    onSuccess: async (data: UrlResponse) => {
+      // If URL is returned and different from current, redirect (e.g., to Stripe checkout)
+      if (data.url !== window.location.href) {
+        window.location.href = data.url
+      } else {
+        // Upgrade was processed directly - refresh subscription data
+        await queryClient.invalidateQueries({ queryKey: ['subscription'] })
+        // Re-run route loaders to refresh subscription in context (for sidebar, etc.)
+        await router.invalidate()
+        // Show success toast
+        toast.success('Successfully upgraded to Pro!', {
+          description: 'You now have access to Reflections and Insights.',
+        })
+      }
     },
   })
 
@@ -286,47 +309,110 @@ function ProfilePage() {
                 <div>
                   <p className="font-medium">
                     {subscription?.status === 'active'
-                      ? 'Pro Plan'
-                      : 'Free Plan'}
+                      ? subscription.tier === 'pro'
+                        ? SUBSCRIPTION_TIERS.pro.name
+                        : SUBSCRIPTION_TIERS.starter.name
+                      : 'No Subscription'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {subscription?.status === 'active'
-                      ? 'Full access to all features'
-                      : 'Upgrade to unlock all features'}
+                      ? subscription.tier === 'pro'
+                        ? `$${SUBSCRIPTION_TIERS.pro.priceMonthly}/month - ${SUBSCRIPTION_TIERS.pro.maxDurationSeconds / 60} min sessions`
+                        : `$${SUBSCRIPTION_TIERS.starter.priceMonthly}/month - ${SUBSCRIPTION_TIERS.starter.maxDurationSeconds / 60} min sessions`
+                      : 'Subscribe to access all features'}
                   </p>
                 </div>
                 <span
                   className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                     subscription?.status === 'active'
-                      ? 'bg-green-500/10 text-green-600'
+                      ? subscription?.cancelAtPeriodEnd
+                        ? 'bg-amber-500/10 text-amber-600'
+                        : 'bg-green-500/10 text-green-600'
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {subscription?.status === 'active' ? 'Active' : 'Free'}
+                  {subscription?.status === 'active'
+                    ? subscription?.cancelAtPeriodEnd
+                      ? 'Canceling'
+                      : 'Active'
+                    : 'Inactive'}
                 </span>
               </div>
+
+              {/* Show period end date and cancellation status */}
+              {subscription?.status === 'active' && subscription?.periodEnd && (
+                <div className="mt-3 pt-3 border-t border-border/50">
+                  {subscription.cancelAtPeriodEnd ? (
+                    <p className="text-sm text-amber-600">
+                      Your subscription will end on{' '}
+                      <span className="font-medium">
+                        {new Date(subscription.periodEnd).toLocaleDateString(
+                          'en-US',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          },
+                        )}
+                      </span>
+                      . You'll retain access until then.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Next billing date:{' '}
+                      <span className="font-medium text-foreground">
+                        {new Date(subscription.periodEnd).toLocaleDateString(
+                          'en-US',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          },
+                        )}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
-            {subscription?.status === 'active' ? (
-              <Button
-                variant="outline"
-                onClick={() => portalMutation.mutate()}
-                disabled={portalMutation.isPending}
-                className="w-full"
-              >
-                {portalMutation.isPending
-                  ? 'Loading...'
-                  : 'Manage Subscription'}
-              </Button>
-            ) : (
-              <Button
-                onClick={() => checkoutMutation.mutate()}
-                disabled={checkoutMutation.isPending}
-                className="w-full"
-              >
-                {checkoutMutation.isPending ? 'Loading...' : 'Upgrade to Pro'}
-              </Button>
-            )}
+            <div className="space-y-2">
+              {subscription?.status === 'active' &&
+                subscription.tier === 'starter' && (
+                  <Button
+                    onClick={() => upgradeMutation.mutate()}
+                    disabled={upgradeMutation.isPending}
+                    className="w-full"
+                  >
+                    {upgradeMutation.isPending
+                      ? 'Processing...'
+                      : 'Upgrade to Pro'}
+                  </Button>
+                )}
+
+              {subscription?.status === 'active' ? (
+                <Button
+                  variant="outline"
+                  onClick={() => portalMutation.mutate()}
+                  disabled={portalMutation.isPending}
+                  className="w-full"
+                >
+                  {portalMutation.isPending
+                    ? 'Loading...'
+                    : subscription?.cancelAtPeriodEnd
+                      ? 'Manage Subscription'
+                      : 'Manage / Cancel Subscription'}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => checkoutMutation.mutate()}
+                  disabled={checkoutMutation.isPending}
+                  className="w-full"
+                >
+                  {checkoutMutation.isPending ? 'Loading...' : 'Subscribe Now'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

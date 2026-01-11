@@ -52,6 +52,7 @@ function LoginPage() {
         }
 
         // Force full page reload to pick up new session cookie
+        // The _app layout will handle redirects based on subscription/onboarding status
         await router.invalidate()
         window.location.href = '/memories'
       } catch (err) {

@@ -431,6 +431,7 @@ export const ModelName = {
   Todo: 'Todo',
   Person: 'Person',
   PersonMention: 'PersonMention',
+  SubscriptionEvent: 'SubscriptionEvent',
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -472,6 +473,7 @@ export type TypeMap<
       | 'todo'
       | 'person'
       | 'personMention'
+      | 'subscriptionEvent'
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1919,6 +1921,82 @@ export type TypeMap<
         }
       }
     }
+    SubscriptionEvent: {
+      payload: Prisma.$SubscriptionEventPayload<ExtArgs>
+      fields: Prisma.SubscriptionEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SubscriptionEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SubscriptionEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>
+        }
+        findFirst: {
+          args: Prisma.SubscriptionEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SubscriptionEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>
+        }
+        findMany: {
+          args: Prisma.SubscriptionEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>[]
+        }
+        create: {
+          args: Prisma.SubscriptionEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>
+        }
+        createMany: {
+          args: Prisma.SubscriptionEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SubscriptionEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>[]
+        }
+        delete: {
+          args: Prisma.SubscriptionEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>
+        }
+        update: {
+          args: Prisma.SubscriptionEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.SubscriptionEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SubscriptionEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SubscriptionEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.SubscriptionEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SubscriptionEventPayload>
+        }
+        aggregate: {
+          args: Prisma.SubscriptionEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSubscriptionEvent>
+        }
+        groupBy: {
+          args: Prisma.SubscriptionEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SubscriptionEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SubscriptionEventCountArgs<ExtArgs>
+          result:
+            | runtime.Types.Utils.Optional<Prisma.SubscriptionEventCountAggregateOutputType>
+            | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1964,7 +2042,9 @@ export const UserScalarFieldEnum = {
   role: 'role',
   stripeCustomerId: 'stripeCustomerId',
   subscriptionStatus: 'subscriptionStatus',
-  trialEndsAt: 'trialEndsAt',
+  subscriptionTier: 'subscriptionTier',
+  subscriptionPeriodEnd: 'subscriptionPeriodEnd',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
   onboardingComplete: 'onboardingComplete',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -2224,6 +2304,21 @@ export const PersonMentionScalarFieldEnum = {
 export type PersonMentionScalarFieldEnum =
   (typeof PersonMentionScalarFieldEnum)[keyof typeof PersonMentionScalarFieldEnum]
 
+export const SubscriptionEventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  event: 'event',
+  fromTier: 'fromTier',
+  toTier: 'toTier',
+  metadata: 'metadata',
+  stripeEventId: 'stripeEventId',
+  stripeSubscriptionId: 'stripeSubscriptionId',
+  createdAt: 'createdAt',
+} as const
+
+export type SubscriptionEventScalarFieldEnum =
+  (typeof SubscriptionEventScalarFieldEnum)[keyof typeof SubscriptionEventScalarFieldEnum]
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc',
@@ -2404,6 +2499,7 @@ export type GlobalOmitConfig = {
   todo?: Prisma.TodoOmit
   person?: Prisma.PersonOmit
   personMention?: Prisma.PersonMentionOmit
+  subscriptionEvent?: Prisma.SubscriptionEventOmit
 }
 
 /* Types for Logging */

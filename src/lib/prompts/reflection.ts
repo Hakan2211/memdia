@@ -104,7 +104,10 @@ Make them feel they have the space and time to really explore what's on their mi
  * Reflection-specific greetings - more therapeutic and inviting than memory greetings
  * These signal to the user that this is a space for deeper exploration
  */
-export const REFLECTION_GREETINGS_BY_LANGUAGE: Record<Language, Array<string>> = {
+export const REFLECTION_GREETINGS_BY_LANGUAGE: Record<
+  Language,
+  Array<string>
+> = {
   // English
   en: [
     "Take your time. What's been weighing on your mind?",

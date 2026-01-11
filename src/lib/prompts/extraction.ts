@@ -8,8 +8,8 @@ import {
   INSIGHT_CATEGORIES,
   RELATIONSHIP_TYPES,
 } from '../../types/insights'
-import { LANGUAGE_LABELS  } from '../../types/voice-session'
-import type {Language} from '../../types/voice-session';
+import { LANGUAGE_LABELS } from '../../types/voice-session'
+import type { Language } from '../../types/voice-session'
 
 /**
  * Get the English name of a language from its code

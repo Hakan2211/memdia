@@ -111,3 +111,8 @@ export type Person = Prisma.PersonModel
  *
  */
 export type PersonMention = Prisma.PersonMentionModel
+/**
+ * Model SubscriptionEvent
+ *
+ */
+export type SubscriptionEvent = Prisma.SubscriptionEventModel

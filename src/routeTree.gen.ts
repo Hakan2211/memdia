@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SubscribeRouteImport } from './routes/subscribe'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
@@ -22,6 +23,7 @@ import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
 import { Route as AppInsightsRouteImport } from './routes/_app/insights'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
 import { Route as AppInsightsIndexRouteImport } from './routes/_app/insights.index'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ApiStreamConversationRouteImport } from './routes/api/stream/conversation'
 import { Route as ApiStreamCancelRouteImport } from './routes/api/stream/cancel'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -35,6 +37,11 @@ import { Route as AppInsightsPeopleRouteImport } from './routes/_app/insights.pe
 import { Route as AppInsightsMoodsRouteImport } from './routes/_app/insights.moods'
 import { Route as AppInsightsInsightsRouteImport } from './routes/_app/insights.insights'
 
+const SubscribeRoute = SubscribeRouteImport.update({
+  id: '/subscribe',
+  path: '/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
@@ -97,6 +104,11 @@ const AppInsightsIndexRoute = AppInsightsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppInsightsRoute,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiStreamConversationRoute = ApiStreamConversationRouteImport.update({
   id: '/api/stream/conversation',
@@ -162,6 +174,7 @@ const AppInsightsInsightsRoute = AppInsightsInsightsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/subscribe': typeof SubscribeRoute
   '/admin': typeof AppAdminRoute
   '/insights': typeof AppInsightsRouteWithChildren
   '/memories': typeof AppMemoriesRouteWithChildren
@@ -182,11 +195,13 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/insights/': typeof AppInsightsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/subscribe': typeof SubscribeRoute
   '/admin': typeof AppAdminRoute
   '/memories': typeof AppMemoriesRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
@@ -206,6 +221,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/insights': typeof AppInsightsIndexRoute
 }
 export interface FileRoutesById {
@@ -214,6 +230,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/pricing': typeof PricingRoute
+  '/subscribe': typeof SubscribeRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/insights': typeof AppInsightsRouteWithChildren
   '/_app/memories': typeof AppMemoriesRouteWithChildren
@@ -234,6 +251,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/_app/insights/': typeof AppInsightsIndexRoute
 }
 export interface FileRouteTypes {
@@ -241,6 +259,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/pricing'
+    | '/subscribe'
     | '/admin'
     | '/insights'
     | '/memories'
@@ -261,11 +280,13 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
+    | '/api/stripe/webhook'
     | '/insights/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/pricing'
+    | '/subscribe'
     | '/admin'
     | '/memories'
     | '/onboarding'
@@ -285,6 +306,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
+    | '/api/stripe/webhook'
     | '/insights'
   id:
     | '__root__'
@@ -292,6 +314,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/pricing'
+    | '/subscribe'
     | '/_app/admin'
     | '/_app/insights'
     | '/_app/memories'
@@ -312,6 +335,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
+    | '/api/stripe/webhook'
     | '/_app/insights/'
   fileRoutesById: FileRoutesById
 }
@@ -320,13 +344,22 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   PricingRoute: typeof PricingRoute
+  SubscribeRoute: typeof SubscribeRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiStreamCancelRoute: typeof ApiStreamCancelRoute
   ApiStreamConversationRoute: typeof ApiStreamConversationRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/subscribe': {
+      id: '/subscribe'
+      path: '/subscribe'
+      fullPath: '/subscribe'
+      preLoaderRoute: typeof SubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/pricing': {
       id: '/pricing'
       path: '/pricing'
@@ -417,6 +450,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/insights/'
       preLoaderRoute: typeof AppInsightsIndexRouteImport
       parentRoute: typeof AppInsightsRoute
+    }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/stream/conversation': {
       id: '/api/stream/conversation'
@@ -592,9 +632,11 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   PricingRoute: PricingRoute,
+  SubscribeRoute: SubscribeRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiStreamCancelRoute: ApiStreamCancelRoute,
   ApiStreamConversationRoute: ApiStreamConversationRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

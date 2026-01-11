@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useMotionValue, useAnimationFrame } from 'framer-motion'
+import { motion, useAnimationFrame, useMotionValue } from 'framer-motion'
 import { useState } from 'react'
 import 'flag-icons/css/flag-icons.min.css'
 
@@ -72,7 +72,11 @@ export function LanguageSection() {
   )
 }
 
-function CurvedMarquee({ items }: { items: { code: string; flag: string }[] }) {
+function CurvedMarquee({
+  items,
+}: {
+  items: Array<{ code: string; flag: string }>
+}) {
   // Triple the items for infinite loop
   const repeatedItems = [...items, ...items, ...items]
 
@@ -97,7 +101,7 @@ function CurvedMarquee({ items }: { items: { code: string; flag: string }[] }) {
 
   useAnimationFrame((t, delta) => {
     if (!isDragging) {
-      let moveBy = baseVelocity * (delta / 16) // Normalize to roughly 60fps
+      const moveBy = baseVelocity * (delta / 16) // Normalize to roughly 60fps
 
       // Update x
       let currentX = baseX.get() + moveBy

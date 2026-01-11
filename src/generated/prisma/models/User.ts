@@ -33,7 +33,9 @@ export type UserMinAggregateOutputType = {
   role: string | null
   stripeCustomerId: string | null
   subscriptionStatus: string | null
-  trialEndsAt: Date | null
+  subscriptionTier: string | null
+  subscriptionPeriodEnd: Date | null
+  cancelAtPeriodEnd: boolean | null
   onboardingComplete: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -48,7 +50,9 @@ export type UserMaxAggregateOutputType = {
   role: string | null
   stripeCustomerId: string | null
   subscriptionStatus: string | null
-  trialEndsAt: Date | null
+  subscriptionTier: string | null
+  subscriptionPeriodEnd: Date | null
+  cancelAtPeriodEnd: boolean | null
   onboardingComplete: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -63,7 +67,9 @@ export type UserCountAggregateOutputType = {
   role: number
   stripeCustomerId: number
   subscriptionStatus: number
-  trialEndsAt: number
+  subscriptionTier: number
+  subscriptionPeriodEnd: number
+  cancelAtPeriodEnd: number
   onboardingComplete: number
   createdAt: number
   updatedAt: number
@@ -79,7 +85,9 @@ export type UserMinAggregateInputType = {
   role?: true
   stripeCustomerId?: true
   subscriptionStatus?: true
-  trialEndsAt?: true
+  subscriptionTier?: true
+  subscriptionPeriodEnd?: true
+  cancelAtPeriodEnd?: true
   onboardingComplete?: true
   createdAt?: true
   updatedAt?: true
@@ -94,7 +102,9 @@ export type UserMaxAggregateInputType = {
   role?: true
   stripeCustomerId?: true
   subscriptionStatus?: true
-  trialEndsAt?: true
+  subscriptionTier?: true
+  subscriptionPeriodEnd?: true
+  cancelAtPeriodEnd?: true
   onboardingComplete?: true
   createdAt?: true
   updatedAt?: true
@@ -109,7 +119,9 @@ export type UserCountAggregateInputType = {
   role?: true
   stripeCustomerId?: true
   subscriptionStatus?: true
-  trialEndsAt?: true
+  subscriptionTier?: true
+  subscriptionPeriodEnd?: true
+  cancelAtPeriodEnd?: true
   onboardingComplete?: true
   createdAt?: true
   updatedAt?: true
@@ -204,7 +216,9 @@ export type UserGroupByOutputType = {
   role: string
   stripeCustomerId: string | null
   subscriptionStatus: string | null
-  trialEndsAt: Date | null
+  subscriptionTier: string | null
+  subscriptionPeriodEnd: Date | null
+  cancelAtPeriodEnd: boolean
   onboardingComplete: boolean
   createdAt: Date
   updatedAt: Date
@@ -237,12 +251,19 @@ export type UserWhereInput = {
   role?: Prisma.StringFilter<'User'> | string
   stripeCustomerId?: Prisma.StringNullableFilter<'User'> | string | null
   subscriptionStatus?: Prisma.StringNullableFilter<'User'> | string | null
-  trialEndsAt?: Prisma.DateTimeNullableFilter<'User'> | Date | string | null
+  subscriptionTier?: Prisma.StringNullableFilter<'User'> | string | null
+  subscriptionPeriodEnd?:
+    | Prisma.DateTimeNullableFilter<'User'>
+    | Date
+    | string
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFilter<'User'> | boolean
   onboardingComplete?: Prisma.BoolFilter<'User'> | boolean
   createdAt?: Prisma.DateTimeFilter<'User'> | Date | string
   updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string
   accounts?: Prisma.AccountListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
+  subscriptionEvents?: Prisma.SubscriptionEventListRelationFilter
   voiceSessions?: Prisma.VoiceSessionListRelationFilter
   preferences?: Prisma.XOR<
     Prisma.UserPreferencesNullableScalarRelationFilter,
@@ -262,12 +283,15 @@ export type UserOrderByWithRelationInput = {
   role?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrderInput | Prisma.SortOrder
-  trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionPeriodEnd?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   accounts?: Prisma.AccountOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
+  subscriptionEvents?: Prisma.SubscriptionEventOrderByRelationAggregateInput
   voiceSessions?: Prisma.VoiceSessionOrderByRelationAggregateInput
   preferences?: Prisma.UserPreferencesOrderByWithRelationInput
   reflectionSessions?: Prisma.ReflectionSessionOrderByRelationAggregateInput
@@ -288,12 +312,19 @@ export type UserWhereUniqueInput = Prisma.AtLeast<
     role?: Prisma.StringFilter<'User'> | string
     stripeCustomerId?: Prisma.StringNullableFilter<'User'> | string | null
     subscriptionStatus?: Prisma.StringNullableFilter<'User'> | string | null
-    trialEndsAt?: Prisma.DateTimeNullableFilter<'User'> | Date | string | null
+    subscriptionTier?: Prisma.StringNullableFilter<'User'> | string | null
+    subscriptionPeriodEnd?:
+      | Prisma.DateTimeNullableFilter<'User'>
+      | Date
+      | string
+      | null
+    cancelAtPeriodEnd?: Prisma.BoolFilter<'User'> | boolean
     onboardingComplete?: Prisma.BoolFilter<'User'> | boolean
     createdAt?: Prisma.DateTimeFilter<'User'> | Date | string
     updatedAt?: Prisma.DateTimeFilter<'User'> | Date | string
     accounts?: Prisma.AccountListRelationFilter
     sessions?: Prisma.SessionListRelationFilter
+    subscriptionEvents?: Prisma.SubscriptionEventListRelationFilter
     voiceSessions?: Prisma.VoiceSessionListRelationFilter
     preferences?: Prisma.XOR<
       Prisma.UserPreferencesNullableScalarRelationFilter,
@@ -315,7 +346,9 @@ export type UserOrderByWithAggregationInput = {
   role?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrderInput | Prisma.SortOrder
-  trialEndsAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrderInput | Prisma.SortOrder
+  subscriptionPeriodEnd?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -346,11 +379,16 @@ export type UserScalarWhereWithAggregatesInput = {
     | Prisma.StringNullableWithAggregatesFilter<'User'>
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.StringNullableWithAggregatesFilter<'User'>
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.DateTimeNullableWithAggregatesFilter<'User'>
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolWithAggregatesFilter<'User'> | boolean
   onboardingComplete?: Prisma.BoolWithAggregatesFilter<'User'> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<'User'> | Date | string
@@ -365,12 +403,15 @@ export type UserCreateInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
@@ -387,12 +428,15 @@ export type UserUncheckedCreateInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
@@ -415,16 +459,22 @@ export type UserUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
@@ -447,16 +497,22 @@ export type UserUncheckedUpdateInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -473,7 +529,9 @@ export type UserCreateManyInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -494,11 +552,16 @@ export type UserUpdateManyMutationInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -519,11 +582,16 @@ export type UserUncheckedUpdateManyInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -538,7 +606,9 @@ export type UserCountOrderByAggregateInput = {
   role?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
-  trialEndsAt?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
+  subscriptionPeriodEnd?: Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -553,7 +623,9 @@ export type UserMaxOrderByAggregateInput = {
   role?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
-  trialEndsAt?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
+  subscriptionPeriodEnd?: Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -568,7 +640,9 @@ export type UserMinOrderByAggregateInput = {
   role?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   subscriptionStatus?: Prisma.SortOrder
-  trialEndsAt?: Prisma.SortOrder
+  subscriptionTier?: Prisma.SortOrder
+  subscriptionPeriodEnd?: Prisma.SortOrder
+  cancelAtPeriodEnd?: Prisma.SortOrder
   onboardingComplete?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -781,6 +855,32 @@ export type UserUpdateOneRequiredWithoutPeopleNestedInput = {
   >
 }
 
+export type UserCreateNestedOneWithoutSubscriptionEventsInput = {
+  create?: Prisma.XOR<
+    Prisma.UserCreateWithoutSubscriptionEventsInput,
+    Prisma.UserUncheckedCreateWithoutSubscriptionEventsInput
+  >
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionEventsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSubscriptionEventsNestedInput = {
+  create?: Prisma.XOR<
+    Prisma.UserCreateWithoutSubscriptionEventsInput,
+    Prisma.UserUncheckedCreateWithoutSubscriptionEventsInput
+  >
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSubscriptionEventsInput
+  upsert?: Prisma.UserUpsertWithoutSubscriptionEventsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<
+    Prisma.XOR<
+      Prisma.UserUpdateToOneWithWhereWithoutSubscriptionEventsInput,
+      Prisma.UserUpdateWithoutSubscriptionEventsInput
+    >,
+    Prisma.UserUncheckedUpdateWithoutSubscriptionEventsInput
+  >
+}
+
 export type UserCreateWithoutSessionsInput = {
   id?: string
   email: string
@@ -790,11 +890,14 @@ export type UserCreateWithoutSessionsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
@@ -811,11 +914,14 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
@@ -866,15 +972,21 @@ export type UserUpdateWithoutSessionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
@@ -897,15 +1009,21 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -922,11 +1040,14 @@ export type UserCreateWithoutAccountsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
@@ -943,11 +1064,14 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
@@ -998,15 +1122,21 @@ export type UserUpdateWithoutAccountsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
@@ -1029,15 +1159,21 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1054,12 +1190,15 @@ export type UserCreateWithoutVoiceSessionsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
@@ -1075,12 +1214,15 @@ export type UserUncheckedCreateWithoutVoiceSessionsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
@@ -1130,16 +1272,22 @@ export type UserUpdateWithoutVoiceSessionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
@@ -1161,16 +1309,22 @@ export type UserUncheckedUpdateWithoutVoiceSessionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
@@ -1186,12 +1340,15 @@ export type UserCreateWithoutPreferencesInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
@@ -1207,12 +1364,15 @@ export type UserUncheckedCreateWithoutPreferencesInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
@@ -1262,16 +1422,22 @@ export type UserUpdateWithoutPreferencesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
@@ -1293,16 +1459,22 @@ export type UserUncheckedUpdateWithoutPreferencesInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
@@ -1318,12 +1490,15 @@ export type UserCreateWithoutReflectionSessionsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   todos?: Prisma.TodoCreateNestedManyWithoutUserInput
@@ -1339,12 +1514,15 @@ export type UserUncheckedCreateWithoutReflectionSessionsInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
@@ -1394,16 +1572,22 @@ export type UserUpdateWithoutReflectionSessionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
@@ -1425,16 +1609,22 @@ export type UserUncheckedUpdateWithoutReflectionSessionsInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
@@ -1450,12 +1640,15 @@ export type UserCreateWithoutTodosInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
@@ -1471,12 +1664,15 @@ export type UserUncheckedCreateWithoutTodosInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
@@ -1526,16 +1722,22 @@ export type UserUpdateWithoutTodosInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
@@ -1557,16 +1759,22 @@ export type UserUncheckedUpdateWithoutTodosInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1582,12 +1790,15 @@ export type UserCreateWithoutPeopleInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
@@ -1603,12 +1814,15 @@ export type UserUncheckedCreateWithoutPeopleInput = {
   role?: string
   stripeCustomerId?: string | null
   subscriptionStatus?: string | null
-  trialEndsAt?: Date | string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedCreateNestedManyWithoutUserInput
   voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
   preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
@@ -1658,16 +1872,22 @@ export type UserUpdateWithoutPeopleInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUpdateManyWithoutUserNestedInput
   voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
   preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
@@ -1689,11 +1909,166 @@ export type UserUncheckedUpdateWithoutPeopleInput = {
     | Prisma.NullableStringFieldUpdateOperationsInput
     | string
     | null
-  trialEndsAt?:
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
     | Prisma.NullableDateTimeFieldUpdateOperationsInput
     | Date
     | string
     | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  subscriptionEvents?: Prisma.SubscriptionEventUncheckedUpdateManyWithoutUserNestedInput
+  voiceSessions?: Prisma.VoiceSessionUncheckedUpdateManyWithoutUserNestedInput
+  preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
+  reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutSubscriptionEventsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  image?: string | null
+  emailVerified?: boolean
+  role?: string
+  stripeCustomerId?: string | null
+  subscriptionStatus?: string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
+  onboardingComplete?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  voiceSessions?: Prisma.VoiceSessionCreateNestedManyWithoutUserInput
+  preferences?: Prisma.UserPreferencesCreateNestedOneWithoutUserInput
+  reflectionSessions?: Prisma.ReflectionSessionCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSubscriptionEventsInput = {
+  id?: string
+  email: string
+  name?: string | null
+  image?: string | null
+  emailVerified?: boolean
+  role?: string
+  stripeCustomerId?: string | null
+  subscriptionStatus?: string | null
+  subscriptionTier?: string | null
+  subscriptionPeriodEnd?: Date | string | null
+  cancelAtPeriodEnd?: boolean
+  onboardingComplete?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  voiceSessions?: Prisma.VoiceSessionUncheckedCreateNestedManyWithoutUserInput
+  preferences?: Prisma.UserPreferencesUncheckedCreateNestedOneWithoutUserInput
+  reflectionSessions?: Prisma.ReflectionSessionUncheckedCreateNestedManyWithoutUserInput
+  todos?: Prisma.TodoUncheckedCreateNestedManyWithoutUserInput
+  people?: Prisma.PersonUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSubscriptionEventsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<
+    Prisma.UserCreateWithoutSubscriptionEventsInput,
+    Prisma.UserUncheckedCreateWithoutSubscriptionEventsInput
+  >
+}
+
+export type UserUpsertWithoutSubscriptionEventsInput = {
+  update: Prisma.XOR<
+    Prisma.UserUpdateWithoutSubscriptionEventsInput,
+    Prisma.UserUncheckedUpdateWithoutSubscriptionEventsInput
+  >
+  create: Prisma.XOR<
+    Prisma.UserCreateWithoutSubscriptionEventsInput,
+    Prisma.UserUncheckedCreateWithoutSubscriptionEventsInput
+  >
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSubscriptionEventsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<
+    Prisma.UserUpdateWithoutSubscriptionEventsInput,
+    Prisma.UserUncheckedUpdateWithoutSubscriptionEventsInput
+  >
+}
+
+export type UserUpdateWithoutSubscriptionEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCustomerId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionStatus?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  voiceSessions?: Prisma.VoiceSessionUpdateManyWithoutUserNestedInput
+  preferences?: Prisma.UserPreferencesUpdateOneWithoutUserNestedInput
+  reflectionSessions?: Prisma.ReflectionSessionUpdateManyWithoutUserNestedInput
+  todos?: Prisma.TodoUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSubscriptionEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  role?: Prisma.StringFieldUpdateOperationsInput | string
+  stripeCustomerId?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionStatus?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionTier?:
+    | Prisma.NullableStringFieldUpdateOperationsInput
+    | string
+    | null
+  subscriptionPeriodEnd?:
+    | Prisma.NullableDateTimeFieldUpdateOperationsInput
+    | Date
+    | string
+    | null
+  cancelAtPeriodEnd?: Prisma.BoolFieldUpdateOperationsInput | boolean
   onboardingComplete?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1703,6 +2078,7 @@ export type UserUncheckedUpdateWithoutPeopleInput = {
   preferences?: Prisma.UserPreferencesUncheckedUpdateOneWithoutUserNestedInput
   reflectionSessions?: Prisma.ReflectionSessionUncheckedUpdateManyWithoutUserNestedInput
   todos?: Prisma.TodoUncheckedUpdateManyWithoutUserNestedInput
+  people?: Prisma.PersonUncheckedUpdateManyWithoutUserNestedInput
 }
 
 /**
@@ -1712,6 +2088,7 @@ export type UserUncheckedUpdateWithoutPeopleInput = {
 export type UserCountOutputType = {
   accounts: number
   sessions: number
+  subscriptionEvents: number
   voiceSessions: number
   reflectionSessions: number
   todos: number
@@ -1724,6 +2101,7 @@ export type UserCountOutputTypeSelect<
 > = {
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+  subscriptionEvents?: boolean | UserCountOutputTypeCountSubscriptionEventsArgs
   voiceSessions?: boolean | UserCountOutputTypeCountVoiceSessionsArgs
   reflectionSessions?: boolean | UserCountOutputTypeCountReflectionSessionsArgs
   todos?: boolean | UserCountOutputTypeCountTodosArgs
@@ -1761,6 +2139,16 @@ export type UserCountOutputTypeCountSessionsArgs<
     runtime.Types.Extensions.DefaultArgs,
 > = {
   where?: Prisma.SessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSubscriptionEventsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  where?: Prisma.SubscriptionEventWhereInput
 }
 
 /**
@@ -1816,12 +2204,15 @@ export type UserSelect<
     role?: boolean
     stripeCustomerId?: boolean
     subscriptionStatus?: boolean
-    trialEndsAt?: boolean
+    subscriptionTier?: boolean
+    subscriptionPeriodEnd?: boolean
+    cancelAtPeriodEnd?: boolean
     onboardingComplete?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
     sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
+    subscriptionEvents?: boolean | Prisma.User$subscriptionEventsArgs<ExtArgs>
     voiceSessions?: boolean | Prisma.User$voiceSessionsArgs<ExtArgs>
     preferences?: boolean | Prisma.User$preferencesArgs<ExtArgs>
     reflectionSessions?: boolean | Prisma.User$reflectionSessionsArgs<ExtArgs>
@@ -1845,7 +2236,9 @@ export type UserSelectCreateManyAndReturn<
     role?: boolean
     stripeCustomerId?: boolean
     subscriptionStatus?: boolean
-    trialEndsAt?: boolean
+    subscriptionTier?: boolean
+    subscriptionPeriodEnd?: boolean
+    cancelAtPeriodEnd?: boolean
     onboardingComplete?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1866,7 +2259,9 @@ export type UserSelectUpdateManyAndReturn<
     role?: boolean
     stripeCustomerId?: boolean
     subscriptionStatus?: boolean
-    trialEndsAt?: boolean
+    subscriptionTier?: boolean
+    subscriptionPeriodEnd?: boolean
+    cancelAtPeriodEnd?: boolean
     onboardingComplete?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1883,7 +2278,9 @@ export type UserSelectScalar = {
   role?: boolean
   stripeCustomerId?: boolean
   subscriptionStatus?: boolean
-  trialEndsAt?: boolean
+  subscriptionTier?: boolean
+  subscriptionPeriodEnd?: boolean
+  cancelAtPeriodEnd?: boolean
   onboardingComplete?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1901,7 +2298,9 @@ export type UserOmit<
   | 'role'
   | 'stripeCustomerId'
   | 'subscriptionStatus'
-  | 'trialEndsAt'
+  | 'subscriptionTier'
+  | 'subscriptionPeriodEnd'
+  | 'cancelAtPeriodEnd'
   | 'onboardingComplete'
   | 'createdAt'
   | 'updatedAt',
@@ -1913,6 +2312,7 @@ export type UserInclude<
 > = {
   accounts?: boolean | Prisma.User$accountsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
+  subscriptionEvents?: boolean | Prisma.User$subscriptionEventsArgs<ExtArgs>
   voiceSessions?: boolean | Prisma.User$voiceSessionsArgs<ExtArgs>
   preferences?: boolean | Prisma.User$preferencesArgs<ExtArgs>
   reflectionSessions?: boolean | Prisma.User$reflectionSessionsArgs<ExtArgs>
@@ -1937,6 +2337,7 @@ export type $UserPayload<
   objects: {
     accounts: Prisma.$AccountPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
+    subscriptionEvents: Prisma.$SubscriptionEventPayload<ExtArgs>[]
     voiceSessions: Prisma.$VoiceSessionPayload<ExtArgs>[]
     preferences: Prisma.$UserPreferencesPayload<ExtArgs> | null
     reflectionSessions: Prisma.$ReflectionSessionPayload<ExtArgs>[]
@@ -1953,7 +2354,9 @@ export type $UserPayload<
       role: string
       stripeCustomerId: string | null
       subscriptionStatus: string | null
-      trialEndsAt: Date | null
+      subscriptionTier: string | null
+      subscriptionPeriodEnd: Date | null
+      cancelAtPeriodEnd: boolean
       onboardingComplete: boolean
       createdAt: Date
       updatedAt: Date
@@ -2529,6 +2932,19 @@ export interface Prisma__UserClient<
       >
     | Null
   >
+  subscriptionEvents<
+    T extends Prisma.User$subscriptionEventsArgs<ExtArgs> = {},
+  >(
+    args?: Prisma.Subset<T, Prisma.User$subscriptionEventsArgs<ExtArgs>>,
+  ): Prisma.PrismaPromise<
+    | runtime.Types.Result.GetResult<
+        Prisma.$SubscriptionEventPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    | Null
+  >
   voiceSessions<T extends Prisma.User$voiceSessionsArgs<ExtArgs> = {}>(
     args?: Prisma.Subset<T, Prisma.User$voiceSessionsArgs<ExtArgs>>,
   ): Prisma.PrismaPromise<
@@ -2638,7 +3054,9 @@ export interface UserFieldRefs {
   readonly role: Prisma.FieldRef<'User', 'String'>
   readonly stripeCustomerId: Prisma.FieldRef<'User', 'String'>
   readonly subscriptionStatus: Prisma.FieldRef<'User', 'String'>
-  readonly trialEndsAt: Prisma.FieldRef<'User', 'DateTime'>
+  readonly subscriptionTier: Prisma.FieldRef<'User', 'String'>
+  readonly subscriptionPeriodEnd: Prisma.FieldRef<'User', 'DateTime'>
+  readonly cancelAtPeriodEnd: Prisma.FieldRef<'User', 'Boolean'>
   readonly onboardingComplete: Prisma.FieldRef<'User', 'Boolean'>
   readonly createdAt: Prisma.FieldRef<'User', 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<'User', 'DateTime'>
@@ -3136,6 +3554,37 @@ export type User$sessionsArgs<
   take?: number
   skip?: number
   distinct?: Prisma.SessionScalarFieldEnum | Prisma.SessionScalarFieldEnum[]
+}
+
+/**
+ * User.subscriptionEvents
+ */
+export type User$subscriptionEventsArgs<
+  ExtArgs extends runtime.Types.Extensions.InternalArgs =
+    runtime.Types.Extensions.DefaultArgs,
+> = {
+  /**
+   * Select specific fields to fetch from the SubscriptionEvent
+   */
+  select?: Prisma.SubscriptionEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SubscriptionEvent
+   */
+  omit?: Prisma.SubscriptionEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubscriptionEventInclude<ExtArgs> | null
+  where?: Prisma.SubscriptionEventWhereInput
+  orderBy?:
+    | Prisma.SubscriptionEventOrderByWithRelationInput
+    | Prisma.SubscriptionEventOrderByWithRelationInput[]
+  cursor?: Prisma.SubscriptionEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?:
+    | Prisma.SubscriptionEventScalarFieldEnum
+    | Prisma.SubscriptionEventScalarFieldEnum[]
 }
 
 /**

@@ -1,7 +1,7 @@
-import { Outlet, createFileRoute, redirect, Link } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { ChevronLeft } from 'lucide-react'
 import { getSessionFn } from '../server/auth.fn'
 import { FloatingAudioToggle } from '@/components/audio/FloatingAudioToggle'
-import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 /**

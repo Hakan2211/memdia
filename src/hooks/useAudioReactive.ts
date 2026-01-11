@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useAudio } from '@/contexts/AudioContext'
 
 export interface AudioReactiveValues {
@@ -96,7 +96,9 @@ export function useAudioReactive() {
 
       // Update each value with exponential smoothing
       const state = smoothedValues.current
-      const keys = Object.keys(SMOOTH_CONFIGS) as (keyof AudioReactiveValues)[]
+      const keys = Object.keys(SMOOTH_CONFIGS) as Array<
+        keyof AudioReactiveValues
+      >
 
       for (const key of keys) {
         state[key] = smoothValue(state[key], targets[key], SMOOTH_CONFIGS[key])

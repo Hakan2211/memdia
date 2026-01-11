@@ -3,7 +3,7 @@
  * View topics mentioned in reflections
  */
 
-import { Link, createFileRoute  } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Calendar, Tag } from 'lucide-react'

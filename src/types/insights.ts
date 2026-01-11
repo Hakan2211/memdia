@@ -50,7 +50,8 @@ export type Mood = (typeof ALL_MOODS)[number]
 export type MoodValence = 'positive' | 'neutral' | 'negative'
 
 export function getMoodValence(mood: Mood): MoodValence {
-  if ((POSITIVE_MOODS as ReadonlyArray<string>).includes(mood)) return 'positive'
+  if ((POSITIVE_MOODS as ReadonlyArray<string>).includes(mood))
+    return 'positive'
   if ((NEUTRAL_MOODS as ReadonlyArray<string>).includes(mood)) return 'neutral'
   return 'negative'
 }
@@ -215,13 +216,15 @@ export interface PersonMention {
 
 // Person with mentions for detail view
 export interface PersonWithMentions extends Person {
-  mentions: Array<PersonMention & {
-    session: {
-      id: string
-      date: Date
-      summaryText: string | null
+  mentions: Array<
+    PersonMention & {
+      session: {
+        id: string
+        date: Date
+        summaryText: string | null
+      }
     }
-  }>
+  >
 }
 
 // ==========================================

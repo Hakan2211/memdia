@@ -18,11 +18,15 @@ import {
 } from '../lib/prompts/summary'
 import { buildImagePrompt } from '../lib/prompts/image'
 import { authMiddleware } from './middleware'
-import {  chatCompletion } from './services/openrouter.service'
-import { generateImage, generateSpeech  } from './services/falai.service'
+import { chatCompletion } from './services/openrouter.service'
+import { generateImage, generateSpeech } from './services/falai.service'
 import { uploadImageFromUrl } from './services/bunny.service'
-import type {ChatMessage} from './services/openrouter.service';
-import type { AIPersonality, ImageStyle, Language  } from '../types/voice-session'
+import type { ChatMessage } from './services/openrouter.service'
+import type {
+  AIPersonality,
+  ImageStyle,
+  Language,
+} from '../types/voice-session'
 
 // ==========================================
 // Schemas
@@ -475,9 +479,12 @@ export const processSessionFn = createServerFn({ method: 'POST' })
     let summaryText: string | null = null
     try {
       const summaryMessages = buildSummaryMessages(transcript, userLanguage)
-      summaryText = await chatCompletion(summaryMessages as Array<ChatMessage>, {
-        maxTokens: 1000,
-      })
+      summaryText = await chatCompletion(
+        summaryMessages as Array<ChatMessage>,
+        {
+          maxTokens: 1000,
+        },
+      )
     } catch (error) {
       console.error('Failed to generate summary:', error)
     }

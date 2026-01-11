@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
+  Crown,
   Lightbulb,
+  Lock,
   LogOut,
   MessageCircle,
   Mic,
@@ -41,15 +43,30 @@ interface AppUser {
 
 interface AppSidebarProps {
   user: AppUser
+  subscriptionTier: string | null
 }
 
-export function AppSidebar({ user }: AppSidebarProps) {
+/**
+ * PRO Badge with lock icon for Pro-only features in sidebar
+ */
+function ProBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+      <Lock className="h-2.5 w-2.5" />
+      <Crown className="h-2.5 w-2.5" />
+      PRO
+    </span>
+  )
+}
+
+export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { setOpenMobile } = useSidebar()
   const userName = user.name || 'User'
   const userEmail = user.email
   const userRole = user.role
+  const isPro = subscriptionTier === 'pro'
 
   const handleSignOut = async () => {
     await signOut()
@@ -110,15 +127,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/reflections')}
-                  tooltip="Reflections"
+                  tooltip="Reflections (Pro)"
                   size="lg"
                   className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
                   onClick={handleNavClick}
                 >
                   <Link to="/reflections">
                     <MessageCircle className="h-5! w-5!" />
-                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
+                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden flex items-center gap-2">
                       Reflections
+                      {!isPro && <ProBadge />}
                     </span>
                   </Link>
                 </SidebarMenuButton>
@@ -127,15 +145,16 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/insights')}
-                  tooltip="Insights"
+                  tooltip="Insights (Pro)"
                   size="lg"
                   className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
                   onClick={handleNavClick}
                 >
                   <Link to="/insights">
                     <Lightbulb className="h-5! w-5!" />
-                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
+                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden flex items-center gap-2">
                       Insights
+                      {!isPro && <ProBadge />}
                     </span>
                   </Link>
                 </SidebarMenuButton>

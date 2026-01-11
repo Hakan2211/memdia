@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Mic, Bot, LineChart } from 'lucide-react'
+import { Bot, LineChart, Mic } from 'lucide-react'
 
 const steps = [
   {
@@ -62,10 +62,10 @@ function StepCard({
         </motion.div>
 
         {/* Content */}
-        <h3 className="mb-3 text-xl font-bold text-slate-900">
-          {step.title}
-        </h3>
-        <p className="text-slate-600 leading-relaxed max-w-sm mx-auto">{step.description}</p>
+        <h3 className="mb-3 text-xl font-bold text-slate-900">{step.title}</h3>
+        <p className="text-slate-600 leading-relaxed max-w-sm mx-auto">
+          {step.description}
+        </p>
       </motion.div>
 
       {/* Connector Line (hidden on last item and mobile) */}

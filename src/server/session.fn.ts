@@ -8,10 +8,7 @@ import { z } from 'zod'
 import { format } from 'date-fns'
 import { prisma } from '../db'
 import { authMiddleware } from './middleware'
-import {
-  checkSubscription,
-  ensureTrialInitialized,
-} from './services/subscription.service'
+import { checkSubscription } from './services/subscription.service'
 import type {
   ImageStyle,
   SessionStatus,
@@ -149,17 +146,16 @@ export const getSessionByDateFn = createServerFn({ method: 'GET' })
 export const startSessionFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    // Ensure trial is initialized
-    await ensureTrialInitialized(context.user.id)
-
     // Check subscription
     const subCheck = await checkSubscription(context.user.id)
     if (!subCheck.canCreateSession) {
-      throw new Error(
-        subCheck.blockedReason === 'trial_expired'
-          ? 'Your free trial has ended. Please subscribe to continue.'
-          : 'Subscription required to create sessions.',
-      )
+      const message =
+        subCheck.blockedReason === 'past_due'
+          ? 'Your payment is past due. Please update your payment method.'
+          : subCheck.blockedReason === 'subscription_canceled'
+            ? 'Your subscription has been canceled. Please resubscribe to continue.'
+            : 'Active subscription required to create sessions.'
+      throw new Error(message)
     }
 
     const today = getStartOfDay()
@@ -719,9 +715,6 @@ export const updateUserPreferencesFn = createServerFn({ method: 'POST' })
 export const completeOnboardingFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    // Initialize trial if not done already
-    await ensureTrialInitialized(context.user.id)
-
     // Mark onboarding as complete
     const user = await prisma.user.update({
       where: { id: context.user.id },
@@ -738,66 +731,52 @@ export const getOnboardingStatusFn = createServerFn({ method: 'GET' })
       where: { id: context.user.id },
       select: {
         onboardingComplete: true,
-        trialEndsAt: true,
       },
     })
 
     return {
       onboardingComplete: user?.onboardingComplete ?? false,
-      trialEndsAt: user?.trialEndsAt,
     }
   })
 
 // ==========================================
-// Trial Status
+// Subscription Status
 // ==========================================
 
-export const getTrialStatusFn = createServerFn({ method: 'GET' })
+export const getSubscriptionStatusFn = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const user = await prisma.user.findUnique({
       where: { id: context.user.id },
       select: {
-        trialEndsAt: true,
         subscriptionStatus: true,
+        subscriptionTier: true,
+        subscriptionPeriodEnd: true,
+        cancelAtPeriodEnd: true,
       },
     })
 
     if (!user) {
       return {
-        isTrialing: false,
         isSubscribed: false,
-        trialExpired: false,
-        daysRemaining: 0,
+        tier: null,
+        status: 'none' as const,
+        periodEnd: null,
+        cancelAtPeriodEnd: false,
       }
     }
 
     const isSubscribed = user.subscriptionStatus === 'active'
-    const now = new Date()
-    const trialEndsAt = user.trialEndsAt
-
-    if (!trialEndsAt) {
-      return {
-        isTrialing: false,
-        isSubscribed,
-        trialExpired: false,
-        daysRemaining: 0,
-      }
-    }
-
-    const isTrialing = trialEndsAt > now
-    const trialExpired = !isTrialing && !isSubscribed
-    const daysRemaining = isTrialing
-      ? Math.ceil(
-          (trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-        )
-      : 0
 
     return {
-      isTrialing,
       isSubscribed,
-      trialExpired,
-      daysRemaining,
-      trialEndsAt,
+      tier: isSubscribed ? user.subscriptionTier : null,
+      status: (user.subscriptionStatus ?? 'none') as
+        | 'active'
+        | 'canceled'
+        | 'past_due'
+        | 'none',
+      periodEnd: user.subscriptionPeriodEnd,
+      cancelAtPeriodEnd: user.cancelAtPeriodEnd,
     }
   })

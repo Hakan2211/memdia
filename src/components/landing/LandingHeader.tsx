@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { motion, useScroll, useTransform } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AudioToggle } from '@/components/audio/AudioToggle'
 import { cn } from '@/lib/utils'

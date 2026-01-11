@@ -2,6 +2,7 @@
  * Reflections Layout Route
  * Parent route for all /reflections/* routes
  * Contains the sidebar navigation and calendar view for 10-minute reflection sessions
+ * PRO-ONLY: Requires Pro subscription tier
  */
 
 import {
@@ -27,9 +28,10 @@ import {
   Calendar as CalendarComponent,
   CalendarDayButton,
 } from '../../components/ui/calendar'
+import { ProFeatureGate } from '../../components/upgrade-modal'
 
 export const Route = createFileRoute('/_app/reflections')({
-  component: ReflectionsLayout,
+  component: ReflectionsLayoutWrapper,
   beforeLoad: async ({ location }) => {
     // Redirect /reflections to /reflections/today for default view
     if (location.pathname === '/reflections') {
@@ -37,6 +39,22 @@ export const Route = createFileRoute('/_app/reflections')({
     }
   },
 })
+
+/**
+ * Wrapper component that checks subscription tier
+ */
+function ReflectionsLayoutWrapper() {
+  const { subscription } = Route.useRouteContext()
+
+  return (
+    <ProFeatureGate
+      subscriptionTier={subscription?.tier ?? null}
+      featureName="Reflections"
+    >
+      <ReflectionsLayout />
+    </ProFeatureGate>
+  )
+}
 
 function ReflectionsLayout() {
   const navigate = useNavigate()

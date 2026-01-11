@@ -1,76 +1,36 @@
 /**
  * Subscription Service
- * Handles trial creation, validation, and subscription checks
+ * Handles subscription checks and status management
+ * No trial - users must subscribe to use the app
  */
 
 import { prisma } from '../../db'
-import {
-  SUBSCRIPTION_TIERS,
-  
-  
-  
-  TRIAL_CONFIG
+import { SUBSCRIPTION_TIERS } from '../../types/subscription'
+import type {
+  SubscriptionCheckResult,
+  SubscriptionStatus,
+  SubscriptionTier,
 } from '../../types/subscription'
-import type {SubscriptionCheckResult, SubscriptionStatus, SubscriptionTier} from '../../types/subscription';
 
 /**
- * Initialize trial for a new user
- * Called after user registration
+ * Check if mock payments are enabled
  */
-export async function initializeUserTrial(userId: string): Promise<Date> {
-  const trialEndsAt = new Date()
-  trialEndsAt.setDate(trialEndsAt.getDate() + TRIAL_CONFIG.TRIAL_DURATION_DAYS)
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      trialEndsAt,
-      subscriptionStatus: 'trialing',
-    },
-  })
-
-  return trialEndsAt
+function isMockMode(): boolean {
+  return process.env.MOCK_PAYMENTS === 'true'
 }
 
 /**
- * Check if user's trial is active
- */
-export function isTrialActive(trialEndsAt: Date | null): boolean {
-  if (!trialEndsAt) return false
-  return new Date() < trialEndsAt
-}
-
-/**
- * Calculate days remaining in trial
- */
-export function getTrialDaysRemaining(trialEndsAt: Date | null): number {
-  if (!trialEndsAt) return 0
-  const now = new Date()
-  const diff = trialEndsAt.getTime() - now.getTime()
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
-}
-
-/**
- * Get user's current subscription tier
+ * Get user's current subscription tier from database
  */
 export function getUserTier(
   subscriptionStatus: string | null,
-  trialEndsAt: Date | null,
-): SubscriptionTier {
-  // Check if on active trial
-  if (isTrialActive(trialEndsAt)) {
-    return 'trial'
+  subscriptionTier: string | null,
+): SubscriptionTier | null {
+  // Only return tier if subscription is active
+  if (subscriptionStatus === 'active' && subscriptionTier) {
+    return subscriptionTier as SubscriptionTier
   }
-
-  // Check subscription status
-  if (subscriptionStatus === 'active') {
-    // For now, all paid users are on standard tier
-    // In the future, we can check for premium tier
-    return 'standard'
-  }
-
-  // Default to trial (expired)
-  return 'trial'
+  return null
 }
 
 /**
@@ -80,11 +40,23 @@ export function getUserTier(
 export async function checkSubscription(
   userId: string,
 ): Promise<SubscriptionCheckResult> {
+  // In mock mode, always allow with pro tier
+  if (isMockMode()) {
+    const proTier = SUBSCRIPTION_TIERS.pro
+    return {
+      canCreateSession: true,
+      tier: 'pro',
+      status: 'active',
+      maxDurationSeconds: proTier.maxDurationSeconds,
+      maxReflectionDurationSeconds: proTier.maxReflectionDurationSeconds,
+    }
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
       subscriptionStatus: true,
-      trialEndsAt: true,
+      subscriptionTier: true,
       stripeCustomerId: true,
     },
   })
@@ -92,79 +64,78 @@ export async function checkSubscription(
   if (!user) {
     return {
       canCreateSession: false,
-      tier: 'trial',
+      tier: null,
       status: 'none',
       maxDurationSeconds: 0,
-      blockedReason: 'trial_expired',
+      maxReflectionDurationSeconds: 0,
+      blockedReason: 'no_subscription',
     }
   }
 
   const status = (user.subscriptionStatus ?? 'none') as SubscriptionStatus
-  const tier = getUserTier(status, user.trialEndsAt)
-  const tierConfig = SUBSCRIPTION_TIERS[tier]
+  const tier = getUserTier(status, user.subscriptionTier)
 
-  // Build trial info if applicable
-  const trialInfo = user.trialEndsAt
-    ? {
-        isActive: isTrialActive(user.trialEndsAt),
-        daysRemaining: getTrialDaysRemaining(user.trialEndsAt),
-        endsAt: user.trialEndsAt,
-      }
-    : undefined
-
-  // Check if user can create a session
-  let canCreateSession = false
-  let blockedReason: SubscriptionCheckResult['blockedReason']
-
-  if (tier === 'trial') {
-    if (trialInfo?.isActive) {
-      canCreateSession = true
-    } else {
-      blockedReason = 'trial_expired'
+  // No active subscription
+  if (!tier || status === 'none') {
+    return {
+      canCreateSession: false,
+      tier: null,
+      status: 'none',
+      maxDurationSeconds: 0,
+      maxReflectionDurationSeconds: 0,
+      blockedReason: 'no_subscription',
     }
-  } else if (status === 'active') {
-    canCreateSession = true
-  } else if (status === 'past_due') {
-    blockedReason = 'past_due'
-  } else {
-    blockedReason = 'subscription_inactive'
   }
 
+  // Subscription canceled
+  if (status === 'canceled') {
+    return {
+      canCreateSession: false,
+      tier,
+      status: 'canceled',
+      maxDurationSeconds: 0,
+      maxReflectionDurationSeconds: 0,
+      blockedReason: 'subscription_canceled',
+    }
+  }
+
+  // Payment past due
+  if (status === 'past_due') {
+    return {
+      canCreateSession: false,
+      tier,
+      status: 'past_due',
+      maxDurationSeconds: 0,
+      maxReflectionDurationSeconds: 0,
+      blockedReason: 'past_due',
+    }
+  }
+
+  // Active subscription
+  const tierConfig = SUBSCRIPTION_TIERS[tier]
   return {
-    canCreateSession,
+    canCreateSession: true,
     tier,
-    status,
+    status: 'active',
     maxDurationSeconds: tierConfig.maxDurationSeconds,
-    trial: trialInfo,
-    blockedReason,
+    maxReflectionDurationSeconds: tierConfig.maxReflectionDurationSeconds,
   }
 }
 
 /**
- * Ensure user has trial initialized
- * Called during signup or first API access
- */
-export async function ensureTrialInitialized(userId: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { trialEndsAt: true },
-  })
-
-  if (user && !user.trialEndsAt) {
-    await initializeUserTrial(userId)
-  }
-}
-
-/**
- * Update subscription status from Stripe webhook
+ * Update subscription status (called from webhook handler)
  */
 export async function updateSubscriptionStatus(
   userId: string,
   status: SubscriptionStatus,
+  tier?: SubscriptionTier | null,
 ): Promise<void> {
   await prisma.user.update({
     where: { id: userId },
-    data: { subscriptionStatus: status },
+    data: {
+      subscriptionStatus: status,
+      ...(tier !== undefined && { subscriptionTier: tier }),
+    },
   })
 }
 
@@ -179,21 +150,42 @@ export async function cancelSubscription(userId: string): Promise<void> {
 }
 
 /**
- * Get subscription status for display
+ * Get subscription status for display in UI
  */
 export async function getSubscriptionDisplayInfo(userId: string): Promise<{
-  tier: SubscriptionTier
+  tier: SubscriptionTier | null
   tierName: string
   status: SubscriptionStatus
   isActive: boolean
-  trial?: {
-    isActive: boolean
-    daysRemaining: number
-    endsAt: Date
-  }
   price: number | null
+  features: Array<string>
 }> {
+  // In mock mode, return pro tier
+  if (isMockMode()) {
+    const proTier = SUBSCRIPTION_TIERS.pro
+    return {
+      tier: 'pro',
+      tierName: proTier.name,
+      status: 'active',
+      isActive: true,
+      price: proTier.priceMonthly,
+      features: proTier.features,
+    }
+  }
+
   const check = await checkSubscription(userId)
+
+  if (!check.tier) {
+    return {
+      tier: null,
+      tierName: 'No Subscription',
+      status: check.status,
+      isActive: false,
+      price: null,
+      features: [],
+    }
+  }
+
   const tierConfig = SUBSCRIPTION_TIERS[check.tier]
 
   return {
@@ -201,7 +193,62 @@ export async function getSubscriptionDisplayInfo(userId: string): Promise<{
     tierName: tierConfig.name,
     status: check.status,
     isActive: check.canCreateSession,
-    trial: check.trial,
     price: tierConfig.priceMonthly,
+    features: tierConfig.features,
   }
+}
+
+/**
+ * Check if user has an active subscription
+ */
+export async function hasActiveSubscription(userId: string): Promise<boolean> {
+  if (isMockMode()) {
+    return true
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { subscriptionStatus: true },
+  })
+
+  return user?.subscriptionStatus === 'active'
+}
+
+/**
+ * Get subscription events for a user (for admin dashboard)
+ */
+export async function getSubscriptionEvents(
+  userId?: string,
+  limit = 50,
+): Promise<
+  Array<{
+    id: string
+    userId: string
+    userEmail: string
+    event: string
+    fromTier: string | null
+    toTier: string | null
+    createdAt: Date
+  }>
+> {
+  const events = await prisma.subscriptionEvent.findMany({
+    where: userId ? { userId } : undefined,
+    include: {
+      user: {
+        select: { email: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  })
+
+  return events.map((event) => ({
+    id: event.id,
+    userId: event.userId,
+    userEmail: event.user.email,
+    event: event.event,
+    fromTier: event.fromTier,
+    toTier: event.toTier,
+    createdAt: event.createdAt,
+  }))
 }

@@ -10,7 +10,6 @@ import {
   Check,
   ChevronRight,
   Clock,
-  Globe,
   Languages,
   Mic,
   Palette,
@@ -35,7 +34,6 @@ import {
   MONOLINGUAL_LANGUAGE_LABELS,
   MULTILINGUAL_LANGUAGES,
   MULTILINGUAL_LANGUAGE_LABELS,
-  isMultilingualLanguage,
   requiresNova2Model,
 } from '../../types/voice-session'
 import type {
@@ -701,7 +699,7 @@ function OnboardingPage() {
                 You're All Set!
               </h1>
               <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
-                Your 7-day free trial starts now. Take 3 minutes each day to
+                Your subscription is active. Take a few minutes each day to
                 reflect, and we'll turn your thoughts into beautiful memories.
               </p>
               <Button

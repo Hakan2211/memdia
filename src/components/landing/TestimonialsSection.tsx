@@ -1,7 +1,7 @@
 'use client'
 
-import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useRef } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

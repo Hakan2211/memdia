@@ -2,17 +2,27 @@ import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useState } from 'react'
+import { Check } from 'lucide-react'
 import { signUp } from '../../lib/auth-client'
+import { createCheckoutFn } from '../../server/billing.fn'
+import { SUBSCRIPTION_TIERS } from '../../types/subscription'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Honeypot, isHoneypotFilled } from '../../components/common/Honeypot'
+import type { SubscriptionTier } from '../../types/subscription'
+
+// Search params schema for tier selection
+const signupSearchSchema = z.object({
+  tier: z.enum(['starter', 'pro']).optional().default('starter'),
+})
 
 export const Route = createFileRoute('/_auth/signup')({
+  validateSearch: signupSearchSchema,
   component: SignupPage,
 })
 
-const signupSchema = z.object({
+const signupFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -21,6 +31,7 @@ const signupSchema = z.object({
 
 function SignupPage() {
   const router = useRouter()
+  const { tier: selectedTier } = Route.useSearch()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -34,7 +45,6 @@ function SignupPage() {
     onSubmit: async ({ value }) => {
       // Honeypot check
       if (isHoneypotFilled(value)) {
-        // Silently fail for bots
         return
       }
 
@@ -42,6 +52,7 @@ function SignupPage() {
       setLoading(true)
 
       try {
+        // Step 1: Create the account
         const result = await signUp.email({
           email: value.email,
           password: value.password,
@@ -54,27 +65,105 @@ function SignupPage() {
           return
         }
 
-        // Force full page reload to pick up new session cookie
-        await router.invalidate()
-        window.location.href = '/memories'
+        // Step 2: Redirect to Stripe Checkout
+        const checkoutResult = await createCheckoutFn({
+          data: {
+            tier: selectedTier as SubscriptionTier,
+            isNewUser: true,
+          },
+        })
+
+        // Redirect to Stripe Checkout
+        window.location.href = checkoutResult.url
       } catch (err) {
+        console.error('Signup error:', err)
         setError('An unexpected error occurred')
         setLoading(false)
       }
     },
   })
 
+  const handleTierChange = (tier: SubscriptionTier) => {
+    router.navigate({
+      to: '/signup',
+      search: { tier },
+      replace: true,
+    })
+  }
+
   return (
-    <div className="w-full max-w-md space-y-8">
+    <div className="w-full max-w-4xl space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-[#5a7ba6] to-[#7e9ec9] bg-clip-text text-transparent">
-          Create an account
+          Create your account
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Get started with your free account
+          Choose your plan and get started with Memdia
         </p>
       </div>
 
+      {/* Tier Selection */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {(['starter', 'pro'] as const).map((tier) => {
+          const tierInfo = SUBSCRIPTION_TIERS[tier]
+          const isSelected = selectedTier === tier
+
+          return (
+            <button
+              key={tier}
+              type="button"
+              onClick={() => handleTierChange(tier)}
+              className={`relative p-6 rounded-xl border-2 text-left transition-all ${
+                isSelected
+                  ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                  : 'border-muted hover:border-primary/30 hover:bg-accent/50'
+              }`}
+            >
+              {tier === 'pro' && (
+                <div className="absolute -top-3 right-4 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
+                  Best Value
+                </div>
+              )}
+
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">{tierInfo.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {tierInfo.description}
+                  </p>
+                </div>
+                <div
+                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    isSelected ? 'border-primary bg-primary' : 'border-muted'
+                  }`}
+                >
+                  {isSelected && (
+                    <Check className="w-3 h-3 text-primary-foreground" />
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <span className="text-3xl font-bold">
+                  ${tierInfo.priceMonthly}
+                </span>
+                <span className="text-muted-foreground">/month</span>
+              </div>
+
+              <ul className="space-y-2">
+                {tierInfo.features.slice(0, 4).map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm">
+                    <Check className="w-4 h-4 text-primary shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Signup Form */}
       <div className="rounded-lg border bg-card p-8 shadow-sm">
         <form
           onSubmit={(e) => {
@@ -95,7 +184,7 @@ function SignupPage() {
             name="name"
             validators={{
               onChange: ({ value }) => {
-                const result = signupSchema.shape.name.safeParse(value)
+                const result = signupFormSchema.shape.name.safeParse(value)
                 return result.success
                   ? undefined
                   : result.error.issues[0]?.message
@@ -126,7 +215,7 @@ function SignupPage() {
             name="email"
             validators={{
               onChange: ({ value }) => {
-                const result = signupSchema.shape.email.safeParse(value)
+                const result = signupFormSchema.shape.email.safeParse(value)
                 return result.success
                   ? undefined
                   : result.error.issues[0]?.message
@@ -157,7 +246,7 @@ function SignupPage() {
             name="password"
             validators={{
               onChange: ({ value }) => {
-                const result = signupSchema.shape.password.safeParse(value)
+                const result = signupFormSchema.shape.password.safeParse(value)
                 return result.success
                   ? undefined
                   : result.error.issues[0]?.message
@@ -189,8 +278,15 @@ function SignupPage() {
             className="w-full bg-linear-to-r from-[#7e9ec9] to-[#5a7ba6] hover:opacity-90 transition-opacity text-white border-0"
             disabled={loading}
           >
-            {loading ? 'Creating account...' : 'Create account'}
+            {loading
+              ? 'Creating account...'
+              : `Continue with ${SUBSCRIPTION_TIERS[selectedTier].name} Plan`}
           </Button>
+
+          <p className="text-xs text-center text-muted-foreground">
+            By continuing, you agree to our Terms of Service and Privacy Policy.
+            You will be redirected to Stripe to complete payment.
+          </p>
         </form>
 
         <div className="mt-6">

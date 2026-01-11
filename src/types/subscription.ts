@@ -1,83 +1,63 @@
 /**
  * Subscription Types
- * Types for trial and subscription management
+ * Types for paid subscription management (Starter & Pro tiers)
  */
 
 // ==========================================
 // Subscription Status
 // ==========================================
 
-export type SubscriptionStatus =
-  | 'trialing'
-  | 'active'
-  | 'canceled'
-  | 'past_due'
-  | 'none'
+export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'none'
 
 // ==========================================
 // Subscription Tier
 // ==========================================
 
-export type SubscriptionTier = 'trial' | 'standard' | 'premium'
+export type SubscriptionTier = 'starter' | 'pro'
 
 export const SUBSCRIPTION_TIERS: Record<
   SubscriptionTier,
   {
     name: string
     maxDurationSeconds: number
-    priceMonthly: number | null
+    maxReflectionDurationSeconds: number
+    priceMonthly: number
     features: Array<string>
+    description: string
   }
 > = {
-  trial: {
-    name: 'Free Trial',
-    maxDurationSeconds: 180, // 3 minutes
-    priceMonthly: null,
-    features: [
-      '7-day free trial',
-      '3-minute daily conversations',
-      'Daily memory images',
-      'Full transcript & summary',
-    ],
-  },
-  standard: {
-    name: 'Standard',
-    maxDurationSeconds: 180, // 3 minutes
+  starter: {
+    name: 'Starter',
+    maxDurationSeconds: 180, // 3 minutes for voice sessions
+    maxReflectionDurationSeconds: 600, // 10 minutes for reflections
     priceMonthly: 19.99,
+    description: 'Perfect for daily check-ins',
     features: [
-      '3-minute daily conversations',
-      'Daily memory images',
-      'Full transcript & summary',
+      '3-minute daily voice check-ins',
+      '10-minute reflection sessions',
+      'AI-generated memory images',
+      'Full transcripts & summaries',
       'Calendar view & history',
       'Export your data',
     ],
   },
-  premium: {
-    name: 'Premium',
-    maxDurationSeconds: 300, // 5 minutes - Future
+  pro: {
+    name: 'Pro',
+    maxDurationSeconds: 600, // 10 minutes for voice sessions
+    maxReflectionDurationSeconds: 600, // 10 minutes for reflections
     priceMonthly: 29.99,
+    description: 'For deeper daily reflections',
     features: [
-      '5-minute daily conversations',
-      'Daily, weekly & monthly images',
-      'Full transcript & summary',
+      '10-minute daily voice check-ins',
+      '10-minute reflection sessions',
+      'AI-generated memory images',
+      'Full transcripts & summaries',
       'Calendar view & history',
       'Export your data',
       'Priority support',
     ],
   },
 }
-
-// ==========================================
-// Trial Configuration
-// ==========================================
-
-export const TRIAL_CONFIG = {
-  /** Trial duration in days */
-  TRIAL_DURATION_DAYS: 7,
-
-  /** Grace period after trial ends (in hours) */
-  GRACE_PERIOD_HOURS: 24,
-} as const
 
 // ==========================================
 // Subscription Check Result
@@ -87,31 +67,58 @@ export interface SubscriptionCheckResult {
   /** Whether the user can create a new session */
   canCreateSession: boolean
 
-  /** Current subscription tier */
-  tier: SubscriptionTier
+  /** Current subscription tier (null if not subscribed) */
+  tier: SubscriptionTier | null
 
   /** Subscription status */
   status: SubscriptionStatus
 
-  /** Maximum duration allowed (in seconds) */
+  /** Maximum duration allowed for voice sessions (in seconds) */
   maxDurationSeconds: number
 
-  /** Trial info (if applicable) */
-  trial?: {
-    isActive: boolean
-    daysRemaining: number
-    endsAt: Date
-  }
+  /** Maximum duration allowed for reflection sessions (in seconds) */
+  maxReflectionDurationSeconds: number
 
   /** Reason if session creation is blocked */
-  blockedReason?: 'trial_expired' | 'subscription_inactive' | 'past_due'
+  blockedReason?: 'no_subscription' | 'subscription_canceled' | 'past_due'
 }
+
+// ==========================================
+// Subscription Event Types (for audit logging)
+// ==========================================
+
+export type SubscriptionEventType =
+  | 'subscribed'
+  | 'upgraded'
+  | 'downgraded'
+  | 'canceled'
+  | 'reactivated'
+  | 'payment_failed'
+  | 'payment_succeeded'
 
 // ==========================================
 // Stripe Integration
 // ==========================================
 
 export const STRIPE_PRICE_IDS = {
-  standard_monthly: process.env.STRIPE_STANDARD_MONTHLY_PRICE_ID ?? '',
-  premium_monthly: process.env.STRIPE_PREMIUM_MONTHLY_PRICE_ID ?? '',
+  starter_monthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID ?? '',
+  pro_monthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID ?? '',
 } as const
+
+/**
+ * Get the tier from a Stripe price ID
+ */
+export function getTierFromPriceId(priceId: string): SubscriptionTier | null {
+  if (priceId === STRIPE_PRICE_IDS.starter_monthly) return 'starter'
+  if (priceId === STRIPE_PRICE_IDS.pro_monthly) return 'pro'
+  return null
+}
+
+/**
+ * Get the price ID for a tier
+ */
+export function getPriceIdForTier(tier: SubscriptionTier): string {
+  return tier === 'pro'
+    ? STRIPE_PRICE_IDS.pro_monthly
+    : STRIPE_PRICE_IDS.starter_monthly
+}

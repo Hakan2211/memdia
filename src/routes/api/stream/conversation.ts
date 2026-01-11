@@ -6,10 +6,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { auth } from '../../../lib/auth'
 import { prisma } from '../../../db'
-import {
-  
-  streamChatCompletion
-} from '../../../server/services/openrouter.service'
+import { streamChatCompletion } from '../../../server/services/openrouter.service'
 import { streamSpeech } from '../../../server/services/falai-streaming.service'
 import {
   buildConversationContext,
@@ -20,7 +17,7 @@ import {
   buildReflectionSystemPrompt,
 } from '../../../lib/prompts/reflection'
 import { getGeneration, setGeneration } from './cancel'
-import type {ChatMessage} from '../../../server/services/openrouter.service';
+import type { ChatMessage } from '../../../server/services/openrouter.service'
 import type { AIPersonality, Language } from '../../../types/voice-session'
 
 // Type for session turns (shared between voice and reflection sessions)

@@ -11,13 +11,10 @@ import {
   buildConversationSystemPrompt,
 } from '../lib/prompts/conversation'
 import { authMiddleware } from './middleware'
-import {
-  
-  streamChatCompletion
-} from './services/openrouter.service'
+import { streamChatCompletion } from './services/openrouter.service'
 import { generateSpeech } from './services/falai.service'
 import { uploadAudio } from './services/bunny.service'
-import type {ChatMessage} from './services/openrouter.service';
+import type { ChatMessage } from './services/openrouter.service'
 // NOTE: uploadAudio only used for user audio; AI audio uses fal.ai URLs directly
 import type { AIPersonality } from '../types/voice-session'
 
