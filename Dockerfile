@@ -47,11 +47,7 @@ COPY --from=builder /app/.output ./.output
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# Copy generated Prisma client from builder
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma/client ./node_modules/@prisma/client
-
-# Copy generated Prisma client to src/generated/prisma (memdia-specific path)
+# Copy generated Prisma client (memdia uses Prisma 7 with custom output path)
 COPY --from=builder /app/src/generated/prisma ./src/generated/prisma
 
 # Copy public assets
