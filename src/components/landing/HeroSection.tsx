@@ -1,9 +1,18 @@
+import { lazy, Suspense } from 'react'
 import { Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import { Globe, Shield } from 'lucide-react'
-import { HeroCanvas } from './HeroCanvas'
-import { AudioVisualization } from './AudioVisualization'
 import { Button } from '@/components/ui/button'
+
+// Dynamic imports for Three.js components - prevents SSR issues
+const HeroCanvas = lazy(() =>
+  import('./HeroCanvas').then((m) => ({ default: m.HeroCanvas })),
+)
+const AudioVisualization = lazy(() =>
+  import('./AudioVisualization').then((m) => ({
+    default: m.AudioVisualization,
+  })),
+)
 
 export function HeroSection() {
   const scrollToSection = (id: string) => {
@@ -15,8 +24,10 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden bg-linear-to-br from-blue-100/40 to-blue-50/40 py-24 lg:py-40">
-      {/* Background WebGL canvas */}
-      <HeroCanvas />
+      {/* Background WebGL canvas - lazy loaded to prevent SSR issues */}
+      <Suspense fallback={null}>
+        <HeroCanvas />
+      </Suspense>
 
       <div className="container mx-auto px-4 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
@@ -113,7 +124,9 @@ export function HeroSection() {
           >
             <div className="absolute inset-0 bg-linear-to-tr from-[#7e9ec9]/10 to-[#5a7ba6]/10 rounded-full blur-[100px]" />
             <div className="relative w-full aspect-square max-w-[500px] flex items-center justify-center backdrop-blur-3xl rounded-full bg-white/5 border border-white/10 shadow-2xl overflow-hidden">
-              <AudioVisualization />
+              <Suspense fallback={null}>
+                <AudioVisualization />
+              </Suspense>
             </div>
           </motion.div>
         </div>
