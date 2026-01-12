@@ -46,7 +46,13 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [process.env.BETTER_AUTH_URL || 'http://localhost:3000'],
+  trustedOrigins: [
+    process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    // Include www subdomain for production
+    ...(process.env.BETTER_AUTH_URL
+      ? [process.env.BETTER_AUTH_URL.replace('https://', 'https://www.')]
+      : []),
+  ],
 })
 
 export type Session = typeof auth.$Infer.Session
