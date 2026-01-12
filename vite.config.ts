@@ -20,7 +20,13 @@ const config = defineConfig({
     tanstackStart(),
     nitro({
       rollupConfig: {
-        external: [],
+        external: [
+          'three',
+          '@react-three/fiber',
+          '@react-three/drei',
+          'its-fine',
+          'three-custom-shader-material',
+        ],
       },
       externals: {
         inline: ['zod'],
@@ -42,6 +48,11 @@ const config = defineConfig({
       '@prisma/client',
       '@prisma/adapter-better-sqlite3',
       'better-sqlite3',
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei',
+      'its-fine',
+      'three-custom-shader-material',
     ],
   },
   optimizeDeps: {
