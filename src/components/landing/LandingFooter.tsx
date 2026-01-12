@@ -10,14 +10,46 @@ const footerLinks = {
     { label: 'FAQ', href: '#faq' },
   ],
   company: [
-    { label: 'About', href: '#' },
-    { label: 'Blog', href: '#' },
-    { label: 'Contact', href: '#' },
+    { label: 'About', href: 'https://hakanda.com/about' },
+    { label: 'Blog', href: 'https://hakanda.com/articles' },
+    { label: 'Contact', href: 'https://hakanda.com/contact' },
   ],
   legal: [
     { label: 'Privacy', href: '#' },
     { label: 'Terms', href: '#' },
   ],
+}
+
+function FooterLinkItem({
+  label,
+  href,
+  scrollToSection,
+}: {
+  label: string
+  href: string
+  scrollToSection: (href: string) => void
+}) {
+  const className =
+    'text-slate-500 hover:text-[#7e9ec9] transition-colors text-sm text-left'
+
+  if (href.startsWith('http')) {
+    return (
+      <a
+        href={href}
+        className={className}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {label}
+      </a>
+    )
+  }
+
+  return (
+    <button onClick={() => scrollToSection(href)} className={className}>
+      {label}
+    </button>
+  )
 }
 
 export function LandingFooter() {
@@ -63,15 +95,10 @@ export function LandingFooter() {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <h4 className="font-semibold text-slate-900 mb-4">Product</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex flex-col items-start">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <button
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-slate-500 hover:text-[#7e9ec9] transition-colors text-sm"
-                  >
-                    {link.label}
-                  </button>
+                  <FooterLinkItem {...link} scrollToSection={scrollToSection} />
                 </li>
               ))}
             </ul>
@@ -85,15 +112,10 @@ export function LandingFooter() {
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             <h4 className="font-semibold text-slate-900 mb-4">Company</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex flex-col items-start">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <button
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-slate-500 hover:text-[#7e9ec9] transition-colors text-sm"
-                  >
-                    {link.label}
-                  </button>
+                  <FooterLinkItem {...link} scrollToSection={scrollToSection} />
                 </li>
               ))}
             </ul>
@@ -107,15 +129,10 @@ export function LandingFooter() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <h4 className="font-semibold text-slate-900 mb-4">Legal</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex flex-col items-start">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <button
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-slate-500 hover:text-[#7e9ec9] transition-colors text-sm"
-                  >
-                    {link.label}
-                  </button>
+                  <FooterLinkItem {...link} scrollToSection={scrollToSection} />
                 </li>
               ))}
             </ul>

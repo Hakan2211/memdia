@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 const plans = [
   {
     name: 'Starter',
-    price: '€19',
+    price: '€19,99',
     period: '/month',
     description: 'Perfect for building a daily memory habit.',
     features: [
@@ -26,7 +26,7 @@ const plans = [
   },
   {
     name: 'Pro',
-    price: '€29',
+    price: '€29,99',
     period: '/month',
     description: 'Deepen your self-discovery with extended sessions.',
     features: [

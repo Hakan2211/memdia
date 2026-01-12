@@ -147,7 +147,7 @@ function SignupPage() {
 
               <div className="mb-4">
                 <span className="text-3xl font-bold">
-                  ${tierInfo.priceMonthly}
+                  €{tierInfo.priceMonthly.toString().replace('.', ',')}
                 </span>
                 <span className="text-muted-foreground">/month</span>
               </div>

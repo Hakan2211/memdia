@@ -48,7 +48,7 @@ export function CTASection() {
                 />
                 {/* Button content */}
                 <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-900 px-10 py-1 text-base font-semibold text-white backdrop-blur-3xl transition-all group-hover:bg-slate-800 gap-2">
-                  Start Today for €19
+                  Start Today for €19,99
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
               </button>

@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+
+# Build outputs (we rebuild in Docker)
+.output
+.nitro
+.tanstack
+.vinxi
+dist
+
+# Development files
+.git
+.gitignore
+.vscode
+.cursor
+*.log
+
+# Database files (we create fresh in production)
+*.db
+*.db-journal
+prisma/data
+
+# Environment files (set via Coolify/Docker)
+.env
+.env.*
+!.env.example
+
+# IDE and OS files
+.DS_Store
+*.local
+
+# Documentation
+README.md
+CLAUDE.md
+todos.json

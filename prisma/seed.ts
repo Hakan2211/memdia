@@ -1,5 +1,6 @@
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { PrismaClient } from '../src/generated/prisma/client.js'
+import { hashPassword } from 'better-auth/crypto'
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL || 'file:./dev.db',
@@ -10,59 +11,67 @@ const prisma = new PrismaClient({ adapter })
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // Clear existing data
-  await prisma.account.deleteMany()
-  await prisma.session.deleteMany()
-  await prisma.verification.deleteMany()
-  await prisma.user.deleteMany()
+  // Get admin credentials from environment variables
+  const adminEmail = process.env.ADMIN_EMAIL
+  const adminPassword = process.env.ADMIN_PASSWORD
+  const adminName = process.env.ADMIN_NAME || 'Admin'
 
-  // Create Admin user
-  const adminUser = await prisma.user.create({
-    data: {
-      email: 'admin@example.com',
-      name: 'Admin User',
+  if (!adminEmail || !adminPassword) {
+    console.log(
+      '⚠️  ADMIN_EMAIL or ADMIN_PASSWORD not set, skipping admin creation',
+    )
+    console.log('   Set these environment variables to create an admin user:')
+    console.log('   - ADMIN_EMAIL')
+    console.log('   - ADMIN_PASSWORD')
+    console.log('   - ADMIN_NAME (optional)')
+    return
+  }
+
+  // Hash password using better-auth's method
+  const hashedPassword = await hashPassword(adminPassword)
+
+  // Upsert admin user
+  const admin = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      name: adminName,
+      role: 'admin',
+    },
+    create: {
+      email: adminEmail,
+      name: adminName,
       emailVerified: true,
       role: 'admin',
     },
   })
 
-  // Create Test user
-  const testUser = await prisma.user.create({
-    data: {
-      email: 'user@example.com',
-      name: 'Test User',
-      emailVerified: true,
-      role: 'user',
+  // Upsert admin account (for credential login)
+  // Find existing account first
+  const existingAccount = await prisma.account.findFirst({
+    where: {
+      userId: admin.id,
+      providerId: 'credential',
     },
   })
 
-  // Create credential accounts for both users
-  // Note: In production, passwords should be hashed by better-auth
-  // These are placeholder accounts - real passwords will be set via auth flow
-  await prisma.account.createMany({
-    data: [
-      {
-        userId: adminUser.id,
-        accountId: adminUser.id,
+  if (existingAccount) {
+    await prisma.account.update({
+      where: { id: existingAccount.id },
+      data: { password: hashedPassword },
+    })
+  } else {
+    await prisma.account.create({
+      data: {
+        userId: admin.id,
+        accountId: admin.id,
         providerId: 'credential',
-        // Password: "admin123" - would be hashed in production
-        password: '$2a$10$placeholder.admin.hash',
+        password: hashedPassword,
       },
-      {
-        userId: testUser.id,
-        accountId: testUser.id,
-        providerId: 'credential',
-        // Password: "user123" - would be hashed in production
-        password: '$2a$10$placeholder.user.hash',
-      },
-    ],
-  })
+    })
+  }
 
-  console.log(`✅ Created admin user: ${adminUser.email}`)
-  console.log(`✅ Created test user: ${testUser.email}`)
-  console.log('')
   console.log(
-    '📝 Note: Use the signup flow to create accounts with proper password hashing.',
+    `✅ Admin user created/updated: ${admin.email} (role: ${admin.role})`,
   )
 }
 
