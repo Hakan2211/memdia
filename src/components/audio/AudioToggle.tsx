@@ -18,7 +18,7 @@ export function AudioToggle({
   variant = 'light',
   className,
 }: AudioToggleProps) {
-  const { isPlaying, isLoaded, toggle } = useAudio()
+  const { isPlaying, toggle } = useAudio()
 
   const getBarColor = () => {
     if (variant === 'light') {
@@ -35,11 +35,9 @@ export function AudioToggle({
       <TooltipTrigger asChild>
         <motion.button
           onClick={toggle}
-          disabled={!isLoaded}
           className={cn(
             'group flex items-center justify-center gap-[3px] h-9 w-9 rounded-full cursor-pointer transition-colors',
             variant === 'light' ? 'hover:bg-white/10' : 'hover:bg-black/5',
-            !isLoaded && 'opacity-50 cursor-not-allowed',
             className,
           )}
           whileHover={{ scale: 1.05 }}

@@ -5,15 +5,25 @@ import { Button } from '@/components/ui/button'
 import { AudioToggle } from '@/components/audio/AudioToggle'
 import MemdiaLogo from '@/components/common/MemdiaLogo'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export function LandingHeader() {
   const { scrollY } = useScroll()
   const [isScrolled, setIsScrolled] = useState(false)
+  const isMobile = useIsMobile()
 
   // Transform values based on scroll
-  const headerWidth = useTransform(scrollY, [0, 100], ['100%', '80%'])
-  const headerTop = useTransform(scrollY, [0, 100], [0, 20])
-  const headerBorderRadius = useTransform(scrollY, [0, 100], [0, 24])
+  const headerWidth = useTransform(
+    scrollY,
+    [0, 100],
+    isMobile ? ['100%', '100%'] : ['100%', '80%'],
+  )
+  const headerTop = useTransform(scrollY, [0, 100], isMobile ? [0, 0] : [0, 20])
+  const headerBorderRadius = useTransform(
+    scrollY,
+    [0, 100],
+    isMobile ? [0, 0] : [0, 24],
+  )
 
   useEffect(() => {
     const unsubscribe = scrollY.on('change', (latest) => {
