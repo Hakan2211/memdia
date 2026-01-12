@@ -33,6 +33,34 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         title: 'Memdia - Voice Journal',
       },
+      {
+        property: 'og:title',
+        content: 'Memdia - Voice Journal',
+      },
+      {
+        property: 'og:description',
+        content: 'Your AI companion for daily reflection and personal growth.',
+      },
+      {
+        property: 'og:image',
+        content: '/og-image.svg',
+      },
+      {
+        name: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        name: 'twitter:title',
+        content: 'Memdia - Voice Journal',
+      },
+      {
+        name: 'twitter:description',
+        content: 'Your AI companion for daily reflection and personal growth.',
+      },
+      {
+        name: 'twitter:image',
+        content: '/og-image.svg',
+      },
     ],
     links: [
       {
