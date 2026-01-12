@@ -41,7 +41,7 @@ export const SUBSCRIPTION_TIERS: Record<
   },
   pro: {
     name: 'Pro',
-    maxDurationSeconds: 600, // 10 minutes for voice sessions
+    maxDurationSeconds: 180, // 3 minutes for voice sessions (same as starter)
     maxReflectionDurationSeconds: 600, // 10 minutes for reflections
     priceMonthly: 29.99,
     description: 'For deeper daily reflections',

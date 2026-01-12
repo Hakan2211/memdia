@@ -261,8 +261,8 @@ export const SESSION_CONFIG = {
 // ==========================================
 
 export const REFLECTION_CONFIG = {
-  /** Maximum reflection duration in seconds - TEMPORARY: 3 minutes for testing (was 600 = 10 minutes) */
-  MAX_DURATION_SECONDS: 180,
+  /** Maximum reflection duration in seconds (10 minutes) */
+  MAX_DURATION_SECONDS: 600,
 
   /** Hard cutoff grace period after timer ends (30 seconds) */
   HARD_CUTOFF_GRACE_SECONDS: 30,
