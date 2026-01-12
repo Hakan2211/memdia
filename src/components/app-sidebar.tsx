@@ -11,6 +11,7 @@ import {
   User,
 } from 'lucide-react'
 import { signOut } from '../lib/auth-client'
+import MemdiaLogo from '@/components/common/MemdiaLogo'
 import { getSubscriptionFn } from '../server/billing.fn'
 import {
   Sidebar,
@@ -102,8 +103,8 @@ export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
           to="/"
           className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center"
         >
-          <div className="h-8 w-8 shrink-0 rounded-xl bg-linear-to-br from-primary to-primary/60 shadow-lg shadow-primary/20 flex items-center justify-center text-primary-foreground font-bold text-sm transition-all">
-            M
+          <div className="h-8 w-8 shrink-0 rounded-xl bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-lg shadow-primary/20 flex items-center justify-center text-primary-foreground font-bold text-sm transition-all">
+            <MemdiaLogo className="w-5 h-5 text-white" />
           </div>
           <span className="text-xl font-bold tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden transition-opacity duration-200">
             Memdia

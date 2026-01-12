@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { AudioToggle } from '@/components/audio/AudioToggle'
+import MemdiaLogo from '@/components/common/MemdiaLogo'
 import { cn } from '@/lib/utils'
 
 export function LandingHeader() {
@@ -46,7 +47,9 @@ export function LandingHeader() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4 lg:px-8">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group cursor-pointer">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-md transition-transform group-hover:scale-105" />
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-md transition-transform group-hover:scale-105 flex items-center justify-center">
+              <MemdiaLogo className="w-5 h-5 text-white" />
+            </div>
             <span className="text-xl font-bold bg-gradient-to-r from-[#5a7ba6] to-[#7e9ec9] bg-clip-text text-transparent">
               Memdia
             </span>

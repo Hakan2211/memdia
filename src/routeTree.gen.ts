@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SubscribeRouteImport } from './routes/subscribe'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as AppRouteImport } from './routes/_app'
@@ -37,9 +39,19 @@ import { Route as AppInsightsPeopleRouteImport } from './routes/_app/insights.pe
 import { Route as AppInsightsMoodsRouteImport } from './routes/_app/insights.moods'
 import { Route as AppInsightsInsightsRouteImport } from './routes/_app/insights.insights'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubscribeRoute = SubscribeRouteImport.update({
   id: '/subscribe',
   path: '/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -174,7 +186,9 @@ const AppInsightsInsightsRoute = AppInsightsInsightsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/subscribe': typeof SubscribeRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AppAdminRoute
   '/insights': typeof AppInsightsRouteWithChildren
   '/memories': typeof AppMemoriesRouteWithChildren
@@ -201,7 +215,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/subscribe': typeof SubscribeRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AppAdminRoute
   '/memories': typeof AppMemoriesRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
@@ -230,7 +246,9 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_auth': typeof AuthRouteWithChildren
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/subscribe': typeof SubscribeRoute
+  '/terms': typeof TermsRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/insights': typeof AppInsightsRouteWithChildren
   '/_app/memories': typeof AppMemoriesRouteWithChildren
@@ -259,7 +277,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/pricing'
+    | '/privacy'
     | '/subscribe'
+    | '/terms'
     | '/admin'
     | '/insights'
     | '/memories'
@@ -286,7 +306,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/pricing'
+    | '/privacy'
     | '/subscribe'
+    | '/terms'
     | '/admin'
     | '/memories'
     | '/onboarding'
@@ -314,7 +336,9 @@ export interface FileRouteTypes {
     | '/_app'
     | '/_auth'
     | '/pricing'
+    | '/privacy'
     | '/subscribe'
+    | '/terms'
     | '/_app/admin'
     | '/_app/insights'
     | '/_app/memories'
@@ -344,7 +368,9 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   SubscribeRoute: typeof SubscribeRoute
+  TermsRoute: typeof TermsRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiStreamCancelRoute: typeof ApiStreamCancelRoute
   ApiStreamConversationRoute: typeof ApiStreamConversationRoute
@@ -353,11 +379,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/subscribe': {
       id: '/subscribe'
       path: '/subscribe'
       fullPath: '/subscribe'
       preLoaderRoute: typeof SubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -632,7 +672,9 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   SubscribeRoute: SubscribeRoute,
+  TermsRoute: TermsRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiStreamCancelRoute: ApiStreamCancelRoute,
   ApiStreamConversationRoute: ApiStreamConversationRoute,

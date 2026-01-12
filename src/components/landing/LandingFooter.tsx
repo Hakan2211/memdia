@@ -2,6 +2,7 @@
 
 import { Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
+import MemdiaLogo from '@/components/common/MemdiaLogo'
 
 const footerLinks = {
   product: [
@@ -15,18 +16,20 @@ const footerLinks = {
     { label: 'Contact', href: 'https://hakanda.com/contact' },
   ],
   legal: [
-    { label: 'Privacy', href: '#' },
-    { label: 'Terms', href: '#' },
+    { label: 'Privacy', href: '/privacy', isInternal: true },
+    { label: 'Terms', href: '/terms', isInternal: true },
   ],
 }
 
 function FooterLinkItem({
   label,
   href,
+  isInternal,
   scrollToSection,
 }: {
   label: string
   href: string
+  isInternal?: boolean
   scrollToSection: (href: string) => void
 }) {
   const className =
@@ -42,6 +45,14 @@ function FooterLinkItem({
       >
         {label}
       </a>
+    )
+  }
+
+  if (isInternal) {
+    return (
+      <Link to={href} className={className}>
+        {label}
+      </Link>
     )
   }
 
@@ -76,7 +87,9 @@ export function LandingFooter() {
             className="col-span-2 md:col-span-1"
           >
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-md" />
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#7e9ec9] to-[#5a7ba6] shadow-md flex items-center justify-center">
+                <MemdiaLogo className="w-5 h-5 text-white" />
+              </div>
               <span className="text-xl font-bold bg-gradient-to-r from-[#5a7ba6] to-[#7e9ec9] bg-clip-text text-transparent">
                 Memdia
               </span>
