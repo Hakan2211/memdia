@@ -2,7 +2,7 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Bot, LineChart, Mic } from 'lucide-react'
+import { LineChart, MessageCircle, Mic } from 'lucide-react'
 
 const steps = [
   {
@@ -14,10 +14,10 @@ const steps = [
   },
   {
     number: '02',
-    icon: Bot,
-    title: 'AI Listens',
+    icon: MessageCircle,
+    title: 'Converse',
     description:
-      'Our AI companion engages in meaningful conversation, asking thoughtful questions and helping you process your experiences.',
+      'Have a real conversation with your AI companion. It listens, asks follow-up questions, and responds with empathy. It is just like talking with a supportive friend.',
   },
   {
     number: '03',
