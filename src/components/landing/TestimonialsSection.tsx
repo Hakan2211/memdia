@@ -147,7 +147,7 @@ export function TestimonialsSection() {
           </button>
 
           {/* Testimonial Card */}
-          <div className="relative min-h-[320px] flex items-center justify-center">
+          <div className="relative h-[360px] lg:h-[340px] flex items-center justify-center">
             <AnimatePresence mode="wait" custom={direction}>
               <motion.div
                 key={currentIndex}
@@ -167,7 +167,7 @@ export function TestimonialsSection() {
 
                   {/* Quote Text */}
                   <div className="relative z-10">
-                    <p className="text-xl lg:text-2xl font-medium text-slate-800 leading-relaxed mb-8 text-center italic">
+                    <p className="text-xl lg:text-2xl font-medium text-slate-800 leading-relaxed mb-8 text-center italic line-clamp-5">
                       "{testimonials[currentIndex].quote}"
                     </p>
 
