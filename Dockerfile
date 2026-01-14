@@ -19,9 +19,6 @@ COPY . .
 # Generate Prisma client (outputs to src/generated/prisma)
 RUN npx prisma generate
 
-# Cache bust argument - change value to force rebuild
-ARG CACHEBUST=1
-
 # Build the application (TanStack Start with Nitro outputs to .output/)
 RUN node --max-old-space-size=6144 node_modules/vite/bin/vite.js build
 
