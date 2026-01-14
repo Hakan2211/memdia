@@ -5,6 +5,8 @@ const MemdiaLogo = ({ className, ...props }: React.SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 587.282 517.567"
+    width="20"
+    height="20"
     className={cn('w-5 h-5 shrink-0 fill-current', className)}
     {...props}
   >
