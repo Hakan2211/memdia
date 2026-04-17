@@ -1,12 +1,12 @@
 /**
  * fal.ai Service
- * Handles Text-to-Speech (ElevenLabs) and Image Generation (ImagineArt 1.5)
+ * Handles Text-to-Speech (ElevenLabs) and Image Generation (ImagineArt 2.0)
  *
  * Uses the official @fal-ai/client
  *
  * Models:
  * - TTS: fal-ai/elevenlabs/tts/turbo-v2.5 (faster than eleven-v3)
- * - Image: imagineart/imagineart-1.5-preview/text-to-image
+ * - Image: imagineart/imagineart-2.0-preview/text-to-image
  */
 
 import { fal } from '@fal-ai/client'
@@ -138,7 +138,7 @@ function estimateDuration(text: string): number {
 }
 
 // ==========================================
-// Image Generation Service using ImagineArt 1.5
+// Image Generation Service using ImagineArt 2.0
 // ==========================================
 
 /** Style prompts for different image styles */
@@ -180,8 +180,8 @@ const STYLE_ENDINGS: Record<ImageStyle, string> = {
 }
 
 /**
- * Generate an image based on a summary and style using ImagineArt 1.5
- * Model: imagineart/imagineart-1.5-preview/text-to-image
+ * Generate an image based on a summary and style using ImagineArt 2.0
+ * Model: imagineart/imagineart-2.0-preview/text-to-image
  */
 export async function generateImage(
   summary: string,
@@ -216,12 +216,12 @@ Important: No text, no words, no letters in the image. Pure visual art only. ${s
 
   try {
     const result = await fal.subscribe(
-      'imagineart/imagineart-1.5-preview/text-to-image',
+      'imagineart/imagineart-2.0-preview/text-to-image',
       {
         input: {
           prompt,
-          // ImagineArt 1.5 uses aspect_ratio instead of image_size
           aspect_ratio: '1:1',
+          resolution: '1K',
         },
       },
     )
