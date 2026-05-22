@@ -141,42 +141,56 @@ function estimateDuration(text: string): number {
 // Image Generation Service using ImagineArt 2.0
 // ==========================================
 
-/** Style prompts for different image styles */
+/**
+ * Style prompts for different image styles.
+ *
+ * Note: ImagineArt 2.0 follows prompts very literally. Style descriptions are
+ * framed as a *rendering treatment* applied to a concrete scene, rather than
+ * abstract qualities that could replace the subject. Words like "abstract",
+ * "minimalist", or "shapes only" are avoided as primary descriptors because
+ * the model otherwise drops figures/objects entirely.
+ */
 const STYLE_PROMPTS: Record<ImageStyle, string> = {
-  realistic: `Style: photorealistic, hyperreal, cinematic photography quality,
-    realistic lighting and shadows, natural textures, detailed environmental elements,
-    editorial photography aesthetic, lifelike colors, professional composition,
-    high-quality 4K detail, real-world scene visualization`,
+  realistic: `Render the scene as photorealistic, cinematic photography:
+    natural lighting and shadows, real textures, depth of field,
+    editorial composition, lifelike colors, high detail.
+    Include real people, objects, and environments — a believable moment captured on camera.`,
 
-  dreamlike: `Style: ethereal, soft focus, pastel colors, minimalist composition, 
-    dreamlike atmosphere, gentle gradients, calm and serene, subtle symbolism, 
-    fine art photography aesthetic, muted tones, peaceful mood`,
+  dreamlike: `Render the scene with a soft, dreamlike atmosphere:
+    pastel palette, gentle gradients, hazy light, a slightly surreal mood.
+    Still depict recognizable people, objects, or places — just bathed in this dreamy quality,
+    as if remembered rather than photographed. Avoid empty color fields.`,
 
-  watercolor: `Style: delicate watercolor painting, soft washes of color, 
-    organic flowing shapes, gentle bleeding edges, artistic and emotional, 
-    traditional watercolor texture, loose brushwork, expressive`,
+  watercolor: `Render the scene as a delicate watercolor painting:
+    soft washes of color, organic flowing edges, visible paper texture,
+    loose expressive brushwork. The subject — people, objects, an environment —
+    should be clearly readable, painted with emotional, painterly strokes.`,
 
-  geometric: `Style: abstract geometric shapes, clean lines, modern minimalist, 
-    bold but harmonious colors, mathematical precision, contemporary art, 
-    balanced composition, sophisticated simplicity`,
+  geometric: `Render the scene in a stylized geometric illustration style:
+    figures, objects, and environments built from clean geometric forms,
+    bold harmonious colors, modernist composition, flat-design influence.
+    Think contemporary editorial illustration — there must still be a recognizable
+    subject (people, places, symbolic objects), simplified into geometric shapes
+    rather than replaced by pure abstract patterns.`,
 
-  sketch: `Style: elegant pencil sketch, fine line art, minimalist drawing, 
-    subtle shading, artistic illustration, clean strokes, 
-    delicate details, hand-drawn aesthetic, monochromatic with hints of color`,
+  sketch: `Render the scene as an elegant hand-drawn pencil sketch:
+    fine confident line work, subtle shading, expressive strokes,
+    occasional hints of color wash. Depict real subjects — people, objects,
+    a place — as if drawn from life in a sketchbook.`,
 }
 
 /** Style-specific endings to reinforce the visual style */
 const STYLE_ENDINGS: Record<ImageStyle, string> = {
   realistic:
-    'Capture a photorealistic, cinematic scene with natural lighting, realistic details, and lifelike representation.',
+    'Final result should look like a candid editorial photograph of a real moment — with people, objects, or a clear environment present.',
   dreamlike:
-    'Create an ethereal, dreamlike atmosphere with soft symbolism and abstract, flowing elements.',
+    'Final result should feel like a softly remembered moment with a recognizable subject — not an empty color wash.',
   watercolor:
-    'Express through flowing watercolor washes, organic shapes, and artistic painterly strokes.',
+    'Final result should look like a painted scene with a clear subject rendered in flowing watercolor — not just abstract color blooms.',
   geometric:
-    'Compose with clean geometric forms, balanced abstract elements, and modern minimalist design.',
+    'Final result should be a stylized illustration of a scene or figure built from geometric forms — not a pattern of shapes without a subject.',
   sketch:
-    'Render as an elegant pencil sketch with fine artistic line work and subtle hand-drawn details.',
+    'Final result should look like a sketchbook drawing of a real scene or person — not just abstract pencil marks.',
 }
 
 /**
@@ -200,14 +214,24 @@ export async function generateImage(
   const stylePrompt = STYLE_PROMPTS[config.style]
   const styleEnding = STYLE_ENDINGS[config.style]
 
-  // Build the full prompt - style ending reinforces the visual style
-  const prompt = `Create an image representing the emotional themes of this reflection:
+  // ImagineArt 2.0 follows prompts very literally, so we:
+  // 1. Lead with a concrete scene direction (subjects must appear)
+  // 2. Apply style as a *rendering treatment* on top of that scene
+  // 3. Explicitly forbid pure-abstract / subjectless output
+  const prompt = `Create a single evocative image inspired by this personal reflection:
 
-${summary.slice(0, 500)}
+"${summary.slice(0, 500)}"
+
+Visualize a concrete scene that captures the feeling of this reflection — for example a person, a place, an object, a moment, or a symbolic situation drawn from the reflection itself. The image must contain a clearly recognizable subject; do not produce a purely abstract composition of colors or shapes without a subject. Use composition, lighting, and color to convey the emotional tone.
 
 ${stylePrompt}
 
-Important: No text, no words, no letters in the image. Pure visual art only. ${styleEnding}`
+Constraints:
+- No text, no words, no letters, no signage anywhere in the image.
+- Must contain a discernible subject (people, objects, environment, or symbolic figure) — not just colors or patterns.
+- Style is a rendering treatment applied to the scene, not a replacement for it.
+
+${styleEnding}`
 
   console.log(
     '[fal.ai Image] Generating image with prompt:',
