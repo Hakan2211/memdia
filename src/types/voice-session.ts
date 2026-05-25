@@ -431,6 +431,7 @@ export interface ReflectionSession {
   totalUserSpeakingTime: number // seconds
   maxDuration: number // seconds (600 = 10 minutes)
   summaryText: string | null
+  imageUrl: string | null
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date

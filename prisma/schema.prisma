@@ -245,8 +245,9 @@ model ReflectionSession {
   totalUserSpeakingTime Int @default(0)
   maxDuration           Int @default(600) // 600 = 10 minutes
 
-  // Post-processing results (no image for reflections)
+  // Post-processing results
   summaryText String?
+  imageUrl    String?
 
   // Timestamps
   pausedAt    DateTime?

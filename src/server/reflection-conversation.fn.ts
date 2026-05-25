@@ -14,14 +14,21 @@ import {
 } from '../lib/prompts/reflection'
 import {
   buildSummaryMessages,
+  buildTranslationMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
+import { buildImagePrompt } from '../lib/prompts/image'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
-import { generateSpeech } from './services/falai.service'
+import { generateImage, generateSpeech } from './services/falai.service'
+import { uploadImageFromUrl } from './services/bunny.service'
 import { extractInsightsFromSession } from './extraction.internal'
 import type { ChatMessage } from './services/openrouter.service'
-import type { AIPersonality, Language } from '../types/voice-session'
+import type {
+  AIPersonality,
+  ImageStyle,
+  Language,
+} from '../types/voice-session'
 
 // ==========================================
 // Schemas
@@ -265,12 +272,14 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
         data: {
           status: 'completed',
           summaryText: null,
+          imageUrl: null,
         },
       })
 
       return {
         session: updatedSession,
         summaryText: null,
+        imageUrl: null,
         skipped: true,
         reason: 'No meaningful user input detected',
       }
@@ -298,12 +307,61 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       console.error('Failed to generate reflection summary:', error)
     }
 
-    // Update session (no image for reflections)
+    // Generate image only if we have a meaningful summary
+    const imageStyle = (preferences?.imageStyle as ImageStyle) || 'realistic'
+    let imageUrl: string | null = null
+    if (summaryText && summaryText.length > 50) {
+      try {
+        // Translate summary to English for image generation if not already English
+        // Image generation models work best with English prompts
+        let imagePromptText = summaryText
+        if (userLanguage !== 'en') {
+          try {
+            const translationMessages = buildTranslationMessages(summaryText)
+            const translatedSummary = await chatCompletion(
+              translationMessages as Array<ChatMessage>,
+              { maxTokens: 1000 },
+            )
+            if (translatedSummary) {
+              imagePromptText = translatedSummary
+              console.log(
+                '[Process Reflection] Translated summary for image generation',
+              )
+            }
+          } catch (translationError) {
+            console.error(
+              'Failed to translate summary, using original:',
+              translationError,
+            )
+            // Fall back to original summary if translation fails
+          }
+        }
+
+        // Build prompt and generate image with English text
+        void buildImagePrompt(imagePromptText, imageStyle)
+        const imageResult = await generateImage(imagePromptText, {
+          style: imageStyle,
+        })
+
+        // Upload to Bunny.net
+        const uploadResult = await uploadImageFromUrl(
+          context.user.id,
+          session.id,
+          imageResult.imageUrl,
+        )
+        imageUrl = uploadResult.url
+      } catch (error) {
+        console.error('Failed to generate reflection image:', error)
+      }
+    }
+
+    // Update session with results
     const updatedSession = await prisma.reflectionSession.update({
       where: { id: session.id },
       data: {
         status: 'completed',
         summaryText,
+        imageUrl,
       },
     })
 
@@ -326,6 +384,7 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
     return {
       session: updatedSession,
       summaryText,
+      imageUrl,
     }
   })
 
@@ -346,6 +405,7 @@ export const getReflectionProcessingStatusFn = createServerFn({ method: 'GET' })
         id: true,
         status: true,
         summaryText: true,
+        imageUrl: true,
       },
     })
 
@@ -357,6 +417,7 @@ export const getReflectionProcessingStatusFn = createServerFn({ method: 'GET' })
       status: session.status,
       isComplete: session.status === 'completed',
       hasSummary: !!session.summaryText,
+      hasImage: !!session.imageUrl,
     }
   })
 

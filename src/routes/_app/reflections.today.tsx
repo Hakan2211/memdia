@@ -1322,6 +1322,17 @@ function CompletedReflectionView({
         <p className="mt-2 text-sm text-[#7e9ec9]">Reflection completed</p>
       </div>
 
+      {/* Reflection Image */}
+      {session.imageUrl && (
+        <div className="mb-8">
+          <img
+            src={session.imageUrl}
+            alt="Reflection"
+            className="w-full rounded-xl shadow-lg"
+          />
+        </div>
+      )}
+
       {/* Summary */}
       {session.summaryText && (
         <div className="mb-8">
