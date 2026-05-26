@@ -48,6 +48,7 @@ export type ReflectionSessionMinAggregateOutputType = {
   maxDuration: number | null
   summaryText: string | null
   imageUrl: string | null
+  imageStatus: string | null
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date | null
@@ -64,6 +65,7 @@ export type ReflectionSessionMaxAggregateOutputType = {
   maxDuration: number | null
   summaryText: string | null
   imageUrl: string | null
+  imageStatus: string | null
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date | null
@@ -80,6 +82,7 @@ export type ReflectionSessionCountAggregateOutputType = {
   maxDuration: number
   summaryText: number
   imageUrl: number
+  imageStatus: number
   pausedAt: number
   completedAt: number
   createdAt: number
@@ -110,6 +113,7 @@ export type ReflectionSessionMinAggregateInputType = {
   maxDuration?: true
   summaryText?: true
   imageUrl?: true
+  imageStatus?: true
   pausedAt?: true
   completedAt?: true
   createdAt?: true
@@ -126,6 +130,7 @@ export type ReflectionSessionMaxAggregateInputType = {
   maxDuration?: true
   summaryText?: true
   imageUrl?: true
+  imageStatus?: true
   pausedAt?: true
   completedAt?: true
   createdAt?: true
@@ -142,6 +147,7 @@ export type ReflectionSessionCountAggregateInputType = {
   maxDuration?: true
   summaryText?: true
   imageUrl?: true
+  imageStatus?: true
   pausedAt?: true
   completedAt?: true
   createdAt?: true
@@ -245,6 +251,7 @@ export type ReflectionSessionGroupByOutputType = {
   maxDuration: number
   summaryText: string | null
   imageUrl: string | null
+  imageStatus: string
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date
@@ -284,6 +291,7 @@ export type ReflectionSessionWhereInput = {
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
   pausedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ReflectionSession"> | Date | string
@@ -306,6 +314,7 @@ export type ReflectionSessionOrderByWithRelationInput = {
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -332,6 +341,7 @@ export type ReflectionSessionWhereUniqueInput = Prisma.AtLeast<{
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
   pausedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ReflectionSession"> | Date | string
@@ -354,6 +364,7 @@ export type ReflectionSessionOrderByWithAggregationInput = {
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -378,6 +389,7 @@ export type ReflectionSessionScalarWhereWithAggregatesInput = {
   maxDuration?: Prisma.IntWithAggregatesFilter<"ReflectionSession"> | number
   summaryText?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
+  imageStatus?: Prisma.StringWithAggregatesFilter<"ReflectionSession"> | string
   pausedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReflectionSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReflectionSession"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ReflectionSession"> | Date | string
@@ -393,6 +405,7 @@ export type ReflectionSessionCreateInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -415,6 +428,7 @@ export type ReflectionSessionUncheckedCreateInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -435,6 +449,7 @@ export type ReflectionSessionUpdateInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -457,6 +472,7 @@ export type ReflectionSessionUncheckedUpdateInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -478,6 +494,7 @@ export type ReflectionSessionCreateManyInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -493,6 +510,7 @@ export type ReflectionSessionUpdateManyMutationInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -509,6 +527,7 @@ export type ReflectionSessionUncheckedUpdateManyInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -540,6 +559,7 @@ export type ReflectionSessionCountOrderByAggregateInput = {
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -562,6 +582,7 @@ export type ReflectionSessionMaxOrderByAggregateInput = {
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -578,6 +599,7 @@ export type ReflectionSessionMinOrderByAggregateInput = {
   maxDuration?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
+  imageStatus?: Prisma.SortOrder
   pausedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -716,6 +738,7 @@ export type ReflectionSessionCreateWithoutUserInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -736,6 +759,7 @@ export type ReflectionSessionUncheckedCreateWithoutUserInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -785,6 +809,7 @@ export type ReflectionSessionScalarWhereInput = {
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
   pausedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"ReflectionSession"> | Date | string
@@ -800,6 +825,7 @@ export type ReflectionSessionCreateWithoutTurnsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -821,6 +847,7 @@ export type ReflectionSessionUncheckedCreateWithoutTurnsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -856,6 +883,7 @@ export type ReflectionSessionUpdateWithoutTurnsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -877,6 +905,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTurnsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -896,6 +925,7 @@ export type ReflectionSessionCreateWithoutMoodInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -917,6 +947,7 @@ export type ReflectionSessionUncheckedCreateWithoutMoodInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -952,6 +983,7 @@ export type ReflectionSessionUpdateWithoutMoodInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -973,6 +1005,7 @@ export type ReflectionSessionUncheckedUpdateWithoutMoodInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -992,6 +1025,7 @@ export type ReflectionSessionCreateWithoutTopicsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1013,6 +1047,7 @@ export type ReflectionSessionUncheckedCreateWithoutTopicsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1048,6 +1083,7 @@ export type ReflectionSessionUpdateWithoutTopicsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1069,6 +1105,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTopicsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1088,6 +1125,7 @@ export type ReflectionSessionCreateWithoutInsightsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1109,6 +1147,7 @@ export type ReflectionSessionUncheckedCreateWithoutInsightsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1144,6 +1183,7 @@ export type ReflectionSessionUpdateWithoutInsightsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1165,6 +1205,7 @@ export type ReflectionSessionUncheckedUpdateWithoutInsightsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1184,6 +1225,7 @@ export type ReflectionSessionCreateWithoutPersonMentionsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1205,6 +1247,7 @@ export type ReflectionSessionUncheckedCreateWithoutPersonMentionsInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1240,6 +1283,7 @@ export type ReflectionSessionUpdateWithoutPersonMentionsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1261,6 +1305,7 @@ export type ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1280,6 +1325,7 @@ export type ReflectionSessionCreateManyUserInput = {
   maxDuration?: number
   summaryText?: string | null
   imageUrl?: string | null
+  imageStatus?: string
   pausedAt?: Date | string | null
   completedAt?: Date | string | null
   createdAt?: Date | string
@@ -1295,6 +1341,7 @@ export type ReflectionSessionUpdateWithoutUserInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1315,6 +1362,7 @@ export type ReflectionSessionUncheckedUpdateWithoutUserInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1335,6 +1383,7 @@ export type ReflectionSessionUncheckedUpdateManyWithoutUserInput = {
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
   pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1409,6 +1458,7 @@ export type ReflectionSessionSelect<ExtArgs extends runtime.Types.Extensions.Int
   maxDuration?: boolean
   summaryText?: boolean
   imageUrl?: boolean
+  imageStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -1432,6 +1482,7 @@ export type ReflectionSessionSelectCreateManyAndReturn<ExtArgs extends runtime.T
   maxDuration?: boolean
   summaryText?: boolean
   imageUrl?: boolean
+  imageStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -1449,6 +1500,7 @@ export type ReflectionSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   maxDuration?: boolean
   summaryText?: boolean
   imageUrl?: boolean
+  imageStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
@@ -1466,13 +1518,14 @@ export type ReflectionSessionSelectScalar = {
   maxDuration?: boolean
   summaryText?: boolean
   imageUrl?: boolean
+  imageStatus?: boolean
   pausedAt?: boolean
   completedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
+export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
 export type ReflectionSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.ReflectionSession$turnsArgs<ExtArgs>
@@ -1509,6 +1562,7 @@ export type $ReflectionSessionPayload<ExtArgs extends runtime.Types.Extensions.I
     maxDuration: number
     summaryText: string | null
     imageUrl: string | null
+    imageStatus: string
     pausedAt: Date | null
     completedAt: Date | null
     createdAt: Date
@@ -1951,6 +2005,7 @@ export interface ReflectionSessionFieldRefs {
   readonly maxDuration: Prisma.FieldRef<"ReflectionSession", 'Int'>
   readonly summaryText: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageUrl: Prisma.FieldRef<"ReflectionSession", 'String'>
+  readonly imageStatus: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly pausedAt: Prisma.FieldRef<"ReflectionSession", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"ReflectionSession", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"ReflectionSession", 'DateTime'>

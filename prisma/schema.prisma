@@ -248,6 +248,8 @@ model ReflectionSession {
   // Post-processing results
   summaryText String?
   imageUrl    String?
+  // Image generation lifecycle: none | generating | ready | failed
+  imageStatus String  @default("none")
 
   // Timestamps
   pausedAt    DateTime?

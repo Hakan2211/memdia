@@ -44,7 +44,7 @@ function ReflectionByDate() {
       const data = query.state.data
       if (!data) return false
       if (data.status === 'processing') return 2000
-      if (data.status === 'completed' && !data.imageUrl) return 2000
+      if (data.imageStatus === 'generating') return 2000
       return false
     },
   })
@@ -221,24 +221,27 @@ function ReflectionByDate() {
         </div>
       )}
 
-      {/* Reflection Image - with skeleton while generating */}
-      <div className="mb-8">
-        {session.imageUrl ? (
-          <img
-            src={session.imageUrl}
-            alt="Reflection"
-            className="w-full rounded-xl shadow-lg"
-          />
-        ) : session.status === 'processing' ||
-          (session.status === 'completed' && !session.imageUrl) ? (
-          <div className="aspect-square bg-muted animate-pulse rounded-xl flex flex-col items-center justify-center">
-            <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
-            <span className="text-muted-foreground text-sm">
-              Creating your reflection image...
-            </span>
-          </div>
-        ) : null}
-      </div>
+      {/* Reflection Image - with skeleton only while actively generating */}
+      {(session.imageUrl ||
+        session.status === 'processing' ||
+        session.imageStatus === 'generating') && (
+        <div className="mb-8">
+          {session.imageUrl ? (
+            <img
+              src={session.imageUrl}
+              alt="Reflection"
+              className="w-full rounded-xl shadow-lg"
+            />
+          ) : (
+            <div className="aspect-square bg-muted animate-pulse rounded-xl flex flex-col items-center justify-center">
+              <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
+              <span className="text-muted-foreground text-sm">
+                Creating your reflection image...
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Summary - with skeleton while processing */}
       <div className="mb-8">

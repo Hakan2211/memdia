@@ -17,7 +17,6 @@ import {
   buildTranslationMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
-import { buildImagePrompt } from '../lib/prompts/image'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
 import { generateImage, generateSpeech } from './services/falai.service'
@@ -227,7 +226,112 @@ export const savePreloadedReflectionGreetingFn = createServerFn({
   })
 
 // ==========================================
-// Process Completed Reflection (Summary only - no image)
+// Background Reflection Image Generation
+// ==========================================
+
+/**
+ * Generate the reflection image in the background.
+ *
+ * Runs fire-and-forget after the session is already marked `completed`, so a
+ * slow or failed image generation never blocks the user's response or risks
+ * losing the summary to a request timeout. The session's `imageStatus` tracks
+ * the lifecycle (`generating` -> `ready` | `failed`) so the UI can poll while
+ * it works and show a terminal state when it stops.
+ *
+ * Retries transient failures a couple of times (Fal.ai occasionally returns
+ * network/queue errors that succeed on retry).
+ */
+async function generateReflectionImageInBackground(params: {
+  sessionId: string
+  userId: string
+  summaryText: string
+  userLanguage: string
+  imageStyle: ImageStyle
+}): Promise<void> {
+  const { sessionId, userId, summaryText, userLanguage, imageStyle } = params
+
+  try {
+    // Translate summary to English for image generation if not already English.
+    // Image generation models work best with English prompts.
+    let imagePromptText = summaryText
+    if (userLanguage !== 'en') {
+      try {
+        const translationMessages = buildTranslationMessages(summaryText)
+        const translatedSummary = await chatCompletion(
+          translationMessages as Array<ChatMessage>,
+          { maxTokens: 1000 },
+        )
+        if (translatedSummary) {
+          imagePromptText = translatedSummary
+        }
+      } catch (translationError) {
+        console.error(
+          '[Reflection Image] Translation failed, using original summary:',
+          translationError,
+        )
+      }
+    }
+
+    // Generate the image, retrying transient failures.
+    const maxAttempts = 3
+    let imageResult: { imageUrl: string } | null = null
+    let lastError: unknown = null
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        imageResult = await generateImage(imagePromptText, {
+          style: imageStyle,
+        })
+        break
+      } catch (error) {
+        lastError = error
+        console.error(
+          `[Reflection Image] generateImage attempt ${attempt}/${maxAttempts} failed:`,
+          error,
+        )
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 1000 * attempt))
+        }
+      }
+    }
+
+    if (!imageResult) {
+      throw lastError ?? new Error('Image generation failed')
+    }
+
+    // Upload to Bunny.net and persist the result.
+    const uploadResult = await uploadImageFromUrl(
+      userId,
+      sessionId,
+      imageResult.imageUrl,
+    )
+
+    await prisma.reflectionSession.update({
+      where: { id: sessionId },
+      data: { imageUrl: uploadResult.url, imageStatus: 'ready' },
+    })
+    console.log(`[Reflection Image] Image ready for session ${sessionId}`)
+  } catch (error) {
+    console.error(
+      `[Reflection Image] Failed to generate image for session ${sessionId}:`,
+      error,
+    )
+    // Mark as failed so the UI stops showing the "generating" state.
+    await prisma.reflectionSession
+      .update({
+        where: { id: sessionId },
+        data: { imageStatus: 'failed' },
+      })
+      .catch((updateError) => {
+        console.error(
+          `[Reflection Image] Failed to mark image as failed for ${sessionId}:`,
+          updateError,
+        )
+      })
+  }
+}
+
+// ==========================================
+// Process Completed Reflection (summary first, image in background)
 // ==========================================
 
 export const processReflectionFn = createServerFn({ method: 'POST' })
@@ -273,6 +377,7 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
           status: 'completed',
           summaryText: null,
           imageUrl: null,
+          imageStatus: 'none',
         },
       })
 
@@ -307,63 +412,33 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       console.error('Failed to generate reflection summary:', error)
     }
 
-    // Generate image only if we have a meaningful summary
+    // Decide whether an image will be generated. We only do so when there is a
+    // meaningful summary to base it on.
     const imageStyle = (preferences?.imageStyle as ImageStyle) || 'realistic'
-    let imageUrl: string | null = null
-    if (summaryText && summaryText.length > 50) {
-      try {
-        // Translate summary to English for image generation if not already English
-        // Image generation models work best with English prompts
-        let imagePromptText = summaryText
-        if (userLanguage !== 'en') {
-          try {
-            const translationMessages = buildTranslationMessages(summaryText)
-            const translatedSummary = await chatCompletion(
-              translationMessages as Array<ChatMessage>,
-              { maxTokens: 1000 },
-            )
-            if (translatedSummary) {
-              imagePromptText = translatedSummary
-              console.log(
-                '[Process Reflection] Translated summary for image generation',
-              )
-            }
-          } catch (translationError) {
-            console.error(
-              'Failed to translate summary, using original:',
-              translationError,
-            )
-            // Fall back to original summary if translation fails
-          }
-        }
+    const willGenerateImage = !!summaryText && summaryText.length > 50
 
-        // Build prompt and generate image with English text
-        void buildImagePrompt(imagePromptText, imageStyle)
-        const imageResult = await generateImage(imagePromptText, {
-          style: imageStyle,
-        })
-
-        // Upload to Bunny.net
-        const uploadResult = await uploadImageFromUrl(
-          context.user.id,
-          session.id,
-          imageResult.imageUrl,
-        )
-        imageUrl = uploadResult.url
-      } catch (error) {
-        console.error('Failed to generate reflection image:', error)
-      }
-    }
-
-    // Update session with results
+    // Mark the session complete immediately with the summary. The image is
+    // generated in the background (see below) so a slow or failed generation
+    // never blocks the response or risks losing the summary to a timeout.
     const updatedSession = await prisma.reflectionSession.update({
       where: { id: session.id },
       data: {
         status: 'completed',
         summaryText,
-        imageUrl,
+        imageStatus: willGenerateImage ? 'generating' : 'none',
       },
     })
+
+    // Kick off image generation in the background (fire-and-forget).
+    if (willGenerateImage && summaryText) {
+      void generateReflectionImageInBackground({
+        sessionId: session.id,
+        userId: context.user.id,
+        summaryText,
+        userLanguage,
+        imageStyle,
+      })
+    }
 
     // Extract insights from the completed session (async, non-blocking)
     // This runs after the session is marked complete so the user gets a response quickly
@@ -384,7 +459,8 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
     return {
       session: updatedSession,
       summaryText,
-      imageUrl,
+      imageUrl: updatedSession.imageUrl,
+      imageStatus: updatedSession.imageStatus,
     }
   })
 
@@ -406,6 +482,7 @@ export const getReflectionProcessingStatusFn = createServerFn({ method: 'GET' })
         status: true,
         summaryText: true,
         imageUrl: true,
+        imageStatus: true,
       },
     })
 
@@ -418,6 +495,9 @@ export const getReflectionProcessingStatusFn = createServerFn({ method: 'GET' })
       isComplete: session.status === 'completed',
       hasSummary: !!session.summaryText,
       hasImage: !!session.imageUrl,
+      imageStatus: session.imageStatus,
+      // Image work is finished when it's no longer actively generating.
+      isImageDone: session.imageStatus !== 'generating',
     }
   })
 

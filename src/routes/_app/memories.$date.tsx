@@ -31,13 +31,13 @@ function SessionByDate() {
   } = useQuery({
     queryKey: ['session', 'date', date],
     queryFn: () => getSessionByDateFn({ data: { date } }),
-    // Poll every 2 seconds while session is processing or missing image
+    // Poll every 2 seconds while the session is still processing. Once it is
+    // completed the image is either present or permanently absent (image
+    // generation is synchronous for voice sessions), so stop polling.
     refetchInterval: (query) => {
       const data = query.state.data
       if (!data) return false
-      // Keep polling if processing or missing image
       if (data.status === 'processing') return 2000
-      if (data.status === 'completed' && !data.imageUrl) return 2000
       return false
     },
   })
@@ -142,24 +142,25 @@ function SessionByDate() {
         </div>
       </div>
 
-      {/* Daily Image - with skeleton while processing */}
-      <div className="mb-8">
-        {session.imageUrl ? (
-          <img
-            src={session.imageUrl}
-            alt="Daily memory"
-            className="w-full rounded-xl shadow-lg"
-          />
-        ) : session.status === 'processing' ||
-          (session.status === 'completed' && !session.imageUrl) ? (
-          <div className="aspect-square bg-muted animate-pulse rounded-xl flex flex-col items-center justify-center">
-            <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
-            <span className="text-muted-foreground text-sm">
-              Creating your memory image...
-            </span>
-          </div>
-        ) : null}
-      </div>
+      {/* Daily Image - with skeleton only while still processing */}
+      {(session.imageUrl || session.status === 'processing') && (
+        <div className="mb-8">
+          {session.imageUrl ? (
+            <img
+              src={session.imageUrl}
+              alt="Daily memory"
+              className="w-full rounded-xl shadow-lg"
+            />
+          ) : (
+            <div className="aspect-square bg-muted animate-pulse rounded-xl flex flex-col items-center justify-center">
+              <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
+              <span className="text-muted-foreground text-sm">
+                Creating your memory image...
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Summary - with skeleton while processing */}
       <div className="mb-8">

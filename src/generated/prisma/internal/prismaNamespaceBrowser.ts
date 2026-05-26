@@ -234,6 +234,7 @@ export const ReflectionSessionScalarFieldEnum = {
   maxDuration: 'maxDuration',
   summaryText: 'summaryText',
   imageUrl: 'imageUrl',
+  imageStatus: 'imageStatus',
   pausedAt: 'pausedAt',
   completedAt: 'completedAt',
   createdAt: 'createdAt',

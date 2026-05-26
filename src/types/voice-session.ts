@@ -432,12 +432,16 @@ export interface ReflectionSession {
   maxDuration: number // seconds (600 = 10 minutes)
   summaryText: string | null
   imageUrl: string | null
+  imageStatus: ReflectionImageStatus
   pausedAt: Date | null
   completedAt: Date | null
   createdAt: Date
   updatedAt: Date
   turns?: Array<ReflectionTurn>
 }
+
+// Image generation lifecycle for a reflection session
+export type ReflectionImageStatus = 'none' | 'generating' | 'ready' | 'failed'
 
 // ==========================================
 // Reflection API Response Types
