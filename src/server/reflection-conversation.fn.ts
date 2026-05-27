@@ -338,12 +338,48 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .inputValidator(processSessionSchema)
   .handler(async ({ data, context }) => {
-    // Get session with turns
-    const session = await prisma.reflectionSession.findFirst({
+    // Atomically claim this session for processing.
+    //
+    // Two invocations can race here: the end-session handler kicks one off, and
+    // the detail page's "stuck session" auto-retry can kick off another while the
+    // first is still generating the (slow) summary. A plain `findFirst` status
+    // check is not atomic — both calls would pass it and each would generate a
+    // summary *and* a paid Fal.ai image, doubling the cost.
+    //
+    // `updateMany` is a single atomic statement, so only the first caller flips
+    // `imageStatus` to 'generating' and gets count === 1; concurrent callers get
+    // count === 0 and bail out without doing any work. (The real image lifecycle
+    // value is set further down once we know whether an image will be produced.)
+    const claim = await prisma.reflectionSession.updateMany({
       where: {
         id: data.sessionId,
         userId: context.user.id,
         status: 'processing',
+        imageStatus: { not: 'generating' },
+      },
+      data: { imageStatus: 'generating' },
+    })
+
+    if (claim.count === 0) {
+      // Another invocation already claimed it (or it isn't in a processing
+      // state). Return the current state without re-running summary/image work.
+      const existing = await prisma.reflectionSession.findFirst({
+        where: { id: data.sessionId, userId: context.user.id },
+      })
+      return {
+        session: existing,
+        summaryText: existing?.summaryText ?? null,
+        imageUrl: existing?.imageUrl ?? null,
+        imageStatus: existing?.imageStatus,
+        alreadyProcessing: true,
+      }
+    }
+
+    // We own the claim — load the session with its turns and proceed.
+    const session = await prisma.reflectionSession.findFirst({
+      where: {
+        id: data.sessionId,
+        userId: context.user.id,
       },
       include: {
         turns: {
