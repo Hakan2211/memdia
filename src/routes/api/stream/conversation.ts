@@ -148,11 +148,14 @@ export const Route = createFileRoute('/api/stream/conversation')({
         }>
 
         if (isReflection) {
-          // Use therapeutic reflection prompts
+          // Use therapeutic reflection prompts, enriched with the memory brief
+          // built from past reflections at session start (null for first-timers
+          // or sessions created before this feature existed).
           systemPrompt = buildReflectionSystemPrompt(
             personality,
             session.user.name || undefined,
             userLanguage,
+            reflectionSession?.contextBrief ?? null,
           )
           conversationHistory = buildReflectionContext(sessionTurns)
         } else {

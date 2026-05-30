@@ -46,6 +46,7 @@ export type ReflectionSessionMinAggregateOutputType = {
   recordingAttempt: number | null
   totalUserSpeakingTime: number | null
   maxDuration: number | null
+  contextBrief: string | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string | null
@@ -63,6 +64,7 @@ export type ReflectionSessionMaxAggregateOutputType = {
   recordingAttempt: number | null
   totalUserSpeakingTime: number | null
   maxDuration: number | null
+  contextBrief: string | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string | null
@@ -80,6 +82,7 @@ export type ReflectionSessionCountAggregateOutputType = {
   recordingAttempt: number
   totalUserSpeakingTime: number
   maxDuration: number
+  contextBrief: number
   summaryText: number
   imageUrl: number
   imageStatus: number
@@ -111,6 +114,7 @@ export type ReflectionSessionMinAggregateInputType = {
   recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
+  contextBrief?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -128,6 +132,7 @@ export type ReflectionSessionMaxAggregateInputType = {
   recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
+  contextBrief?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -145,6 +150,7 @@ export type ReflectionSessionCountAggregateInputType = {
   recordingAttempt?: true
   totalUserSpeakingTime?: true
   maxDuration?: true
+  contextBrief?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -249,6 +255,7 @@ export type ReflectionSessionGroupByOutputType = {
   recordingAttempt: number
   totalUserSpeakingTime: number
   maxDuration: number
+  contextBrief: string | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string
@@ -289,6 +296,7 @@ export type ReflectionSessionWhereInput = {
   recordingAttempt?: Prisma.IntFilter<"ReflectionSession"> | number
   totalUserSpeakingTime?: Prisma.IntFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
+  contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -312,6 +320,7 @@ export type ReflectionSessionOrderByWithRelationInput = {
   recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
+  contextBrief?: Prisma.SortOrderInput | Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -339,6 +348,7 @@ export type ReflectionSessionWhereUniqueInput = Prisma.AtLeast<{
   recordingAttempt?: Prisma.IntFilter<"ReflectionSession"> | number
   totalUserSpeakingTime?: Prisma.IntFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
+  contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -362,6 +372,7 @@ export type ReflectionSessionOrderByWithAggregationInput = {
   recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
+  contextBrief?: Prisma.SortOrderInput | Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -387,6 +398,7 @@ export type ReflectionSessionScalarWhereWithAggregatesInput = {
   recordingAttempt?: Prisma.IntWithAggregatesFilter<"ReflectionSession"> | number
   totalUserSpeakingTime?: Prisma.IntWithAggregatesFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntWithAggregatesFilter<"ReflectionSession"> | number
+  contextBrief?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   summaryText?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringWithAggregatesFilter<"ReflectionSession"> | string
@@ -403,6 +415,7 @@ export type ReflectionSessionCreateInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -426,6 +439,7 @@ export type ReflectionSessionUncheckedCreateInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -447,6 +461,7 @@ export type ReflectionSessionUpdateInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -470,6 +485,7 @@ export type ReflectionSessionUncheckedUpdateInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -492,6 +508,7 @@ export type ReflectionSessionCreateManyInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -508,6 +525,7 @@ export type ReflectionSessionUpdateManyMutationInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -525,6 +543,7 @@ export type ReflectionSessionUncheckedUpdateManyInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -557,6 +576,7 @@ export type ReflectionSessionCountOrderByAggregateInput = {
   recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
+  contextBrief?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -580,6 +600,7 @@ export type ReflectionSessionMaxOrderByAggregateInput = {
   recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
+  contextBrief?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -597,6 +618,7 @@ export type ReflectionSessionMinOrderByAggregateInput = {
   recordingAttempt?: Prisma.SortOrder
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
+  contextBrief?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -736,6 +758,7 @@ export type ReflectionSessionCreateWithoutUserInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -757,6 +780,7 @@ export type ReflectionSessionUncheckedCreateWithoutUserInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -807,6 +831,7 @@ export type ReflectionSessionScalarWhereInput = {
   recordingAttempt?: Prisma.IntFilter<"ReflectionSession"> | number
   totalUserSpeakingTime?: Prisma.IntFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
+  contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -823,6 +848,7 @@ export type ReflectionSessionCreateWithoutTurnsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -845,6 +871,7 @@ export type ReflectionSessionUncheckedCreateWithoutTurnsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -881,6 +908,7 @@ export type ReflectionSessionUpdateWithoutTurnsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -903,6 +931,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTurnsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -923,6 +952,7 @@ export type ReflectionSessionCreateWithoutMoodInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -945,6 +975,7 @@ export type ReflectionSessionUncheckedCreateWithoutMoodInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -981,6 +1012,7 @@ export type ReflectionSessionUpdateWithoutMoodInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1003,6 +1035,7 @@ export type ReflectionSessionUncheckedUpdateWithoutMoodInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1023,6 +1056,7 @@ export type ReflectionSessionCreateWithoutTopicsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1045,6 +1079,7 @@ export type ReflectionSessionUncheckedCreateWithoutTopicsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1081,6 +1116,7 @@ export type ReflectionSessionUpdateWithoutTopicsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1103,6 +1139,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTopicsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1123,6 +1160,7 @@ export type ReflectionSessionCreateWithoutInsightsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1145,6 +1183,7 @@ export type ReflectionSessionUncheckedCreateWithoutInsightsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1181,6 +1220,7 @@ export type ReflectionSessionUpdateWithoutInsightsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1203,6 +1243,7 @@ export type ReflectionSessionUncheckedUpdateWithoutInsightsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1223,6 +1264,7 @@ export type ReflectionSessionCreateWithoutPersonMentionsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1245,6 +1287,7 @@ export type ReflectionSessionUncheckedCreateWithoutPersonMentionsInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1281,6 +1324,7 @@ export type ReflectionSessionUpdateWithoutPersonMentionsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1303,6 +1347,7 @@ export type ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1323,6 +1368,7 @@ export type ReflectionSessionCreateManyUserInput = {
   recordingAttempt?: number
   totalUserSpeakingTime?: number
   maxDuration?: number
+  contextBrief?: string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1339,6 +1385,7 @@ export type ReflectionSessionUpdateWithoutUserInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1360,6 +1407,7 @@ export type ReflectionSessionUncheckedUpdateWithoutUserInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1381,6 +1429,7 @@ export type ReflectionSessionUncheckedUpdateManyWithoutUserInput = {
   recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1456,6 +1505,7 @@ export type ReflectionSessionSelect<ExtArgs extends runtime.Types.Extensions.Int
   recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
+  contextBrief?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1480,6 +1530,7 @@ export type ReflectionSessionSelectCreateManyAndReturn<ExtArgs extends runtime.T
   recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
+  contextBrief?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1498,6 +1549,7 @@ export type ReflectionSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
+  contextBrief?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1516,6 +1568,7 @@ export type ReflectionSessionSelectScalar = {
   recordingAttempt?: boolean
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
+  contextBrief?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1525,7 +1578,7 @@ export type ReflectionSessionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
+export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "contextBrief" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
 export type ReflectionSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.ReflectionSession$turnsArgs<ExtArgs>
@@ -1560,6 +1613,7 @@ export type $ReflectionSessionPayload<ExtArgs extends runtime.Types.Extensions.I
     recordingAttempt: number
     totalUserSpeakingTime: number
     maxDuration: number
+    contextBrief: string | null
     summaryText: string | null
     imageUrl: string | null
     imageStatus: string
@@ -2003,6 +2057,7 @@ export interface ReflectionSessionFieldRefs {
   readonly recordingAttempt: Prisma.FieldRef<"ReflectionSession", 'Int'>
   readonly totalUserSpeakingTime: Prisma.FieldRef<"ReflectionSession", 'Int'>
   readonly maxDuration: Prisma.FieldRef<"ReflectionSession", 'Int'>
+  readonly contextBrief: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly summaryText: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageUrl: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageStatus: Prisma.FieldRef<"ReflectionSession", 'String'>

@@ -81,12 +81,17 @@ export function buildReflectionSystemPrompt(
   personality: AIPersonality,
   userName?: string,
   language: Language = 'en',
+  contextBrief?: string | null,
 ): string {
   const nameContext = userName
     ? `The user's name is ${userName}. You may use their name occasionally to create warmth, but don't overuse it.`
     : ''
 
   const languageInstruction = getReflectionLanguageInstruction(language)
+
+  // Memory from past reflections (people, recurring themes, open intentions).
+  // Omitted entirely for first-time users so the prompt stays clean.
+  const memoryContext = contextBrief ? `\n${contextBrief}\n` : ''
 
   return `${REFLECTION_BASE_CONTEXT}
 
@@ -95,8 +100,8 @@ ${languageInstruction}
 ${REFLECTION_PERSONALITY_PROMPTS[personality]}
 
 ${nameContext}
-
-Begin with a warm, inviting opening that signals you're ready to listen deeply. 
+${memoryContext}
+Begin with a warm, inviting opening that signals you're ready to listen deeply.
 Make them feel they have the space and time to really explore what's on their mind.`
 }
 

@@ -10,6 +10,7 @@ import { prisma } from '../db'
 import { REFLECTION_CONFIG } from '../types/voice-session'
 import { authMiddleware } from './middleware'
 import { checkSubscription } from './services/subscription.service'
+import { buildReflectionContextBrief } from './reflection-context.internal'
 import type {
   ReflectionSession,
   ReflectionTurn,
@@ -247,6 +248,17 @@ export const startReflectionFn = createServerFn({ method: 'POST' })
       }
     }
 
+    // Build a memory brief from the user's past reflections so the companion has
+    // continuity from the first turn. Done here (once per session) rather than on
+    // every conversation turn to keep it out of the latency-critical streaming
+    // path. Never let a brief failure block starting a reflection.
+    const contextBrief = await buildReflectionContextBrief(
+      context.user.id,
+    ).catch((error) => {
+      console.error('[StartReflection] Failed to build context brief:', error)
+      return null
+    })
+
     // Create new reflection session
     const session = await prisma.reflectionSession.create({
       data: {
@@ -255,6 +267,7 @@ export const startReflectionFn = createServerFn({ method: 'POST' })
         status: 'active',
         maxDuration: REFLECTION_CONFIG.MAX_DURATION_SECONDS,
         recordingAttempt: 1,
+        contextBrief,
       },
     })
 

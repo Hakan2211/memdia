@@ -232,6 +232,7 @@ export const ReflectionSessionScalarFieldEnum = {
   recordingAttempt: 'recordingAttempt',
   totalUserSpeakingTime: 'totalUserSpeakingTime',
   maxDuration: 'maxDuration',
+  contextBrief: 'contextBrief',
   summaryText: 'summaryText',
   imageUrl: 'imageUrl',
   imageStatus: 'imageStatus',

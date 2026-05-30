@@ -245,6 +245,12 @@ model ReflectionSession {
   totalUserSpeakingTime Int @default(0)
   maxDuration           Int @default(600) // 600 = 10 minutes
 
+  // Memory brief distilled from the user's PAST reflections (recent moods/
+  // summaries, recurring themes, people, open intentions). Built once at session
+  // start and injected into the system prompt so the companion has continuity.
+  // Null for the user's first-ever reflection (no history yet).
+  contextBrief String?
+
   // Post-processing results
   summaryText String?
   imageUrl    String?

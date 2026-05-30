@@ -534,11 +534,13 @@ export function buildReflectionMessages(params: {
   language: Language
   turns: Array<{ speaker: 'user' | 'ai'; text: string }>
   userMessage: string
+  contextBrief?: string | null
 }): Array<ChatMessage> {
   const systemPrompt = buildReflectionSystemPrompt(
     params.personality,
     params.userName,
     params.language,
+    params.contextBrief,
   )
 
   const conversationHistory = buildReflectionContext(params.turns)
