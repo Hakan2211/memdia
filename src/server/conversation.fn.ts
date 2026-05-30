@@ -13,13 +13,12 @@ import {
 } from '../lib/prompts/conversation'
 import {
   buildSummaryMessages,
-  buildTranslationMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
-import { buildImagePrompt } from '../lib/prompts/image'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
 import { generateImage, generateSpeech } from './services/falai.service'
+import { generateImageScene } from './image-scene'
 import { uploadImageFromUrl } from './services/bunny.service'
 import type { ChatMessage } from './services/openrouter.service'
 import type {
@@ -493,35 +492,17 @@ export const processSessionFn = createServerFn({ method: 'POST' })
     let imageUrl: string | null = null
     if (summaryText && summaryText.length > 50) {
       try {
-        // Translate summary to English for image generation if not already English
-        // Image generation models work best with English prompts
-        let imagePromptText = summaryText
-        if (userLanguage !== 'en') {
-          try {
-            const translationMessages = buildTranslationMessages(summaryText)
-            const translatedSummary = await chatCompletion(
-              translationMessages as Array<ChatMessage>,
-              { maxTokens: 1000 },
-            )
-            if (translatedSummary) {
-              imagePromptText = translatedSummary
-              console.log(
-                '[Process Session] Translated summary for image generation',
-              )
-            }
-          } catch (translationError) {
-            console.error(
-              'Failed to translate summary, using original:',
-              translationError,
-            )
-            // Fall back to original summary if translation fails
-          }
-        }
+        // Turn the full summary into a concrete, vivid visual scene (and
+        // normalize to English) before handing it to the image model. A literal
+        // journal summary produces flat, generic images; a described scene gives
+        // the model a clear subject, setting, lighting, and mood to render. The
+        // scene-writer also picks a random visual approach for variety, so
+        // `abstract` tells the image model whether a subject is required.
+        const { scene, abstract } = await generateImageScene(summaryText)
 
-        // Build prompt and generate image with English text
-        void buildImagePrompt(imagePromptText, session.imageStyle as ImageStyle)
-        const imageResult = await generateImage(imagePromptText, {
+        const imageResult = await generateImage(scene, {
           style: session.imageStyle as ImageStyle,
+          allowAbstract: abstract,
         })
 
         // Upload to Bunny.net

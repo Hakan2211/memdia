@@ -14,12 +14,12 @@ import {
 } from '../lib/prompts/reflection'
 import {
   buildSummaryMessages,
-  buildTranslationMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
 import { generateImage, generateSpeech } from './services/falai.service'
+import { generateImageScene } from './image-scene'
 import { uploadImageFromUrl } from './services/bunny.service'
 import { extractInsightsFromSession } from './extraction.internal'
 import type { ChatMessage } from './services/openrouter.service'
@@ -245,32 +245,18 @@ async function generateReflectionImageInBackground(params: {
   sessionId: string
   userId: string
   summaryText: string
-  userLanguage: string
   imageStyle: ImageStyle
 }): Promise<void> {
-  const { sessionId, userId, summaryText, userLanguage, imageStyle } = params
+  const { sessionId, userId, summaryText, imageStyle } = params
 
   try {
-    // Translate summary to English for image generation if not already English.
-    // Image generation models work best with English prompts.
-    let imagePromptText = summaryText
-    if (userLanguage !== 'en') {
-      try {
-        const translationMessages = buildTranslationMessages(summaryText)
-        const translatedSummary = await chatCompletion(
-          translationMessages as Array<ChatMessage>,
-          { maxTokens: 1000 },
-        )
-        if (translatedSummary) {
-          imagePromptText = translatedSummary
-        }
-      } catch (translationError) {
-        console.error(
-          '[Reflection Image] Translation failed, using original summary:',
-          translationError,
-        )
-      }
-    }
+    // Turn the full summary into a concrete, vivid visual scene (and normalize
+    // to English) before handing it to the image model. A literal journal
+    // summary produces flat, generic images; a described scene gives the model
+    // a clear subject, setting, lighting, and mood to render. The scene-writer
+    // also picks a random visual approach (human moment, object, abstract, …),
+    // so `abstract` tells the image model whether a subject is required.
+    const { scene, abstract } = await generateImageScene(summaryText)
 
     // Generate the image, retrying transient failures.
     const maxAttempts = 3
@@ -278,8 +264,9 @@ async function generateReflectionImageInBackground(params: {
     let lastError: unknown = null
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
-        imageResult = await generateImage(imagePromptText, {
+        imageResult = await generateImage(scene, {
           style: imageStyle,
+          allowAbstract: abstract,
         })
         break
       } catch (error) {
@@ -471,7 +458,6 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
         sessionId: session.id,
         userId: context.user.id,
         summaryText,
-        userLanguage,
         imageStyle,
       })
     }

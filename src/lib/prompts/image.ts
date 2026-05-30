@@ -46,96 +46,45 @@ IMPORTANT REQUIREMENTS:
 - Suitable for all audiences (no disturbing imagery)`
 
 /**
- * Build the image generation prompt
+ * System prompt for the "scene writer" step.
+ *
+ * A raw reflection summary is abstract second-person prose ("You discussed…,
+ * you felt…"). Image models render what they can *see*, so feeding them that
+ * narrative produces flat, generic results. This step acts as an art director:
+ * it reads the whole reflection and invents ONE concrete, vivid visual scene
+ * for the image model to depict. It also normalizes the output to English,
+ * which is what the image model handles best (folding in what used to be a
+ * separate translation step).
  */
-export function buildImagePrompt(summary: string, style: ImageStyle): string {
-  const stylePrefix = STYLE_PREFIXES[style]
+export const IMAGE_SCENE_SYSTEM_PROMPT = `You are an art director turning a personal reflection into a single still image.
+Read the reflection and invent ONE vivid, concrete visual idea that captures its emotional core, expressed through the visual approach you are given.
 
-  return `${stylePrefix}
-
-Create a symbolic, artistic image that represents the emotional themes and essence of this personal reflection:
-
-"${summary}"
-
-${COMMON_GUIDELINES}
-
-The image should capture the mood and feeling of this reflection in a way that would be meaningful to look back on.`
-}
+RULES:
+- Commit to the given visual approach. Describe exactly what is in the frame: the main elements, the setting (if any), lighting, color palette, mood, and composition.
+- Be concrete and visual. Do NOT narrate events, summarize the conversation, or address the reader as "you". Avoid vague or generic filler.
+- Choose imagery that evokes the underlying feeling rather than literally illustrating private details.
+- Do not include any text, words, letters, signs, or numbers.
+- Always write in English, regardless of the language of the reflection.
+- Output ONLY the description as a single paragraph of roughly 50-90 words. No preamble, no title, no quotation marks.`
 
 /**
- * Extract key emotional themes from a summary for image generation
- * This creates a more focused prompt for better image results
+ * Build the messages for the scene-writer LLM call.
+ *
+ * @param summary - The full reflection summary (any language, not truncated)
+ * @param approachHint - The visual approach to express the reflection through
+ *   (e.g. "an intimate human moment", "a purely abstract composition of fractals")
  */
-export function extractThemesForImage(summary: string): string {
-  // This is a simplified extraction - in production, you might use
-  // another LLM call to extract themes more intelligently
-
-  // Common emotional keywords to look for
-  const emotionalKeywords = [
-    'happy',
-    'sad',
-    'anxious',
-    'peaceful',
-    'excited',
-    'worried',
-    'grateful',
-    'frustrated',
-    'hopeful',
-    'tired',
-    'energized',
-    'calm',
-    'stressed',
-    'content',
-    'lonely',
-    'connected',
-    'growth',
-    'change',
-    'challenge',
-    'success',
-    'reflection',
-    'love',
-    'joy',
-    'fear',
-    'anger',
-    'surprise',
-    'anticipation',
-  ]
-
-  const lowerSummary = summary.toLowerCase()
-  const foundThemes = emotionalKeywords.filter((keyword) =>
-    lowerSummary.includes(keyword),
-  )
-
-  if (foundThemes.length > 0) {
-    return `Key themes: ${foundThemes.slice(0, 5).join(', ')}`
-  }
-
-  return ''
-}
-
-/**
- * Build a condensed prompt when the summary is very long
- */
-export function buildCondensedImagePrompt(
+export function buildImageSceneMessages(
   summary: string,
-  style: ImageStyle,
-  maxLength: number = 500,
-): string {
-  // Truncate summary if too long
-  const truncatedSummary =
-    summary.length > maxLength ? summary.slice(0, maxLength) + '...' : summary
-
-  const themes = extractThemesForImage(summary)
-  const stylePrefix = STYLE_PREFIXES[style]
-
-  return `${stylePrefix}
-
-Create a symbolic image representing:
-${truncatedSummary}
-
-${themes}
-
-${COMMON_GUIDELINES}`
+  approachHint: string,
+): Array<{ role: 'system' | 'user'; content: string }> {
+  return [
+    { role: 'system', content: IMAGE_SCENE_SYSTEM_PROMPT },
+    {
+      role: 'user',
+      content: `Reflection:\n\n${summary}\n\nVisual approach for this image: ${approachHint}\n\nDescribe the single image to create.`,
+    },
+  ]
 }
 
 /**
