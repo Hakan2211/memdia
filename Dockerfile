@@ -11,6 +11,8 @@ ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 # Copy package files first for better caching
 COPY package*.json ./
+# postinstall (npm ci) runs scripts/copy-vad-assets.mjs, so it must exist first
+COPY scripts ./scripts
 RUN npm ci --legacy-peer-deps
 
 # Copy the rest of the application
@@ -35,6 +37,8 @@ RUN apk add --no-cache curl
 
 # Copy package files and install production dependencies
 COPY package*.json ./
+# postinstall (npm ci) runs scripts/copy-vad-assets.mjs, so it must exist first
+COPY scripts ./scripts
 RUN npm ci --omit=dev --legacy-peer-deps
 
 # Install tsx for running seed script (needed at runtime)
