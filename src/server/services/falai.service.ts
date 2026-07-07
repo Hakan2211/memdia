@@ -1,12 +1,14 @@
 /**
  * fal.ai Service
- * Handles Text-to-Speech (ElevenLabs) and Image Generation (ImagineArt 2.0)
+ * Handles Text-to-Speech (ElevenLabs) and Image Generation (Krea 2 Turbo)
  *
  * Uses the official @fal-ai/client
  *
  * Models:
- * - TTS: fal-ai/elevenlabs/tts/turbo-v2.5 (faster than eleven-v3)
- * - Image: imagineart/imagineart-2.0-preview/text-to-image
+ * - TTS:   fal-ai/elevenlabs/tts/turbo-v2.5 (faster than eleven-v3)
+ * - Image: fal-ai/krea-2/turbo (default, 1K) with
+ *          imagineart/imagineart-2.0-preview/text-to-image as a silent fallback.
+ *          Model choice is backend-only — it is not user-selectable.
  */
 
 import { fal } from '@fal-ai/client'
@@ -193,14 +195,118 @@ const ABSTRACT_CONSTRAINTS = `Constraints:
 - Fill the frame edge to edge with evocative visual interest — never a flat, empty, or minimal field.
 - Apply the rendering style above as the visual treatment.`
 
+// Default output resolution (1K square). Both callers omit width/height, so this
+// is what we actually generate unless a caller overrides it.
+const DEFAULT_IMAGE_WIDTH = 1024
+const DEFAULT_IMAGE_HEIGHT = 1024
+
 /**
- * Generate an image from a visual scene description and style using ImagineArt 2.0
- * Model: imagineart/imagineart-2.0-preview/text-to-image
+ * A single image-generation backend: takes an already-assembled prompt (+ target
+ * dimensions) and returns a normalized { imageUrl, seed }. Both fal models return
+ * the same output shape (`images[0].url` + `seed`), so callers don't care which
+ * one ran.
+ */
+interface ImageModel {
+  name: string
+  generate: (
+    prompt: string,
+    width: number,
+    height: number,
+  ) => Promise<ImageGenerationResult>
+}
+
+/**
+ * Shared parser for both models — fal image endpoints all return
+ * `{ images: [{ url, ... }], seed }`. Cast through unknown to bridge the SDK's
+ * generic type and the actual API response.
+ */
+function parseImageResult(
+  modelName: string,
+  result: unknown,
+): ImageGenerationResult {
+  const data = (
+    result as {
+      data?: {
+        images?: Array<{ url: string; content_type?: string }>
+        seed?: number
+      }
+    }
+  ).data
+
+  const imageUrl = data?.images?.[0]?.url
+
+  if (!imageUrl) {
+    console.error(`[fal.ai Image:${modelName}] No image URL in response:`, data)
+    throw new Error('No image URL in response')
+  }
+
+  return {
+    imageUrl,
+    // `data` is proven non-null here: imageUrl derives from data.images[0].url.
+    seed: data.seed || 0,
+  }
+}
+
+/**
+ * Default model: Krea 2 Turbo. Fast, high-quality 1K text-to-image.
+ * Uses a custom `image_size` object to request an exact 1024×1024 (1K) frame.
+ */
+const kreaModel: ImageModel = {
+  name: 'krea-2-turbo',
+  async generate(prompt, width, height) {
+    const result = await fal.subscribe('fal-ai/krea-2/turbo', {
+      input: {
+        prompt,
+        image_size: { width, height },
+        num_images: 1,
+        output_format: 'png',
+      },
+    })
+    return parseImageResult('krea-2-turbo', result)
+  },
+}
+
+/**
+ * Fallback model: ImagineArt 2.0. Used only if Krea fails. It takes an aspect
+ * ratio + resolution preset rather than explicit pixel dimensions, so we map to
+ * its 1K / 1:1 preset (our default target is square anyway).
+ */
+const imagineArtModel: ImageModel = {
+  name: 'imagineart-2.0',
+  async generate(prompt) {
+    const result = await fal.subscribe(
+      'imagineart/imagineart-2.0-preview/text-to-image',
+      {
+        input: {
+          prompt,
+          aspect_ratio: '1:1',
+          resolution: '1K',
+        },
+      },
+    )
+    return parseImageResult('imagineart-2.0', result)
+  },
+}
+
+/**
+ * Image models tried in order. The first entry is the default; later entries are
+ * silent fallbacks used only when an earlier model errors. This ordering is the
+ * single source of truth for "which model do we use" — adding a model is just a
+ * new entry here.
+ */
+const IMAGE_MODELS: Array<ImageModel> = [kreaModel, imagineArtModel]
+
+/**
+ * Generate an image from a visual scene description and style.
+ *
+ * Renders with Krea 2 Turbo by default and silently falls back to ImagineArt 2.0
+ * if Krea errors (see `IMAGE_MODELS`). Model selection is backend-only — it is
+ * never surfaced to the user.
  *
  * `sceneDescription` should already be a concrete, vivid scene (see
- * `generateImageScene`), not a raw reflection summary — ImagineArt 2.0 follows
- * prompts very literally, so it renders a described scene far better than it
- * interprets abstract journal prose.
+ * `generateImageScene`), not a raw reflection summary — these models follow
+ * prompts very literally, so they render a described scene far better than they
+ * interpret abstract journal prose.
  *
  * `allowAbstract` flips the constraints: when the scene-writer chose an abstract
  * visual approach (fractals/patterns/cosmic), we drop the subject requirement;
@@ -225,12 +331,15 @@ export async function generateImage(
     throw new Error('FAL_KEY is required')
   }
 
+  const width = config.width ?? DEFAULT_IMAGE_WIDTH
+  const height = config.height ?? DEFAULT_IMAGE_HEIGHT
+
   const stylePrompt = STYLE_PROMPTS[config.style]
   const constraints = config.allowAbstract
     ? ABSTRACT_CONSTRAINTS
     : SUBJECT_CONSTRAINTS
 
-  // ImagineArt 2.0 follows prompts very literally, so we:
+  // These models follow prompts very literally, so we:
   // 1. Lead with the concrete thing to depict (the described scene)
   // 2. Apply style as a *rendering treatment* on top of it
   // 3. Enforce subject-vs-abstract via the matching constraints block
@@ -247,45 +356,31 @@ ${constraints}`
     prompt.slice(0, 100) + '...',
   )
 
-  try {
-    const result = await fal.subscribe(
-      'imagineart/imagineart-2.0-preview/text-to-image',
-      {
-        input: {
-          prompt,
-          aspect_ratio: '1:1',
-          resolution: '1K',
-        },
-      },
-    )
-
-    console.log('[fal.ai Image] Raw result:', JSON.stringify(result, null, 2))
-
-    // ImagineArt output: images is Array<{ url, content_type, ... }>
-    // Cast through unknown to handle SDK type mismatch with actual API response
-    const data = result.data as unknown as {
-      images: Array<{ url: string; content_type?: string }>
-      seed?: number
+  // Try each model in order; the first success wins. Later models are silent
+  // fallbacks used only when an earlier one errors.
+  let lastError: unknown
+  for (const model of IMAGE_MODELS) {
+    try {
+      const result = await model.generate(prompt, width, height)
+      console.log(
+        `[fal.ai Image:${model.name}] Success! Image URL: ${result.imageUrl}`,
+      )
+      return result
+    } catch (error) {
+      lastError = error
+      console.error(`[fal.ai Image:${model.name}] Error:`, error)
+      const isLast = model === IMAGE_MODELS[IMAGE_MODELS.length - 1]
+      if (!isLast) {
+        console.warn(
+          `[fal.ai Image] ${model.name} failed — falling back to next model.`,
+        )
+      }
     }
-
-    // Get the image URL directly from the first image
-    const imageUrl = data.images?.[0]?.url
-
-    if (!imageUrl) {
-      console.error('[fal.ai Image] No image URL in response:', data)
-      throw new Error('No image URL in response')
-    }
-
-    console.log('[fal.ai Image] Success! Image URL:', imageUrl)
-
-    return {
-      imageUrl,
-      seed: data.seed || 0,
-    }
-  } catch (error) {
-    console.error('[fal.ai Image] Error:', error)
-    throw error
   }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('All image models failed')
 }
 
 /**
