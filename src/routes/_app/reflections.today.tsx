@@ -57,7 +57,6 @@ import type {
 } from '../../types/voice-session'
 
 // Feature flags
-const USE_SSE_STREAMING = true
 const USE_VAD = true
 
 // Minimum session duration in seconds (sessions shorter than this are discarded)
@@ -442,7 +441,7 @@ function TodayReflection() {
       onStart: () => {},
       onText: () => {},
       onAudio: (audioBase64, audioUrl, contentType) => {
-        if (USE_SSE_STREAMING && audioBase64) {
+        if (audioBase64) {
           streamingAudioActions.queueAudioChunk(audioBase64, contentType)
         } else if (audioUrl) {
           audioQueueRef.current.push(audioUrl)
@@ -918,9 +917,7 @@ function TodayReflection() {
       lastSentTimeRef.current = now
       setCurrentSpeaker(null)
 
-      if (USE_SSE_STREAMING) {
-        conversationStreamActions.sendMessage(session.id, trimmedTranscript)
-      }
+      conversationStreamActions.sendMessage(session.id, trimmedTranscript)
     }
   }
 
@@ -1004,11 +1001,11 @@ function TodayReflection() {
     queryClient,
   ])
 
-  // Note: Mute toggle not available in unified hook - could be added later
+  // Toggle mic mute - the recorder gates PCM capture while muted, so no
+  // audio reaches Deepgram (and no transcripts are produced)
   const handleToggleMute = useCallback(() => {
-    // TODO: Add mute toggle to useSpeechDetection if needed
-    console.log('[TODO] Mute toggle not implemented in useSpeechDetection')
-  }, [])
+    recorderActions.toggleMute()
+  }, [recorderActions])
 
   // Calculate remaining time
   const maxDuration =
@@ -1179,7 +1176,7 @@ function TodayReflection() {
 
         {(sessionState === 'recording' || sessionState === 'paused') && (
           <SessionControls
-            isMuted={false}
+            isMuted={recorderState.isMuted}
             isPaused={sessionState === 'paused'}
             isEnding={isEndingSession || endMutation.isPending}
             elapsedTime={elapsedTime}

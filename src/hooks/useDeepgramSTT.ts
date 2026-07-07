@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getDeepgramKeyFn } from '../server/deepgram.fn'
+import { getDeepgramTokenFn } from '../server/deepgram.fn'
 
 export interface DeepgramSTTState {
   /** Whether the STT is connected */
@@ -53,8 +53,6 @@ export interface UseDeepgramSTTOptions {
   onError?: (error: Error) => void
   /** Called when Deepgram enters degraded state (receiving audio but not transcribing) */
   onDegradedState?: () => void
-  /** Deepgram API key (optional - will fetch from server if not provided) */
-  apiKey?: string
   /** Model to use (default: nova-3) */
   model?: string
   /**
@@ -88,7 +86,6 @@ export function useDeepgramSTT(
     onSpeechEnd,
     onError,
     onDegradedState,
-    apiKey,
     model = 'nova-3',
     // Use 'multi' for automatic language detection and code-switching
     // Supports: English, Spanish, French, German, Hindi, Russian, Portuguese, Japanese, Italian, Dutch
@@ -106,7 +103,6 @@ export function useDeepgramSTT(
   })
 
   const wsRef = useRef<WebSocket | null>(null)
-  const apiKeyRef = useRef<string | null>(null)
   const keepaliveIntervalRef = useRef<NodeJS.Timeout | null>(null)
   // Timer for delayed keepalive stop - gives Deepgram time to transition after AI stops speaking
   const keepaliveStopTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -115,7 +111,7 @@ export function useDeepgramSTT(
   const DEGRADED_THRESHOLD = 3 // Number of consecutive empty is_final results to trigger degraded state
   // Grace period after AI stops speaking before stopping keepalives (ms)
   // This gives Deepgram time to transition from "keepalive mode" to "listening mode"
-  const KEEPALIVE_GRACE_PERIOD = 2000
+  const KEEPALIVE_GRACE_PERIOD = 1000
 
   // Store callbacks in refs to avoid dependency issues
   const callbacksRef = useRef({
@@ -259,25 +255,22 @@ export function useDeepgramSTT(
       return
     }
 
-    // Fetch API key from server if not provided
-    let key = apiKey || apiKeyRef.current
-
-    if (!key) {
-      try {
-        console.log('[Deepgram] Fetching API key from server...')
-        const result = await getDeepgramKeyFn()
-        key = result.apiKey || null
-        apiKeyRef.current = key
-        if (result.error) {
-          console.warn('[Deepgram] Server warning:', result.error)
-        }
-      } catch (error) {
-        console.error('[Deepgram] Failed to fetch API key:', error)
+    // Fetch a fresh short-lived token from the server on every (re)connect.
+    // Tokens expire quickly, so they must never be cached across connects.
+    let token: string | null = null
+    try {
+      console.log('[Deepgram] Fetching access token from server...')
+      const result = await getDeepgramTokenFn()
+      token = result.token || null
+      if (result.error) {
+        console.warn('[Deepgram] Server warning:', result.error)
       }
+    } catch (error) {
+      console.error('[Deepgram] Failed to fetch access token:', error)
     }
 
-    if (!key) {
-      console.log('[Deepgram] No API key available')
+    if (!token) {
+      console.log('[Deepgram] No access token available')
       setState((prev) => ({
         ...prev,
         isConnected: false,
@@ -299,7 +292,7 @@ export function useDeepgramSTT(
           punctuate: 'true',
           smart_format: 'true',
           interim_results: 'true',
-          utterance_end_ms: '1500',
+          utterance_end_ms: '1000',
           vad_events: 'true',
           endpointing: '400', // Increased from 300ms to reduce premature utterance endings
           // Audio format - we'll send raw PCM
@@ -311,9 +304,9 @@ export function useDeepgramSTT(
         const wsUrl = `${DEEPGRAM_WS_URL}?${params.toString()}`
         console.log('[Deepgram] Connecting to Deepgram...')
 
-        // Create WebSocket with token protocol for browser authentication
-        // This is Deepgram's recommended way for browser clients
-        const ws = new WebSocket(wsUrl, ['token', key])
+        // Create WebSocket with bearer subprotocol using the short-lived
+        // access token - the master API key never reaches the browser
+        const ws = new WebSocket(wsUrl, ['bearer', token])
 
         ws.onopen = () => {
           console.log('[Deepgram] WebSocket connected!')
@@ -366,7 +359,7 @@ export function useDeepgramSTT(
         reject(err)
       }
     })
-  }, [apiKey, model, language, handleMessage])
+  }, [model, language, handleMessage])
 
   // Disconnect from Deepgram
   const disconnect = useCallback(() => {

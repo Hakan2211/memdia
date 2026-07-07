@@ -7,30 +7,64 @@ import { createServerFn } from '@tanstack/react-start'
 import { authMiddleware } from './middleware'
 
 // ==========================================
-// Get Deepgram API Key for Client
+// Get short-lived Deepgram token for client
 // ==========================================
 
 /**
- * Returns the Deepgram API key for use in the client
- * In production, you would want to use Deepgram's temporary key API
- * or proxy audio through your server
+ * Token TTL in seconds. Long enough to cover connection setup and
+ * reconnects during a session; the WebSocket stays open past expiry,
+ * the token only needs to be valid at connection time.
  */
-export const getDeepgramKeyFn = createServerFn({ method: 'GET' })
+const TOKEN_TTL_SECONDS = 600
+
+/**
+ * Returns a short-lived Deepgram access token (JWT) for browser use.
+ * The master DEEPGRAM_API_KEY never leaves the server — the client
+ * authenticates its WebSocket with this ephemeral token via the
+ * ['bearer', token] subprotocol.
+ *
+ * https://developers.deepgram.com/guides/fundamentals/token-based-authentication
+ */
+export const getDeepgramTokenFn = createServerFn({ method: 'GET' })
   .middleware([authMiddleware])
   .handler(async () => {
     const apiKey = process.env.DEEPGRAM_API_KEY
 
     if (!apiKey) {
       console.warn('[Deepgram Server] No API key configured in environment')
-      return { apiKey: null, error: 'Deepgram not configured' }
+      return { token: null, error: 'Deepgram not configured' }
     }
 
-    console.log('[Deepgram Server] API key found, returning to client')
-    console.log('[Deepgram Server] Key prefix:', apiKey.substring(0, 8) + '...')
+    try {
+      const response = await fetch('https://api.deepgram.com/v1/auth/grant', {
+        method: 'POST',
+        headers: {
+          Authorization: `Token ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ttl_seconds: TOKEN_TTL_SECONDS }),
+      })
 
-    // For development, return the API key directly
-    // In production, consider using Deepgram's temporary token API:
-    // https://developers.deepgram.com/docs/create-a-temporary-api-key
+      if (!response.ok) {
+        const body = await response.text()
+        console.error(
+          '[Deepgram Server] Token grant failed:',
+          response.status,
+          body,
+        )
+        return { token: null, error: 'Failed to create Deepgram token' }
+      }
 
-    return { apiKey, error: null }
+      const data = (await response.json()) as { access_token?: string }
+
+      if (!data.access_token) {
+        console.error('[Deepgram Server] Grant response missing access_token')
+        return { token: null, error: 'Failed to create Deepgram token' }
+      }
+
+      return { token: data.access_token, error: null }
+    } catch (error) {
+      console.error('[Deepgram Server] Token grant error:', error)
+      return { token: null, error: 'Failed to create Deepgram token' }
+    }
   })

@@ -126,6 +126,24 @@ export const Route = createFileRoute('/api/stream/conversation')({
           return new Response('Session not found', { status: 404 })
         }
 
+        // Server-side time enforcement: the client timer is UX only.
+        // Reject turns once the session's wall-clock age exceeds its
+        // allowed duration plus a grace window (greeting playback, AI
+        // finishing its last reply). Prevents a modified client from
+        // running unlimited billable LLM/TTS turns.
+        const SESSION_TIME_GRACE_SECONDS = 90
+        const sessionAgeSeconds =
+          (Date.now() - activeSession.createdAt.getTime()) / 1000
+        if (
+          sessionAgeSeconds >
+          activeSession.maxDuration + SESSION_TIME_GRACE_SECONDS
+        ) {
+          console.warn(
+            `[SSE Stream] Rejected turn for expired session ${sessionId} (age ${Math.round(sessionAgeSeconds)}s > ${activeSession.maxDuration}s + ${SESSION_TIME_GRACE_SECONDS}s grace)`,
+          )
+          return new Response('Session time limit exceeded', { status: 403 })
+        }
+
         // Get user preferences
         const preferences = await prisma.userPreferences.findUnique({
           where: { userId: session.user.id },

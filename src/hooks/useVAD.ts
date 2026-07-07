@@ -5,8 +5,11 @@
  * Uses neural network-based speech detection for accurate barge-in detection.
  * This is much more reliable than simple audio level thresholds.
  *
- * NOTE: Loads VAD library via CDN script tags to avoid Vite/ESM compatibility issues.
+ * NOTE: Loads the VAD library via script tags to avoid Vite/ESM compatibility issues.
  * The library uses CommonJS internally which doesn't work with Vite's ESM handling.
+ * Assets are served from our own origin (public/vad/, synced from node_modules by
+ * scripts/copy-vad-assets.mjs on postinstall) so versions always match package.json
+ * and a CDN outage can't silently disable barge-in detection.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -78,19 +81,15 @@ declare global {
   }
 }
 
-// CDN URLs for the VAD library
-// IMPORTANT: Use ort.wasm.min.js (not ort.min.js) and matching versions from docs:
+// Self-hosted VAD assets (synced from node_modules - see scripts/copy-vad-assets.mjs)
+// IMPORTANT: Use ort.wasm.min.js (not ort.min.js) per the vad-web docs:
 // https://docs.vad.ricky0123.com/user-guide/browser/#script-tags-quick-start
-const ORT_CDN_URL =
-  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js'
-const VAD_CDN_URL =
-  'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/bundle.min.js'
+const ORT_SCRIPT_URL = '/vad/ort.wasm.min.js'
+const VAD_SCRIPT_URL = '/vad/bundle.min.js'
 
-// CDN base paths for model/wasm files
-const VAD_BASE_ASSET_PATH =
-  'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/'
-const ONNX_WASM_BASE_PATH =
-  'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/'
+// Base paths for model/wasm files (worklet, silero onnx models, ort wasm)
+const VAD_BASE_ASSET_PATH = '/vad/'
+const ONNX_WASM_BASE_PATH = '/vad/'
 
 // Track if scripts are already loading/loaded
 let scriptsLoading: Promise<void> | null = null
@@ -128,11 +127,11 @@ async function loadVADScripts(): Promise<VADGlobal> {
   }
 
   scriptsLoading = (async () => {
-    console.log('[VAD] Loading ONNX runtime from CDN...')
-    await loadScript(ORT_CDN_URL)
+    console.log('[VAD] Loading ONNX runtime...')
+    await loadScript(ORT_SCRIPT_URL)
 
-    console.log('[VAD] Loading VAD library from CDN...')
-    await loadScript(VAD_CDN_URL)
+    console.log('[VAD] Loading VAD library...')
+    await loadScript(VAD_SCRIPT_URL)
 
     // Wait a bit for the library to initialize
     await new Promise((resolve) => setTimeout(resolve, 100))

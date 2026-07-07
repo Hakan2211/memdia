@@ -25,7 +25,6 @@ import {
   getTodaySessionFn,
   getUserPreferencesFn,
   startSessionFn,
-  updateSessionTimeFn,
 } from '../../server/session.fn'
 import {
   generateGreetingFn,
@@ -33,7 +32,6 @@ import {
   processSessionFn,
   savePreloadedGreetingFn,
 } from '../../server/conversation.fn'
-import { streamMessageFn } from '../../server/streaming.fn'
 import { PulsingCircle } from '../../components/memories/PulsingCircle'
 import { CountdownTimer } from '../../components/memories/CountdownTimer'
 import { SessionControls } from '../../components/memories/SessionControls'
@@ -57,8 +55,6 @@ import type {
 // Minimum session duration in seconds (sessions shorter than this are discarded)
 const MIN_SESSION_DURATION = 60
 
-// Feature flag: Use new SSE streaming architecture for lower latency
-const USE_SSE_STREAMING = true
 // Feature flag: Use VAD for improved speech detection and barge-in
 // VAD provides faster barge-in detection than Deepgram SpeechStarted
 // Deepgram SpeechStarted serves as a fallback if VAD fails to load
@@ -359,7 +355,7 @@ function TodaySession() {
         // Optionally show AI text as it streams
       },
       onAudio: (audioBase64, audioUrl, contentType, _sentenceIndex, _text) => {
-        if (USE_SSE_STREAMING && audioBase64) {
+        if (audioBase64) {
           // Use streaming audio player for base64 chunks
           streamingAudioActions.queueAudioChunk(audioBase64, contentType)
         } else if (audioUrl) {
@@ -564,14 +560,16 @@ function TodaySession() {
   // End session mutation
   const endMutation = useMutation({
     mutationFn: async (sessionId: string) => {
-      // First update the speaking time
-      if (elapsedTime > 0) {
-        await updateSessionTimeFn({
-          data: { sessionId, userSpeakingTime: elapsedTime },
-        })
-      }
-      // Then end the session
-      return endSessionFn({ data: { sessionId } })
+      // End the session and save the speaking time atomically (single
+      // round-trip; mirrors the reflections flow)
+      return endSessionFn({
+        data: {
+          sessionId,
+          ...(elapsedTimeRef.current > 0 && {
+            userSpeakingTime: elapsedTimeRef.current,
+          }),
+        },
+      })
     },
     onSuccess: (updatedSession) => {
       // Stop recording, STT, and audio
@@ -639,42 +637,6 @@ function TodaySession() {
   useEffect(() => {
     playNextInQueueRef.current = playNextInQueue
   }, [playNextInQueue])
-
-  // Send message mutation using streaming endpoint
-  const sendMessageMutation = useMutation({
-    mutationFn: (params: {
-      sessionId: string
-      userMessage: string
-      userAudioBase64?: string
-      userAudioContentType?: string
-    }) => streamMessageFn({ data: params }),
-    onSuccess: (result) => {
-      console.log(
-        `[Streaming] Response received in ${result.latencyMs}ms, ${result.totalSentences} sentences`,
-      )
-
-      // Queue all audio chunks for playback
-      if (result.audioChunks && result.audioChunks.length > 0) {
-        // Clear any existing queue
-        audioQueueRef.current = []
-
-        // Add all audio URLs to the queue in order
-        for (const chunk of result.audioChunks) {
-          audioQueueRef.current.push(chunk.audioUrl)
-        }
-
-        // Start playing if not already
-        if (!isPlayingQueueRef.current) {
-          playNextInQueue()
-        }
-      } else if (result.firstAudioUrl) {
-        // Fallback: play just the first audio
-        playAudio(result.firstAudioUrl)
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['session', 'today'] })
-    },
-  })
 
   // Process session mutation
   const processSessionMutation = useMutation({
@@ -970,18 +932,9 @@ function TodaySession() {
       lastSentTimeRef.current = now
       setCurrentSpeaker(null)
 
-      if (USE_SSE_STREAMING) {
-        // NEW: Use SSE streaming for lower latency
-        console.log('[SSE] Sending message via streaming endpoint')
-        conversationStreamActions.sendMessage(session.id, trimmedTranscript)
-      } else {
-        // Legacy: Use mutation-based approach
-        sendMessageMutation.mutate({
-          sessionId: session.id,
-          userMessage: trimmedTranscript,
-          // Note: User audio upload can be done separately for archival
-        })
-      }
+      // Send via SSE streaming endpoint
+      console.log('[SSE] Sending message via streaming endpoint')
+      conversationStreamActions.sendMessage(session.id, trimmedTranscript)
     }
   }
 
@@ -1050,10 +1003,11 @@ function TodaySession() {
     queryClient,
   ])
 
-  // Note: Mute toggle not available in unified hook
+  // Toggle mic mute - the recorder gates PCM capture while muted, so no
+  // audio reaches Deepgram (and no transcripts are produced)
   const handleToggleMute = useCallback(() => {
-    console.log('[TODO] Mute toggle not implemented in useSpeechDetection')
-  }, [])
+    recorderActions.toggleMute()
+  }, [recorderActions])
 
   // Calculate remaining time
   const maxDuration = session?.maxDuration ?? 180
@@ -1233,7 +1187,7 @@ function TodaySession() {
 
         {(sessionState === 'recording' || sessionState === 'paused') && (
           <SessionControls
-            isMuted={false}
+            isMuted={recorderState.isMuted}
             isPaused={sessionState === 'paused'}
             isEnding={isEndingSession || endMutation.isPending}
             elapsedTime={elapsedTime}
@@ -1331,7 +1285,7 @@ function TodaySession() {
                     e.key === 'Enter' &&
                     liveTranscript.trim() &&
                     session &&
-                    !sendMessageMutation.isPending
+                    !conversationStreamState.isStreaming
                   ) {
                     handleUserSpeechEnd(liveTranscript)
                     setLiveTranscript('')
@@ -1345,14 +1299,14 @@ function TodaySession() {
                     : 'Type your message and press Enter...'
                 }
                 className="flex-1 px-4 py-2 border rounded-lg text-sm"
-                disabled={sendMessageMutation.isPending || isAISpeaking}
+                disabled={conversationStreamState.isStreaming || isAISpeaking}
               />
               <Button
                 onClick={() => {
                   if (
                     liveTranscript.trim() &&
                     session &&
-                    !sendMessageMutation.isPending
+                    !conversationStreamState.isStreaming
                   ) {
                     handleUserSpeechEnd(liveTranscript)
                     setLiveTranscript('')
@@ -1362,12 +1316,12 @@ function TodaySession() {
                 }}
                 disabled={
                   !liveTranscript.trim() ||
-                  sendMessageMutation.isPending ||
+                  conversationStreamState.isStreaming ||
                   isAISpeaking
                 }
                 size="sm"
               >
-                {sendMessageMutation.isPending ? 'Sending...' : 'Send'}
+                {conversationStreamState.isStreaming ? 'Sending...' : 'Send'}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground text-center">
