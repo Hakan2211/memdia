@@ -11,6 +11,3 @@ count.txt
 .output
 .vinxi
 todos.json
-
-# VAD/ONNX browser assets synced from node_modules (scripts/copy-vad-assets.mjs)
-public/vad/

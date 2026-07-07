@@ -5,8 +5,6 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
-    "postinstall": "node scripts/copy-vad-assets.mjs",
-    "vad:sync": "node scripts/copy-vad-assets.mjs",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
     "test": "vitest run",

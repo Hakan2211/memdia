@@ -6,7 +6,11 @@
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { prisma } from '../db'
-import { getRandomGreeting } from '../lib/prompts/conversation'
+import {
+  buildConversationContext,
+  buildConversationSystemPrompt,
+  getRandomGreeting,
+} from '../lib/prompts/conversation'
 import {
   buildSummaryMessages,
   formatTranscriptForSummary,
@@ -17,11 +21,22 @@ import { generateImage, generateSpeech } from './services/falai.service'
 import { generateImageScene } from './image-scene'
 import { uploadImageFromUrl } from './services/bunny.service'
 import type { ChatMessage } from './services/openrouter.service'
-import type { ImageStyle, Language } from '../types/voice-session'
+import type {
+  AIPersonality,
+  ImageStyle,
+  Language,
+} from '../types/voice-session'
 
 // ==========================================
 // Schemas
 // ==========================================
+
+const conversationSchema = z.object({
+  sessionId: z.string(),
+  userMessage: z.string(),
+  userAudioBase64: z.string().optional(), // Base64 encoded user audio (WebM/PCM)
+  userAudioContentType: z.string().optional(), // e.g., 'audio/webm' or 'audio/pcm'
+})
 
 const generateGreetingSchema = z.object({
   sessionId: z.string(),
@@ -280,6 +295,115 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
       text: greeting,
       audioUrl, // Still return for immediate playback
       turn,
+    }
+  })
+
+// ==========================================
+// Send Message and Get AI Response
+// ==========================================
+
+export const sendMessageFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .inputValidator(conversationSchema)
+  .handler(async ({ data, context }) => {
+    // Get session with turns
+    const session = await prisma.voiceSession.findFirst({
+      where: {
+        id: data.sessionId,
+        userId: context.user.id,
+        status: 'active',
+      },
+      include: {
+        turns: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    })
+
+    if (!session) {
+      throw new Error('Active session not found')
+    }
+
+    // Get user preferences
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId: context.user.id },
+    })
+
+    const personality = (preferences?.aiPersonality ||
+      'empathetic') as AIPersonality
+    const language = (preferences?.language || 'en') as Language
+
+    // Build conversation context with language support
+    const systemPrompt = buildConversationSystemPrompt(
+      personality,
+      context.user.name || undefined,
+      language,
+    )
+
+    const conversationHistory = buildConversationContext(
+      session.turns.map((t) => ({
+        speaker: t.speaker as 'user' | 'ai',
+        text: t.text,
+      })),
+    )
+
+    const messages: Array<ChatMessage> = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory,
+      { role: 'user', content: data.userMessage },
+    ]
+
+    // Calculate timing
+    const lastTurn = session.turns[session.turns.length - 1]
+    const startTime = lastTurn
+      ? lastTurn.startTime + lastTurn.duration + 0.5
+      : 0
+
+    // Save user's message as a turn (no audio upload - replay feature removed)
+    const userTurn = await prisma.transcriptTurn.create({
+      data: {
+        sessionId: session.id,
+        speaker: 'user',
+        text: data.userMessage,
+        audioUrl: null, // Audio replay removed
+        startTime,
+        duration: Math.ceil(data.userMessage.split(' ').length / 2.5), // Rough estimate
+        order: session.turns.length,
+      },
+    })
+
+    // Generate AI response (non-streaming for simplicity in this endpoint)
+    const aiResponse = await chatCompletion(messages)
+
+    // Generate TTS for immediate playback (no permanent storage)
+    let audioUrl: string | null = null
+    let audioDuration = 2
+    try {
+      const ttsResult = await generateSpeech(aiResponse)
+      audioDuration = ttsResult.durationSeconds
+      audioUrl = ttsResult.audioUrl // Temporary URL for immediate playback
+    } catch (error) {
+      console.error('Failed to generate TTS:', error)
+    }
+
+    // Save AI response as a turn (no audio URL stored - replay feature removed)
+    const aiTurn = await prisma.transcriptTurn.create({
+      data: {
+        sessionId: session.id,
+        speaker: 'ai',
+        text: aiResponse,
+        audioUrl: null, // Audio replay removed
+        startTime: startTime + userTurn.duration + 0.5,
+        duration: audioDuration,
+        order: session.turns.length + 1,
+      },
+    })
+
+    return {
+      userTurn,
+      aiTurn,
+      aiText: aiResponse,
+      aiAudioUrl: audioUrl, // Still return for immediate playback
     }
   })
 

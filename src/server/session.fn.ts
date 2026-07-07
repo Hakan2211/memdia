@@ -46,6 +46,10 @@ const updatePreferencesSchema = z.object({
   aiPersonality: z.string().optional(),
   language: z.string().optional(),
 })
+const updateTimeSchema = z.object({
+  sessionId: z.string(),
+  userSpeakingTime: z.number(),
+})
 const addTurnSchema = z.object({
   sessionId: z.string(),
   speaker: z.enum(['user', 'ai']),
@@ -230,14 +234,9 @@ export const startSessionFn = createServerFn({ method: 'POST' })
 // End Session
 // ==========================================
 
-const endSessionSchema = z.object({
-  sessionId: z.string(),
-  userSpeakingTime: z.number().optional(),
-})
-
 export const endSessionFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator(endSessionSchema)
+  .inputValidator(sessionIdSchema)
   .handler(async ({ data, context }) => {
     const session = await prisma.voiceSession.findFirst({
       where: {
@@ -254,19 +253,12 @@ export const endSessionFn = createServerFn({ method: 'POST' })
       throw new Error('Session is already completed')
     }
 
-    // Update session to processing status, saving the final speaking time
-    // atomically (single round-trip; mirrors endReflectionFn)
+    // Update session to processing status
     const updated = await prisma.voiceSession.update({
       where: { id: session.id },
       data: {
         status: 'processing',
         completedAt: new Date(),
-        ...(data.userSpeakingTime !== undefined && {
-          totalUserSpeakingTime: Math.min(
-            data.userSpeakingTime,
-            session.maxDuration,
-          ),
-        }),
       },
     })
 
@@ -472,6 +464,50 @@ export const cancelShortSessionFn = createServerFn({ method: 'POST' })
     })
 
     return { success: true, cancelled: true }
+  })
+
+// ==========================================
+// Update Session Time
+// ==========================================
+
+export const updateSessionTimeFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddleware])
+  .inputValidator(updateTimeSchema)
+  .handler(async ({ data, context }) => {
+    const session = await prisma.voiceSession.findFirst({
+      where: {
+        id: data.sessionId,
+        userId: context.user.id,
+        status: 'active',
+      },
+    })
+
+    if (!session) {
+      throw new Error('Active session not found')
+    }
+
+    // Check if time limit reached
+    if (data.userSpeakingTime >= session.maxDuration) {
+      // Lock the session
+      const updated = await prisma.voiceSession.update({
+        where: { id: session.id },
+        data: {
+          status: 'processing',
+          totalUserSpeakingTime: session.maxDuration,
+          completedAt: new Date(),
+        },
+      })
+      return { session: updated as VoiceSession, timeLimitReached: true }
+    }
+
+    const updated = await prisma.voiceSession.update({
+      where: { id: session.id },
+      data: {
+        totalUserSpeakingTime: data.userSpeakingTime,
+      },
+    })
+
+    return { session: updated as VoiceSession, timeLimitReached: false }
   })
 
 // ==========================================
