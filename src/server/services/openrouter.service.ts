@@ -38,6 +38,8 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 /** Available models via OpenRouter */
 export const OPENROUTER_MODELS = {
+  // Gemini 3.5 Flash Lite - fast and cheap (default)
+  GEMINI_35_FLASH_LITE: 'google/gemini-3.5-flash-lite',
   // Gemini 3 Flash Preview - fast and capable
   GEMINI_3_FLASH: 'google/gemini-3-flash-preview',
   // Gemini 2 Flash - stable fallback
@@ -50,7 +52,7 @@ export const OPENROUTER_MODELS = {
 } as const
 
 const DEFAULT_CONFIG: OpenRouterConfig = {
-  model: OPENROUTER_MODELS.GEMINI_3_FLASH,
+  model: OPENROUTER_MODELS.GEMINI_35_FLASH_LITE,
   maxTokens: 500,
   temperature: 0.7,
 }

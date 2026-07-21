@@ -226,7 +226,7 @@ export async function extractInsightsFromSession(
 
   try {
     const response = await chatCompletion(messages, {
-      model: OPENROUTER_MODELS.GEMINI_3_FLASH,
+      model: OPENROUTER_MODELS.GEMINI_35_FLASH_LITE,
       maxTokens: 2000,
       temperature: 0.3, // Lower temperature for more consistent extraction
     })
