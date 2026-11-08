@@ -9,6 +9,10 @@ WORKDIR /app
 # Note: Requires 6-8GB RAM during build (handled by GitHub Actions)
 ENV NODE_OPTIONS="--max-old-space-size=6144"
 
+# Native build toolchain: better-sqlite3 normally downloads a prebuilt binary,
+# but falls back to compiling with node-gyp when that download fails/times out
+RUN apk add --no-cache python3 make g++
+
 # Copy package files first for better caching
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
@@ -33,9 +37,13 @@ WORKDIR /app
 # Install curl for healthcheck
 RUN apk add --no-cache curl
 
-# Copy package files and install production dependencies
+# Copy package files and install production dependencies.
+# Build tools are installed only for this step (in case better-sqlite3 must
+# compile from source) and removed again to keep the runtime image lean.
 COPY package*.json ./
-RUN npm ci --omit=dev --legacy-peer-deps
+RUN apk add --no-cache --virtual .build-deps python3 make g++ \
+  && npm ci --omit=dev --legacy-peer-deps \
+  && apk del .build-deps
 
 # Install tsx for running seed script (needed at runtime)
 RUN npm install -g tsx
