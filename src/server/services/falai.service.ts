@@ -5,7 +5,7 @@
  * Uses the official @fal-ai/client
  *
  * Models:
- * - TTS:   fal-ai/elevenlabs/tts/turbo-v2.5 (faster than eleven-v3)
+ * - TTS:   elevenlabs/tts/eleven-v4-turbo (see TTS_MODEL)
  * - Image: fal-ai/krea-2/turbo (default, 1K) with
  *          imagineart/imagineart-2.0-preview/text-to-image as a silent fallback.
  *          Model choice is backend-only — it is not user-selectable.
@@ -51,8 +51,16 @@ const MOCK_FAL = process.env.MOCK_FAL === 'true'
 // ==========================================
 
 /**
+ * fal.ai TTS model used everywhere (streaming + non-streaming).
+ * Eleven v4 Turbo: same voice/stability/similarity_boost params as
+ * turbo-v2.5 but cheaper ($0.04 vs $0.05 per 1K chars). It has no
+ * `speed` param.
+ */
+export const TTS_MODEL = 'elevenlabs/tts/eleven-v4-turbo'
+
+/**
  * Generate speech from text using ElevenLabs via fal.ai
- * Model: fal-ai/elevenlabs/tts/turbo-v2.5 (faster, optimized for low latency)
+ * Model: TTS_MODEL (ElevenLabs Eleven v4 Turbo)
  */
 export async function generateSpeech(
   text: string,
@@ -72,14 +80,13 @@ export async function generateSpeech(
   console.log('[fal.ai TTS] Generating speech for:', text.slice(0, 50) + '...')
 
   try {
-    const result = await fal.subscribe('fal-ai/elevenlabs/tts/turbo-v2.5', {
+    const result = await fal.subscribe(TTS_MODEL, {
       input: {
         text,
         // Use a warm, friendly voice - Rachel is the default
         voice: voiceId || 'Rachel',
         stability: 0.5,
         similarity_boost: 0.75,
-        speed: 1,
       },
     })
 

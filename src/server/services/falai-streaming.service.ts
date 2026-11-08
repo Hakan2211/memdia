@@ -2,10 +2,11 @@
  * fal.ai Streaming TTS Service
  * Provides streaming text-to-speech using fal.stream() for lower latency
  *
- * Uses ElevenLabs Turbo v2.5 via fal.ai with streaming support
+ * Uses ElevenLabs Eleven v4 Turbo (TTS_MODEL) via fal.ai with streaming support
  */
 
 import { fal } from '@fal-ai/client'
+import { TTS_MODEL } from './falai.service'
 
 // ==========================================
 // Types
@@ -30,8 +31,6 @@ export interface StreamSpeechOptions {
   stability?: number
   /** Similarity boost 0-1 (default: 0.75) */
   similarityBoost?: number
-  /** Speech speed 0.7-1.2 (default: 1) */
-  speed?: number
   /** Return base64 instead of URL (default: true for lower latency) */
   returnBase64?: boolean
 }
@@ -61,7 +60,6 @@ export async function* streamSpeech(
     voiceId = 'Rachel',
     stability = 0.5,
     similarityBoost = 0.75,
-    speed = 1,
     returnBase64 = true,
   } = options
 
@@ -83,13 +81,12 @@ export async function* streamSpeech(
 
   try {
     // Use fal.stream for streaming TTS
-    const stream = await fal.stream('fal-ai/elevenlabs/tts/turbo-v2.5', {
+    const stream = await fal.stream(TTS_MODEL, {
       input: {
         text,
         voice: voiceId,
         stability,
         similarity_boost: similarityBoost,
-        speed,
       },
     })
 
@@ -293,7 +290,6 @@ export async function generateSpeechBase64(
     voiceId = 'Rachel',
     stability = 0.5,
     similarityBoost = 0.75,
-    speed = 1,
   } = options
 
   if (MOCK_FAL) {
@@ -310,13 +306,12 @@ export async function generateSpeechBase64(
 
   const startTime = Date.now()
 
-  const result = await fal.subscribe('fal-ai/elevenlabs/tts/turbo-v2.5', {
+  const result = await fal.subscribe(TTS_MODEL, {
     input: {
       text,
       voice: voiceId,
       stability,
       similarity_boost: similarityBoost,
-      speed,
     },
   })
 
