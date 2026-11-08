@@ -226,8 +226,10 @@ export async function extractInsightsFromSession(
 
   try {
     const response = await chatCompletion(messages, {
-      model: OPENROUTER_MODELS.GEMINI_35_FLASH_LITE,
-      maxTokens: 2000,
+      model: OPENROUTER_MODELS.GEMINI_38_FLASH,
+      // max_tokens includes reasoning tokens — leave headroom so the JSON isn't truncated
+      maxTokens: 4000,
+      reasoningEffort: 'low',
       temperature: 0.3, // Lower temperature for more consistent extraction
     })
 

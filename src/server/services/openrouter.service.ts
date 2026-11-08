@@ -22,6 +22,8 @@ export interface OpenRouterConfig {
   model?: string
   maxTokens?: number
   temperature?: number
+  /** Thinking budget for reasoning models; omitted = provider default */
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high'
 }
 
 export interface StreamCallbacks {
@@ -40,6 +42,8 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 export const OPENROUTER_MODELS = {
   // Gemini 3.5 Flash Lite - fast and cheap (default)
   GEMINI_35_FLASH_LITE: 'google/gemini-3.5-flash-lite',
+  // Gemini 3.8 Flash - smarter, ~2.7x the cost (used for insight extraction)
+  GEMINI_38_FLASH: 'google/gemini-3.8-flash',
   // Gemini 3 Flash Preview - fast and capable
   GEMINI_3_FLASH: 'google/gemini-3-flash-preview',
   // Gemini 2 Flash - stable fallback
@@ -215,6 +219,9 @@ export async function chatCompletion(
       messages,
       max_tokens: mergedConfig.maxTokens,
       temperature: mergedConfig.temperature,
+      ...(mergedConfig.reasoningEffort && {
+        reasoning: { effort: mergedConfig.reasoningEffort },
+      }),
       stream: false,
     }),
   })
