@@ -98,8 +98,10 @@ function AppLayout() {
   return (
     <SidebarProvider>
       <AppSidebar user={user} subscriptionTier={subscription?.tier ?? null} />
-      <SidebarInset>
-        <div className="flex flex-1 flex-col overflow-hidden h-full">
+      {/* Cap the inset at viewport height so <main> (not the document) scrolls;
+          this is what lets sticky headers inside pages actually pin */}
+      <SidebarInset className="h-svh overflow-hidden">
+        <div className="flex flex-1 flex-col overflow-hidden h-full min-h-0">
           {/* Header with Sidebar Trigger */}
           <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-background/60 backdrop-blur-md px-4 sticky top-0 z-10 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
             <div className="flex items-center gap-2 px-4">
@@ -109,7 +111,7 @@ function AppLayout() {
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-auto bg-muted/5 p-6 md:p-8">
+          <main className="flex-1 min-h-0 overflow-auto bg-muted/5 p-6 md:p-8">
             <Outlet />
           </main>
         </div>

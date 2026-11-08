@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import {
   Crown,
+  Images,
   Lightbulb,
   Lock,
   LogOut,
@@ -168,6 +169,23 @@ export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
                     <span className="text-base font-medium group-data-[collapsible=icon]:hidden flex items-center gap-2">
                       Insights
                       {!isPro && <ProBadge />}
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive('/timeline')}
+                  tooltip="Timeline"
+                  size="lg"
+                  className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
+                  onClick={handleNavClick}
+                >
+                  <Link to="/timeline">
+                    <Images className="h-5! w-5!" />
+                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
+                      Timeline
                     </span>
                   </Link>
                 </SidebarMenuButton>

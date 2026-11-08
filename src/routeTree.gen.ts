@@ -18,6 +18,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignupRouteImport } from './routes/_auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/_auth/login'
+import { Route as AppTimelineRouteImport } from './routes/_app/timeline'
 import { Route as AppReflectionsRouteImport } from './routes/_app/reflections'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
@@ -81,6 +82,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => AuthRoute,
+} as any)
+const AppTimelineRoute = AppTimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppReflectionsRoute = AppReflectionsRouteImport.update({
   id: '/reflections',
@@ -195,6 +201,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
   '/reflections': typeof AppReflectionsRouteWithChildren
+  '/timeline': typeof AppTimelineRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/insights/insights': typeof AppInsightsInsightsRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
   '/reflections': typeof AppReflectionsRouteWithChildren
+  '/timeline': typeof AppTimelineRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
   '/insights/insights': typeof AppInsightsInsightsRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/_app/onboarding': typeof AppOnboardingRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/reflections': typeof AppReflectionsRouteWithChildren
+  '/_app/timeline': typeof AppTimelineRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
   '/_app/insights/insights': typeof AppInsightsInsightsRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/reflections'
+    | '/timeline'
     | '/login'
     | '/signup'
     | '/insights/insights'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/reflections'
+    | '/timeline'
     | '/login'
     | '/signup'
     | '/insights/insights'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/_app/onboarding'
     | '/_app/profile'
     | '/_app/reflections'
+    | '/_app/timeline'
     | '/_auth/login'
     | '/_auth/signup'
     | '/_app/insights/insights'
@@ -441,6 +453,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof AuthRoute
+    }
+    '/_app/timeline': {
+      id: '/_app/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof AppTimelineRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/reflections': {
       id: '/_app/reflections'
@@ -642,6 +661,7 @@ interface AppRouteChildren {
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReflectionsRoute: typeof AppReflectionsRouteWithChildren
+  AppTimelineRoute: typeof AppTimelineRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -651,6 +671,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppOnboardingRoute: AppOnboardingRoute,
   AppProfileRoute: AppProfileRoute,
   AppReflectionsRoute: AppReflectionsRouteWithChildren,
+  AppTimelineRoute: AppTimelineRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
