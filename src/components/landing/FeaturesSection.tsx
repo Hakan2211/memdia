@@ -8,9 +8,9 @@ import { cn } from '@/lib/utils'
 const features = [
   {
     icon: Mic,
-    title: '3-Minute Daily Sessions',
+    title: 'Talk About Anything',
     description:
-      "Capture your day in your own words. Share what happened, how you felt, and what's on your mind in just three minutes.",
+      "Your day, your feelings, a decision you're stuck on, or a question about meaning, ethics or how the world works. Just press start and speak in your own words.",
     color: 'from-[#7e9ec9] to-[#5a7ba6]',
     iconBg: 'bg-[#7e9ec9]/10',
     borderColor: 'group-hover:border-[#7e9ec9]/40',

@@ -1164,7 +1164,8 @@ function TodayReflection() {
               Start Conversation
             </MagicButton>
             <p className="mt-6 text-sm text-muted-foreground font-light tracking-wide">
-              10 minutes to process your thoughts
+              Up to {REFLECTION_CONFIG.MAX_DURATION_SECONDS / 60} minutes to
+              explore whatever is on your mind
             </p>
             {sttState.error && (
               <p className="mt-2 text-sm text-red-500">{sttState.error}</p>
