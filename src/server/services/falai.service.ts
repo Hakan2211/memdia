@@ -59,12 +59,26 @@ const MOCK_FAL = process.env.MOCK_FAL === 'true'
 export const TTS_MODEL = 'elevenlabs/tts/eleven-v4-turbo'
 
 /**
+ * Voice stability shared by all TTS calls. Lower = more expressive delivery
+ * (0.35 tested warmer than 0.5 for empathetic conversation). v4 also
+ * interprets inline audio tags like `[softly]` (see src/lib/audio-tags.ts).
+ */
+export const TTS_STABILITY = 0.35
+
+export interface GenerateSpeechOptions {
+  /** Voice name or ElevenLabs voice ID (default: Rachel) */
+  voiceId?: string
+  /** ISO 639-1 language code; improves pronunciation for non-English text */
+  languageCode?: string
+}
+
+/**
  * Generate speech from text using ElevenLabs via fal.ai
  * Model: TTS_MODEL (ElevenLabs Eleven v4 Turbo)
  */
 export async function generateSpeech(
   text: string,
-  voiceId?: string,
+  { voiceId, languageCode }: GenerateSpeechOptions = {},
 ): Promise<TTSResult> {
   // Mock mode for development
   if (MOCK_FAL) {
@@ -85,8 +99,9 @@ export async function generateSpeech(
         text,
         // Use a warm, friendly voice - Rachel is the default
         voice: voiceId || 'Rachel',
-        stability: 0.5,
+        stability: TTS_STABILITY,
         similarity_boost: 0.75,
+        ...(languageCode && { language_code: languageCode }),
       },
     })
 

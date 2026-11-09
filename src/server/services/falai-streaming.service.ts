@@ -6,7 +6,7 @@
  */
 
 import { fal } from '@fal-ai/client'
-import { TTS_MODEL } from './falai.service'
+import { TTS_MODEL, TTS_STABILITY } from './falai.service'
 
 // ==========================================
 // Types
@@ -27,10 +27,12 @@ export interface TTSStreamChunk {
 export interface StreamSpeechOptions {
   /** Voice ID to use (default: Rachel) */
   voiceId?: string
-  /** Voice stability 0-1 (default: 0.5) */
+  /** Voice stability 0-1 (default: TTS_STABILITY) */
   stability?: number
   /** Similarity boost 0-1 (default: 0.75) */
   similarityBoost?: number
+  /** ISO 639-1 language code; improves pronunciation for non-English text */
+  languageCode?: string
   /** Return base64 instead of URL (default: true for lower latency) */
   returnBase64?: boolean
 }
@@ -58,8 +60,9 @@ export async function* streamSpeech(
 ): AsyncGenerator<TTSStreamChunk> {
   const {
     voiceId = 'Rachel',
-    stability = 0.5,
+    stability = TTS_STABILITY,
     similarityBoost = 0.75,
+    languageCode,
     returnBase64 = true,
   } = options
 
@@ -87,6 +90,7 @@ export async function* streamSpeech(
         voice: voiceId,
         stability,
         similarity_boost: similarityBoost,
+        ...(languageCode && { language_code: languageCode }),
       },
     })
 
@@ -288,8 +292,9 @@ export async function generateSpeechBase64(
 }> {
   const {
     voiceId = 'Rachel',
-    stability = 0.5,
+    stability = TTS_STABILITY,
     similarityBoost = 0.75,
+    languageCode,
   } = options
 
   if (MOCK_FAL) {
@@ -312,6 +317,7 @@ export async function generateSpeechBase64(
       voice: voiceId,
       stability,
       similarity_boost: similarityBoost,
+      ...(languageCode && { language_code: languageCode }),
     },
   })
 

@@ -5,6 +5,7 @@
  */
 
 import { LANGUAGE_LABELS } from '../../types/voice-session'
+import { AUDIO_TAG_INSTRUCTIONS } from '../audio-tags'
 import type { AIPersonality, Language } from '../../types/voice-session'
 
 /**
@@ -14,7 +15,11 @@ const REFLECTION_BASE_CONTEXT = `You are a compassionate AI companion helping th
 This is their time to process deeper thoughts, emotions, and experiences.
 
 IMPORTANT GUIDELINES:
-- Keep responses conversational (2-4 sentences) since this is a voice conversation
+- Adapt your response length to the moment: usually 2-3 sentences; up to 5 sentences when they open up about something significant (spoken aloud, so never longer)
+- When going deeper: reflect back the specific thing they said in your own words, name the feeling or pattern you notice, and offer a perspective before your question
+- Almost always end with exactly one open, thoughtful follow-up question - only skip it when they are clearly wrapping up or need a moment of quiet acknowledgment
+- Never ask more than one question per turn
+- Refer to concrete details they shared instead of generic phrases, and avoid repeating the same opener every turn
 - This is a longer, deeper session - take your time and go beneath the surface
 - Ask thoughtful, probing follow-up questions that help them gain clarity
 - Create a safe, non-judgmental space for emotional exploration
@@ -35,7 +40,7 @@ const REFLECTION_PERSONALITY_PROMPTS: Record<AIPersonality, string> = {
 PERSONALITY: Therapeutic & Empathetic Guide
 - Lead with deep empathy and unconditional acceptance
 - Create a container of safety for vulnerable sharing
-- Use validating phrases like "That makes complete sense" or "It's understandable you'd feel that way"
+- Validate by naming what they specifically feel and why it makes sense, not with generic stock phrases
 - Help them sit with difficult emotions rather than rushing past them
 - Notice patterns and gently reflect them back
 - Ask "What do you think is really going on beneath that?" when appropriate
@@ -98,6 +103,7 @@ export function buildReflectionSystemPrompt(
 ${languageInstruction}
 
 ${REFLECTION_PERSONALITY_PROMPTS[personality]}
+${AUDIO_TAG_INSTRUCTIONS}
 
 ${nameContext}
 ${memoryContext}

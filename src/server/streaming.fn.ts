@@ -10,13 +10,14 @@ import {
   buildConversationContext,
   buildConversationSystemPrompt,
 } from '../lib/prompts/conversation'
+import { stripAudioTags, toTtsLanguageCode } from '../lib/audio-tags'
 import { authMiddleware } from './middleware'
 import { streamChatCompletion } from './services/openrouter.service'
 import { generateSpeech } from './services/falai.service'
 import { uploadAudio } from './services/bunny.service'
 import type { ChatMessage } from './services/openrouter.service'
 // NOTE: uploadAudio only used for user audio; AI audio uses fal.ai URLs directly
-import type { AIPersonality } from '../types/voice-session'
+import type { AIPersonality, Language } from '../types/voice-session'
 
 // ==========================================
 // Schemas
@@ -121,11 +122,14 @@ export const streamMessageFn = createServerFn({ method: 'POST' })
 
     const personality = (preferences?.aiPersonality ||
       'empathetic') as AIPersonality
+    const language = (preferences?.language || 'en') as Language
+    const ttsLanguageCode = toTtsLanguageCode(language)
 
     // Build conversation context
     const systemPrompt = buildConversationSystemPrompt(
       personality,
       context.user.name || undefined,
+      language,
     )
 
     const conversationHistory = buildConversationContext(
@@ -203,14 +207,17 @@ export const streamMessageFn = createServerFn({ method: 'POST' })
 
       try {
         // Generate TTS for this sentence
-        const ttsResult = await generateSpeech(sentence)
+        // Sentence keeps its audio tags - v4 interprets them
+        const ttsResult = await generateSpeech(sentence, {
+          languageCode: ttsLanguageCode,
+        })
 
         if (ttsResult.audioUrl) {
           // Use fal.ai URL directly for faster playback (skip Bunny upload)
           const chunk: StreamingAudioChunk = {
             type: 'audio',
             audioUrl: ttsResult.audioUrl, // Direct fal.ai URL
-            text: sentence,
+            text: stripAudioTags(sentence),
             sentenceIndex: index,
           }
           audioChunks.push(chunk)
@@ -279,8 +286,8 @@ export const streamMessageFn = createServerFn({ method: 'POST' })
             processedSentenceCount++
           }
 
-          // Store full text for later
-          accumulatedText = fullText
+          // Store full text for later, without audio tags
+          accumulatedText = stripAudioTags(fullText)
           resolve()
         },
         onError: (error) => {

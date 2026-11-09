@@ -16,6 +16,7 @@ import {
   buildSummaryMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
+import { toTtsLanguageCode } from '../lib/audio-tags'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
 import { generateImage, generateSpeech } from './services/falai.service'
@@ -121,7 +122,9 @@ export const preGenerateReflectionGreetingFn = createServerFn({
     // Generate TTS for the greeting
     let audioBase64: string | null = null
     try {
-      const ttsResult = await generateSpeech(greeting)
+      const ttsResult = await generateSpeech(greeting, {
+        languageCode: toTtsLanguageCode(language),
+      })
 
       if (ttsResult.audioUrl && ttsResult.audioUrl.length > 0) {
         const response = await fetch(ttsResult.audioUrl)

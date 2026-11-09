@@ -15,6 +15,7 @@ import {
   buildSummaryMessages,
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
+import { stripAudioTags, toTtsLanguageCode } from '../lib/audio-tags'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
 import { generateImage, generateSpeech } from './services/falai.service'
@@ -127,10 +128,12 @@ export const preGenerateGreetingFn = createServerFn({ method: 'POST' })
     const greeting = getRandomGreeting(language)
 
     // Generate TTS for the greeting
-    // ElevenLabs Turbo 2.5 auto-detects language from text
+    // Pass the language explicitly for correct pronunciation
     let audioBase64: string | null = null
     try {
-      const ttsResult = await generateSpeech(greeting)
+      const ttsResult = await generateSpeech(greeting, {
+        languageCode: toTtsLanguageCode(language),
+      })
 
       // Fetch the audio and convert to base64 for immediate playback
       if (ttsResult.audioUrl && ttsResult.audioUrl.length > 0) {
@@ -263,10 +266,12 @@ export const generateGreetingFn = createServerFn({ method: 'POST' })
     const greeting = getRandomGreeting(language)
 
     // Generate TTS for the greeting (for live playback only, no permanent storage)
-    // ElevenLabs Turbo 2.5 auto-detects language from text
+    // Pass the language explicitly for correct pronunciation
     let audioUrl: string | null = null
     try {
-      const ttsResult = await generateSpeech(greeting)
+      const ttsResult = await generateSpeech(greeting, {
+        languageCode: toTtsLanguageCode(language),
+      })
       audioUrl = ttsResult.audioUrl // Temporary URL for immediate playback
     } catch (error) {
       console.error('Failed to generate TTS for greeting:', error)
@@ -373,13 +378,18 @@ export const sendMessageFn = createServerFn({ method: 'POST' })
     })
 
     // Generate AI response (non-streaming for simplicity in this endpoint)
-    const aiResponse = await chatCompletion(messages)
+    // Raw response may contain audio tags like [softly] - keep them for TTS,
+    // strip them for storage and display
+    const rawAiResponse = await chatCompletion(messages)
+    const aiResponse = stripAudioTags(rawAiResponse)
 
     // Generate TTS for immediate playback (no permanent storage)
     let audioUrl: string | null = null
     let audioDuration = 2
     try {
-      const ttsResult = await generateSpeech(aiResponse)
+      const ttsResult = await generateSpeech(rawAiResponse, {
+        languageCode: toTtsLanguageCode(language),
+      })
       audioDuration = ttsResult.durationSeconds
       audioUrl = ttsResult.audioUrl // Temporary URL for immediate playback
     } catch (error) {

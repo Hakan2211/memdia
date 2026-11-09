@@ -16,6 +16,11 @@ import {
   buildReflectionContext,
   buildReflectionSystemPrompt,
 } from '../../../lib/prompts/reflection'
+import {
+  createAudioTagStreamFilter,
+  stripAudioTags,
+  toTtsLanguageCode,
+} from '../../../lib/audio-tags'
 import { getGeneration, setGeneration } from './cancel'
 import type { ChatMessage } from '../../../server/services/openrouter.service'
 import type { AIPersonality, Language } from '../../../types/voice-session'
@@ -259,7 +264,11 @@ export const Route = createFileRoute('/api/stream/conversation')({
 
               let accumulatedText = ''
               let processedSentenceCount = 0
-              let fullText = ''
+              // Raw LLM output, may contain audio tags like [softly]
+              let rawText = ''
+              // Strips audio tags from live-displayed tokens
+              const displayFilter = createAudioTagStreamFilter()
+              const ttsLanguageCode = toTtsLanguageCode(userLanguage)
               const audioPromises: Array<Promise<void>> = []
 
               // Check if this stream has been cancelled (barge-in)
@@ -286,7 +295,10 @@ export const Route = createFileRoute('/api/stream/conversation')({
 
                 try {
                   // Stream TTS for this sentence
-                  for await (const chunk of streamSpeech(sentence)) {
+                  // Sentence keeps its audio tags - v4 interprets them
+                  for await (const chunk of streamSpeech(sentence, {
+                    languageCode: ttsLanguageCode,
+                  })) {
                     // Check for cancellation during TTS streaming
                     if (isCancelled()) {
                       console.log(
@@ -301,7 +313,7 @@ export const Route = createFileRoute('/api/stream/conversation')({
                         audioBase64: chunk.audioBase64,
                         audioUrl: chunk.audioUrl,
                         contentType: chunk.contentType,
-                        text: sentence,
+                        text: stripAudioTags(sentence),
                       })
 
                       const latency = Date.now() - sentenceStart
@@ -335,10 +347,11 @@ export const Route = createFileRoute('/api/stream/conversation')({
                 streamChatCompletion(messages, {
                   onToken: (token) => {
                     accumulatedText += token
-                    fullText += token
+                    rawText += token
 
-                    // Send text token for live display
-                    send('text', { token })
+                    // Send text for live display, without audio tags
+                    const displayToken = displayFilter.push(token)
+                    if (displayToken) send('text', { token: displayToken })
 
                     // Check for complete sentences
                     const [sentences, remaining] =
@@ -358,6 +371,13 @@ export const Route = createFileRoute('/api/stream/conversation')({
                     console.log(
                       `[SSE Stream] LLM complete, ${processedSentenceCount} sentences so far`,
                     )
+
+                    const remainingDisplay = displayFilter.flush()
+                    if (remainingDisplay)
+                      send('text', { token: remainingDisplay })
+
+                    // Tag-free text for storage, transcript and the client
+                    const fullText = stripAudioTags(rawText)
 
                     // Process any remaining text as final sentence
                     if (accumulatedText.trim()) {
