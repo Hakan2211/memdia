@@ -17,7 +17,7 @@ const steps = [
     icon: MessageCircle,
     title: 'Converse',
     description:
-      'Have a real conversation with your AI companion. It listens, asks follow-up questions, and responds with empathy. It is just like talking with a supportive friend.',
+      'Have a real conversation with your AI companion. It listens, asks follow-up questions, and remembers what you told it before, so every conversation builds on the last.',
   },
   {
     number: '03',

@@ -14,7 +14,12 @@ const faqs = [
   {
     question: 'Is my data private and secure?',
     answer:
-      'Absolutely. Your privacy is our top priority. All voice recordings and transcripts are encrypted end-to-end. We never share your personal data with third parties.',
+      'Your privacy is our top priority. Everything is encrypted in transit and stored securely. To run your conversations we use a small number of AI providers (speech recognition, language models and image generation) that process your data only to deliver the service. We never sell your data or use it for advertising.',
+  },
+  {
+    question: 'What does my companion remember, and can I delete it?',
+    answer:
+      'It keeps a private memory of what matters to you: the people in your life, what you are working through, your goals and the ideas you keep returning to. That lets it pick up where you left off and bring up a relevant past moment mid-conversation. You can review everything it remembers in your profile settings, delete individual items, or wipe its memory completely at any time.',
   },
   {
     question: 'What languages are supported?',

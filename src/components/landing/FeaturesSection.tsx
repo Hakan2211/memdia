@@ -2,25 +2,25 @@
 
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { BarChart3, Brain, Heart, Image, Mic, Sparkles } from 'lucide-react'
+import { BarChart3, Brain, History, Image, Mic, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const features = [
   {
     icon: Mic,
-    title: 'Talk About Anything',
+    title: '15-Minute Conversations',
     description:
-      "Your day, your feelings, a decision you're stuck on, or a question about meaning, ethics or how the world works. Just press start and speak in your own words.",
+      "Your day, your feelings, a decision you're stuck on, or the big questions about meaning and how the world works. Your companion listens like a therapist and thinks with you like a friend who has read everything.",
     color: 'from-[#7e9ec9] to-[#5a7ba6]',
     iconBg: 'bg-[#7e9ec9]/10',
     borderColor: 'group-hover:border-[#7e9ec9]/40',
     shadowColor: 'group-hover:shadow-[#7e9ec9]/20',
   },
   {
-    icon: Heart,
-    title: '15-Minute Conversations',
+    icon: History,
+    title: 'It Remembers You',
     description:
-      'Talk through your day, your feelings, or the big questions about life and the world. Your companion listens like a therapist and thinks with you like a friend who has read everything.',
+      'The people in your life, what you are working through, the ideas you keep coming back to. Your companion picks up where you left off and recalls past moments when they matter. See or delete what it remembers anytime.',
     color: 'from-rose-400 to-rose-500',
     iconBg: 'bg-rose-50',
     borderColor: 'group-hover:border-rose-200',
@@ -50,7 +50,7 @@ const features = [
     icon: Brain,
     title: 'Smart Extraction',
     description:
-      'Our AI automatically identifies moods, topics, people you mention, and even to-dos hidden in your conversations.',
+      'Moods, topics, people and to-dos are pulled from every conversation, along with your ideas, the views you hold, and the books and thinkers you bring up.',
     color: 'from-sky-400 to-sky-500',
     iconBg: 'bg-sky-50',
     borderColor: 'group-hover:border-sky-200',
