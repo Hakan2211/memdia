@@ -405,7 +405,8 @@ export const ModelName = {
   PersonMention: 'PersonMention',
   ReflectionReference: 'ReflectionReference',
   SubscriptionEvent: 'SubscriptionEvent',
-  UserMemory: 'UserMemory'
+  UserMemory: 'UserMemory',
+  MemoryChunk: 'MemoryChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting" | "reflectionSession" | "reflectionTurn" | "deletedReflectionAttempt" | "dailyReflectionGreeting" | "reflectionMood" | "reflectionTopic" | "reflectionInsight" | "todo" | "person" | "personMention" | "reflectionReference" | "subscriptionEvent" | "userMemory"
+    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting" | "reflectionSession" | "reflectionTurn" | "deletedReflectionAttempt" | "dailyReflectionGreeting" | "reflectionMood" | "reflectionTopic" | "reflectionInsight" | "todo" | "person" | "personMention" | "reflectionReference" | "subscriptionEvent" | "userMemory" | "memoryChunk"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2053,6 +2054,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MemoryChunk: {
+      payload: Prisma.$MemoryChunkPayload<ExtArgs>
+      fields: Prisma.MemoryChunkFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MemoryChunkFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MemoryChunkFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>
+        }
+        findFirst: {
+          args: Prisma.MemoryChunkFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MemoryChunkFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>
+        }
+        findMany: {
+          args: Prisma.MemoryChunkFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>[]
+        }
+        create: {
+          args: Prisma.MemoryChunkCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>
+        }
+        createMany: {
+          args: Prisma.MemoryChunkCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MemoryChunkCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>[]
+        }
+        delete: {
+          args: Prisma.MemoryChunkDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>
+        }
+        update: {
+          args: Prisma.MemoryChunkUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>
+        }
+        deleteMany: {
+          args: Prisma.MemoryChunkDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MemoryChunkUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MemoryChunkUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>[]
+        }
+        upsert: {
+          args: Prisma.MemoryChunkUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MemoryChunkPayload>
+        }
+        aggregate: {
+          args: Prisma.MemoryChunkAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMemoryChunk>
+        }
+        groupBy: {
+          args: Prisma.MemoryChunkGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MemoryChunkGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MemoryChunkCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MemoryChunkCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2405,6 +2480,22 @@ export const UserMemoryScalarFieldEnum = {
 export type UserMemoryScalarFieldEnum = (typeof UserMemoryScalarFieldEnum)[keyof typeof UserMemoryScalarFieldEnum]
 
 
+export const MemoryChunkScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  voiceSessionId: 'voiceSessionId',
+  kind: 'kind',
+  date: 'date',
+  text: 'text',
+  embedding: 'embedding',
+  model: 'model',
+  createdAt: 'createdAt'
+} as const
+
+export type MemoryChunkScalarFieldEnum = (typeof MemoryChunkScalarFieldEnum)[keyof typeof MemoryChunkScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2459,6 +2550,13 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Bytes'
+ */
+export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
     
 
 /**
@@ -2578,6 +2676,7 @@ export type GlobalOmitConfig = {
   reflectionReference?: Prisma.ReflectionReferenceOmit
   subscriptionEvent?: Prisma.SubscriptionEventOmit
   userMemory?: Prisma.UserMemoryOmit
+  memoryChunk?: Prisma.MemoryChunkOmit
 }
 
 /* Types for Logging */

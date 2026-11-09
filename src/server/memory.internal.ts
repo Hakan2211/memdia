@@ -38,6 +38,8 @@ import {
   OPENROUTER_MODELS,
   chatCompletion,
 } from './services/openrouter.service'
+import { isLocked, withLock } from './user-lock'
+import { ensureRecallIndex } from './recall.internal'
 import type { RecentNote, SessionDigest } from '../lib/prompts/memory'
 
 // How many past session notes go verbatim into the next conversation.
@@ -52,21 +54,10 @@ const OPENING_LINE_TIMEOUT_MS = 8000
 
 const MEMORY_MODEL = OPENROUTER_MODELS.GEMINI_38_FLASH
 
-// ==========================================
-// Per-user lock
-// ==========================================
-
-const userLocks = new Map<string, Promise<unknown>>()
+const memoryLockKey = (userId: string) => `memory:${userId}`
 
 function withUserLock<T>(userId: string, fn: () => Promise<T>): Promise<T> {
-  const previous = userLocks.get(userId) ?? Promise.resolve()
-  const run = previous.catch(() => {}).then(fn)
-  const tail = run.catch(() => {})
-  userLocks.set(userId, tail)
-  void tail.then(() => {
-    if (userLocks.get(userId) === tail) userLocks.delete(userId)
-  })
-  return run
+  return withLock(memoryLockKey(userId), fn)
 }
 
 // ==========================================
@@ -272,18 +263,20 @@ export function backfillUserMemory(userId: string): Promise<boolean> {
 }
 
 /**
- * Fire-and-forget: make sure the user's history has been folded into memory.
- * Cheap when already done (one indexed lookup).
+ * Fire-and-forget: make sure the user's history has been folded into memory
+ * and the recall index. Cheap when already done (a few indexed lookups).
  */
 export function ensureUserMemoryInBackground(userId: string): void {
   void (async () => {
+    // A backfill/merge is already running; it indexes when it's done.
+    if (isLocked(memoryLockKey(userId))) return
     const memory = await prisma.userMemory.findUnique({
       where: { userId },
       select: { backfilledAt: true },
     })
-    if (memory?.backfilledAt) return
-    if (userLocks.has(userId)) return // a backfill/merge is already running
-    await backfillUserMemory(userId)
+    if (!memory?.backfilledAt) await backfillUserMemory(userId)
+    // After the backfill, so past conversations are indexed with their notes.
+    await ensureRecallIndex(userId)
   })().catch((error) => {
     console.error('[Memory] Background backfill failed:', error)
   })

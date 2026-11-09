@@ -47,8 +47,9 @@ model User {
   todos  Todo[]
   people Person[]
 
-  // Long-term memory (Phase 3)
-  memory UserMemory?
+  // Long-term memory (Phase 3) + recall index (Phase 4)
+  memory       UserMemory?
+  memoryChunks MemoryChunk[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -142,6 +143,9 @@ model VoiceSession {
 
   // Transcript turns
   turns TranscriptTurn[]
+
+  // Recall index entries (Phase 4)
+  memoryChunks MemoryChunk[]
 
   // Ensure one session per user per day
   @@unique([userId, date])
@@ -283,6 +287,7 @@ model ReflectionSession {
   insights       ReflectionInsight[]
   personMentions PersonMention[]
   references     ReflectionReference[]
+  memoryChunks   MemoryChunk[]
 
   // Ensure one reflection session per user per day
   @@unique([userId, date])
@@ -552,4 +557,36 @@ model UserMemory {
   updatedAt DateTime @updatedAt
 
   @@map("user_memory")
+}
+
+// Recall index: past moments (session notes/summaries, insights) with an
+// embedding, searched during a conversation to bring back relevant memories
+// ("you talked about free will back in March"). Exactly one of sessionId /
+// voiceSessionId is set; both cascade so deleting a session forgets it.
+model MemoryChunk {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sessionId      String?
+  session        ReflectionSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  voiceSessionId String?
+  voiceSession   VoiceSession?      @relation(fields: [voiceSessionId], references: [id], onDelete: Cascade)
+
+  // note | summary | insight
+  kind String
+  // Date of the session it came from
+  date DateTime
+  text String
+
+  // Unit-length Float32 vector, raw bytes
+  embedding Bytes
+  model     String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([voiceSessionId])
+  @@map("memory_chunk")
 }

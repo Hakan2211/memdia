@@ -17,6 +17,10 @@ import {
   stripAudioTags,
   toTtsLanguageCode,
 } from '../../../lib/audio-tags'
+import {
+  getRecallBlock,
+  scheduleRecallSearch,
+} from '../../../server/recall.internal'
 import { getGeneration, setGeneration } from './cancel'
 import type { ChatMessage } from '../../../server/services/openrouter.service'
 import type { AIPersonality, Language } from '../../../types/voice-session'
@@ -120,11 +124,31 @@ export const Route = createFileRoute('/api/stream/conversation')({
         )
         const conversationHistory = buildReflectionContext(sessionTurns)
 
+        // Mid-conversation recall: past moments related to what they've been
+        // saying, found by searches triggered on EARLIER turns (so this reply
+        // never waits on an embedding call). Placed right before the latest
+        // message so the system prompt + history prefix stays stable.
+        const recallBlock = getRecallBlock(activeSession.id, session.user.id)
+
         const messages: Array<ChatMessage> = [
           { role: 'system', content: systemPrompt },
           ...conversationHistory,
+          ...(recallBlock
+            ? [{ role: 'system' as const, content: recallBlock }]
+            : []),
           { role: 'user', content: userMessage },
         ]
+
+        // Search for the NEXT reply in the background.
+        const previousUserMessage = [...sessionTurns]
+          .reverse()
+          .find((t) => t.speaker === 'user')?.text
+        scheduleRecallSearch({
+          sessionId: activeSession.id,
+          userId: session.user.id,
+          userMessage,
+          previousUserMessage,
+        })
 
         // Save user turn first
         const lastTurn = activeSession.turns[activeSession.turns.length - 1]

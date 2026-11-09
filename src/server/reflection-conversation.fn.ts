@@ -28,6 +28,7 @@ import {
   generateOpeningLine,
   updateMemoryAfterSession,
 } from './memory.internal'
+import { clearRecallState, indexConversation } from './recall.internal'
 import type { ChatMessage } from './services/openrouter.service'
 import type {
   AIPersonality,
@@ -483,9 +484,11 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       })
     }
 
+    clearRecallState(session.id)
+
     // Extract insights from the completed session (async, non-blocking)
     // This runs after the session is marked complete so the user gets a response quickly
-    extractInsightsFromSession(session.id, context.user.id)
+    const extraction = extractInsightsFromSession(session.id, context.user.id)
       .then((result) => {
         if (result) {
           console.log(
@@ -501,9 +504,19 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
 
     // Update long-term memory (session note + profile merge), also in the
     // background. Independent of extraction, so they run in parallel.
-    updateMemoryAfterSession(session.id, context.user.id).catch((error) => {
+    const memoryUpdate = updateMemoryAfterSession(
+      session.id,
+      context.user.id,
+    ).catch((error) => {
       console.error('[Process Reflection] Failed to update memory:', error)
     })
+
+    // Once its note and insights exist, add the session to the recall index.
+    void Promise.allSettled([extraction, memoryUpdate])
+      .then(() => indexConversation(session.id, context.user.id))
+      .catch((error) => {
+        console.error('[Process Reflection] Failed to index for recall:', error)
+      })
 
     return {
       session: updatedSession,

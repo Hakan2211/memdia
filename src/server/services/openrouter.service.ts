@@ -309,6 +309,66 @@ Moving forward, there's an opportunity to build on these insights and continue c
   return 'Thank you for sharing. Is there anything else on your mind?'
 }
 
+// ==========================================
+// Embeddings
+// ==========================================
+
+/** Embedding model used for memory recall (multilingual, 1536 dims, fast). */
+export const EMBEDDING_MODEL = 'openai/text-embedding-3-small'
+
+/**
+ * Embed texts via OpenRouter's embeddings endpoint. Returns unit-length
+ * vectors (so cosine similarity is a plain dot product), in input order.
+ */
+export async function createEmbeddings(
+  texts: Array<string>,
+  options?: { model?: string; signal?: AbortSignal },
+): Promise<Array<Float32Array>> {
+  if (texts.length === 0) return []
+  const apiKey = process.env.OPENROUTER_API_KEY
+  if (!apiKey) throw new Error('OPENROUTER_API_KEY is required')
+
+  const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+      'X-Title': 'Memdia Voice AI Companion',
+    },
+    body: JSON.stringify({
+      model: options?.model ?? EMBEDDING_MODEL,
+      input: texts,
+    }),
+    signal: options?.signal,
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(
+      `OpenRouter embeddings error: ${response.status} - ${errorText}`,
+    )
+  }
+
+  const data = (await response.json()) as {
+    data?: Array<{ index: number; embedding: Array<number> }>
+  }
+  if (!data.data || data.data.length !== texts.length) {
+    throw new Error('OpenRouter embeddings: unexpected response shape')
+  }
+
+  return [...data.data]
+    .sort((a, b) => a.index - b.index)
+    .map((d) => {
+      const v = Float32Array.from(d.embedding)
+      let norm = 0
+      for (const x of v) norm += x * x
+      norm = Math.sqrt(norm) || 1
+      for (let i = 0; i < v.length; i++) v[i] /= norm
+      return v
+    })
+}
+
 /**
  * Validate OpenRouter API key
  */

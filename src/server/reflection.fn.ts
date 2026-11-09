@@ -11,6 +11,7 @@ import { REFLECTION_CONFIG } from '../types/voice-session'
 import { authMiddleware } from './middleware'
 import { checkSubscription } from './services/subscription.service'
 import { buildReflectionContextBrief } from './reflection-context.internal'
+import { invalidateRecallCache } from './recall.internal'
 import type {
   ReflectionSession,
   ReflectionTurn,
@@ -452,10 +453,11 @@ export const deleteReflectionFn = createServerFn({ method: 'POST' })
       // Continue with database deletion even if CDN deletion fails
     }
 
-    // Delete from database (cascade will delete turns)
+    // Delete from database (cascade will delete turns and recall chunks)
     await prisma.reflectionSession.delete({
       where: { id: session.id },
     })
+    invalidateRecallCache(context.user.id)
 
     console.log('[Delete Reflection] Session deleted successfully')
     return { success: true }

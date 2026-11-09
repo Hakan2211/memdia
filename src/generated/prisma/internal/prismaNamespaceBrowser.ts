@@ -72,7 +72,8 @@ export const ModelName = {
   PersonMention: 'PersonMention',
   ReflectionReference: 'ReflectionReference',
   SubscriptionEvent: 'SubscriptionEvent',
-  UserMemory: 'UserMemory'
+  UserMemory: 'UserMemory',
+  MemoryChunk: 'MemoryChunk'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -402,6 +403,22 @@ export const UserMemoryScalarFieldEnum = {
 } as const
 
 export type UserMemoryScalarFieldEnum = (typeof UserMemoryScalarFieldEnum)[keyof typeof UserMemoryScalarFieldEnum]
+
+
+export const MemoryChunkScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  sessionId: 'sessionId',
+  voiceSessionId: 'voiceSessionId',
+  kind: 'kind',
+  date: 'date',
+  text: 'text',
+  embedding: 'embedding',
+  model: 'model',
+  createdAt: 'createdAt'
+} as const
+
+export type MemoryChunkScalarFieldEnum = (typeof MemoryChunkScalarFieldEnum)[keyof typeof MemoryChunkScalarFieldEnum]
 
 
 export const SortOrder = {

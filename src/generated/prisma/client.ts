@@ -149,3 +149,8 @@ export type SubscriptionEvent = Prisma.SubscriptionEventModel
  * 
  */
 export type UserMemory = Prisma.UserMemoryModel
+/**
+ * Model MemoryChunk
+ * 
+ */
+export type MemoryChunk = Prisma.MemoryChunkModel

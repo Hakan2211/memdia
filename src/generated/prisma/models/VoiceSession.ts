@@ -306,6 +306,7 @@ export type VoiceSessionWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   turns?: Prisma.TranscriptTurnListRelationFilter
+  memoryChunks?: Prisma.MemoryChunkListRelationFilter
 }
 
 export type VoiceSessionOrderByWithRelationInput = {
@@ -326,6 +327,7 @@ export type VoiceSessionOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   turns?: Prisma.TranscriptTurnOrderByRelationAggregateInput
+  memoryChunks?: Prisma.MemoryChunkOrderByRelationAggregateInput
 }
 
 export type VoiceSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -350,6 +352,7 @@ export type VoiceSessionWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"VoiceSession"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   turns?: Prisma.TranscriptTurnListRelationFilter
+  memoryChunks?: Prisma.MemoryChunkListRelationFilter
 }, "id" | "userId_date">
 
 export type VoiceSessionOrderByWithAggregationInput = {
@@ -413,6 +416,7 @@ export type VoiceSessionCreateInput = {
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutVoiceSessionsInput
   turns?: Prisma.TranscriptTurnCreateNestedManyWithoutSessionInput
+  memoryChunks?: Prisma.MemoryChunkCreateNestedManyWithoutVoiceSessionInput
 }
 
 export type VoiceSessionUncheckedCreateInput = {
@@ -432,6 +436,7 @@ export type VoiceSessionUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   turns?: Prisma.TranscriptTurnUncheckedCreateNestedManyWithoutSessionInput
+  memoryChunks?: Prisma.MemoryChunkUncheckedCreateNestedManyWithoutVoiceSessionInput
 }
 
 export type VoiceSessionUpdateInput = {
@@ -451,6 +456,7 @@ export type VoiceSessionUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutVoiceSessionsNestedInput
   turns?: Prisma.TranscriptTurnUpdateManyWithoutSessionNestedInput
+  memoryChunks?: Prisma.MemoryChunkUpdateManyWithoutVoiceSessionNestedInput
 }
 
 export type VoiceSessionUncheckedUpdateInput = {
@@ -470,6 +476,7 @@ export type VoiceSessionUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   turns?: Prisma.TranscriptTurnUncheckedUpdateManyWithoutSessionNestedInput
+  memoryChunks?: Prisma.MemoryChunkUncheckedUpdateManyWithoutVoiceSessionNestedInput
 }
 
 export type VoiceSessionCreateManyInput = {
@@ -611,6 +618,11 @@ export type VoiceSessionScalarRelationFilter = {
   isNot?: Prisma.VoiceSessionWhereInput
 }
 
+export type VoiceSessionNullableScalarRelationFilter = {
+  is?: Prisma.VoiceSessionWhereInput | null
+  isNot?: Prisma.VoiceSessionWhereInput | null
+}
+
 export type VoiceSessionCreateNestedManyWithoutUserInput = {
   create?: Prisma.XOR<Prisma.VoiceSessionCreateWithoutUserInput, Prisma.VoiceSessionUncheckedCreateWithoutUserInput> | Prisma.VoiceSessionCreateWithoutUserInput[] | Prisma.VoiceSessionUncheckedCreateWithoutUserInput[]
   connectOrCreate?: Prisma.VoiceSessionCreateOrConnectWithoutUserInput | Prisma.VoiceSessionCreateOrConnectWithoutUserInput[]
@@ -675,6 +687,22 @@ export type VoiceSessionUpdateOneRequiredWithoutTurnsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.VoiceSessionUpdateToOneWithWhereWithoutTurnsInput, Prisma.VoiceSessionUpdateWithoutTurnsInput>, Prisma.VoiceSessionUncheckedUpdateWithoutTurnsInput>
 }
 
+export type VoiceSessionCreateNestedOneWithoutMemoryChunksInput = {
+  create?: Prisma.XOR<Prisma.VoiceSessionCreateWithoutMemoryChunksInput, Prisma.VoiceSessionUncheckedCreateWithoutMemoryChunksInput>
+  connectOrCreate?: Prisma.VoiceSessionCreateOrConnectWithoutMemoryChunksInput
+  connect?: Prisma.VoiceSessionWhereUniqueInput
+}
+
+export type VoiceSessionUpdateOneWithoutMemoryChunksNestedInput = {
+  create?: Prisma.XOR<Prisma.VoiceSessionCreateWithoutMemoryChunksInput, Prisma.VoiceSessionUncheckedCreateWithoutMemoryChunksInput>
+  connectOrCreate?: Prisma.VoiceSessionCreateOrConnectWithoutMemoryChunksInput
+  upsert?: Prisma.VoiceSessionUpsertWithoutMemoryChunksInput
+  disconnect?: Prisma.VoiceSessionWhereInput | boolean
+  delete?: Prisma.VoiceSessionWhereInput | boolean
+  connect?: Prisma.VoiceSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.VoiceSessionUpdateToOneWithWhereWithoutMemoryChunksInput, Prisma.VoiceSessionUpdateWithoutMemoryChunksInput>, Prisma.VoiceSessionUncheckedUpdateWithoutMemoryChunksInput>
+}
+
 export type VoiceSessionCreateWithoutUserInput = {
   id?: string
   date: Date | string
@@ -691,6 +719,7 @@ export type VoiceSessionCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   turns?: Prisma.TranscriptTurnCreateNestedManyWithoutSessionInput
+  memoryChunks?: Prisma.MemoryChunkCreateNestedManyWithoutVoiceSessionInput
 }
 
 export type VoiceSessionUncheckedCreateWithoutUserInput = {
@@ -709,6 +738,7 @@ export type VoiceSessionUncheckedCreateWithoutUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   turns?: Prisma.TranscriptTurnUncheckedCreateNestedManyWithoutSessionInput
+  memoryChunks?: Prisma.MemoryChunkUncheckedCreateNestedManyWithoutVoiceSessionInput
 }
 
 export type VoiceSessionCreateOrConnectWithoutUserInput = {
@@ -773,6 +803,7 @@ export type VoiceSessionCreateWithoutTurnsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutVoiceSessionsInput
+  memoryChunks?: Prisma.MemoryChunkCreateNestedManyWithoutVoiceSessionInput
 }
 
 export type VoiceSessionUncheckedCreateWithoutTurnsInput = {
@@ -791,6 +822,7 @@ export type VoiceSessionUncheckedCreateWithoutTurnsInput = {
   completedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  memoryChunks?: Prisma.MemoryChunkUncheckedCreateNestedManyWithoutVoiceSessionInput
 }
 
 export type VoiceSessionCreateOrConnectWithoutTurnsInput = {
@@ -825,6 +857,7 @@ export type VoiceSessionUpdateWithoutTurnsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutVoiceSessionsNestedInput
+  memoryChunks?: Prisma.MemoryChunkUpdateManyWithoutVoiceSessionNestedInput
 }
 
 export type VoiceSessionUncheckedUpdateWithoutTurnsInput = {
@@ -843,6 +876,99 @@ export type VoiceSessionUncheckedUpdateWithoutTurnsInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memoryChunks?: Prisma.MemoryChunkUncheckedUpdateManyWithoutVoiceSessionNestedInput
+}
+
+export type VoiceSessionCreateWithoutMemoryChunksInput = {
+  id?: string
+  date: Date | string
+  status?: string
+  recordingAttempt?: number
+  totalUserSpeakingTime?: number
+  maxDuration?: number
+  summaryText?: string | null
+  imageUrl?: string | null
+  imageStyle?: string
+  archivalStatus?: string
+  pausedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutVoiceSessionsInput
+  turns?: Prisma.TranscriptTurnCreateNestedManyWithoutSessionInput
+}
+
+export type VoiceSessionUncheckedCreateWithoutMemoryChunksInput = {
+  id?: string
+  userId: string
+  date: Date | string
+  status?: string
+  recordingAttempt?: number
+  totalUserSpeakingTime?: number
+  maxDuration?: number
+  summaryText?: string | null
+  imageUrl?: string | null
+  imageStyle?: string
+  archivalStatus?: string
+  pausedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  turns?: Prisma.TranscriptTurnUncheckedCreateNestedManyWithoutSessionInput
+}
+
+export type VoiceSessionCreateOrConnectWithoutMemoryChunksInput = {
+  where: Prisma.VoiceSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.VoiceSessionCreateWithoutMemoryChunksInput, Prisma.VoiceSessionUncheckedCreateWithoutMemoryChunksInput>
+}
+
+export type VoiceSessionUpsertWithoutMemoryChunksInput = {
+  update: Prisma.XOR<Prisma.VoiceSessionUpdateWithoutMemoryChunksInput, Prisma.VoiceSessionUncheckedUpdateWithoutMemoryChunksInput>
+  create: Prisma.XOR<Prisma.VoiceSessionCreateWithoutMemoryChunksInput, Prisma.VoiceSessionUncheckedCreateWithoutMemoryChunksInput>
+  where?: Prisma.VoiceSessionWhereInput
+}
+
+export type VoiceSessionUpdateToOneWithWhereWithoutMemoryChunksInput = {
+  where?: Prisma.VoiceSessionWhereInput
+  data: Prisma.XOR<Prisma.VoiceSessionUpdateWithoutMemoryChunksInput, Prisma.VoiceSessionUncheckedUpdateWithoutMemoryChunksInput>
+}
+
+export type VoiceSessionUpdateWithoutMemoryChunksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
+  maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutVoiceSessionsNestedInput
+  turns?: Prisma.TranscriptTurnUpdateManyWithoutSessionNestedInput
+}
+
+export type VoiceSessionUncheckedUpdateWithoutMemoryChunksInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
+  maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
+  archivalStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  turns?: Prisma.TranscriptTurnUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type VoiceSessionCreateManyUserInput = {
@@ -878,6 +1004,7 @@ export type VoiceSessionUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   turns?: Prisma.TranscriptTurnUpdateManyWithoutSessionNestedInput
+  memoryChunks?: Prisma.MemoryChunkUpdateManyWithoutVoiceSessionNestedInput
 }
 
 export type VoiceSessionUncheckedUpdateWithoutUserInput = {
@@ -896,6 +1023,7 @@ export type VoiceSessionUncheckedUpdateWithoutUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   turns?: Prisma.TranscriptTurnUncheckedUpdateManyWithoutSessionNestedInput
+  memoryChunks?: Prisma.MemoryChunkUncheckedUpdateManyWithoutVoiceSessionNestedInput
 }
 
 export type VoiceSessionUncheckedUpdateManyWithoutUserInput = {
@@ -922,10 +1050,12 @@ export type VoiceSessionUncheckedUpdateManyWithoutUserInput = {
 
 export type VoiceSessionCountOutputType = {
   turns: number
+  memoryChunks: number
 }
 
 export type VoiceSessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   turns?: boolean | VoiceSessionCountOutputTypeCountTurnsArgs
+  memoryChunks?: boolean | VoiceSessionCountOutputTypeCountMemoryChunksArgs
 }
 
 /**
@@ -943,6 +1073,13 @@ export type VoiceSessionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types
  */
 export type VoiceSessionCountOutputTypeCountTurnsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.TranscriptTurnWhereInput
+}
+
+/**
+ * VoiceSessionCountOutputType without action
+ */
+export type VoiceSessionCountOutputTypeCountMemoryChunksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MemoryChunkWhereInput
 }
 
 
@@ -964,6 +1101,7 @@ export type VoiceSessionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.VoiceSession$turnsArgs<ExtArgs>
+  memoryChunks?: boolean | Prisma.VoiceSession$memoryChunksArgs<ExtArgs>
   _count?: boolean | Prisma.VoiceSessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["voiceSession"]>
 
@@ -1027,6 +1165,7 @@ export type VoiceSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type VoiceSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.VoiceSession$turnsArgs<ExtArgs>
+  memoryChunks?: boolean | Prisma.VoiceSession$memoryChunksArgs<ExtArgs>
   _count?: boolean | Prisma.VoiceSessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type VoiceSessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1041,6 +1180,7 @@ export type $VoiceSessionPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     user: Prisma.$UserPayload<ExtArgs>
     turns: Prisma.$TranscriptTurnPayload<ExtArgs>[]
+    memoryChunks: Prisma.$MemoryChunkPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1454,6 +1594,7 @@ export interface Prisma__VoiceSessionClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   turns<T extends Prisma.VoiceSession$turnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VoiceSession$turnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TranscriptTurnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  memoryChunks<T extends Prisma.VoiceSession$memoryChunksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VoiceSession$memoryChunksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MemoryChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1913,6 +2054,30 @@ export type VoiceSession$turnsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.TranscriptTurnScalarFieldEnum | Prisma.TranscriptTurnScalarFieldEnum[]
+}
+
+/**
+ * VoiceSession.memoryChunks
+ */
+export type VoiceSession$memoryChunksArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MemoryChunk
+   */
+  select?: Prisma.MemoryChunkSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MemoryChunk
+   */
+  omit?: Prisma.MemoryChunkOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MemoryChunkInclude<ExtArgs> | null
+  where?: Prisma.MemoryChunkWhereInput
+  orderBy?: Prisma.MemoryChunkOrderByWithRelationInput | Prisma.MemoryChunkOrderByWithRelationInput[]
+  cursor?: Prisma.MemoryChunkWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MemoryChunkScalarFieldEnum | Prisma.MemoryChunkScalarFieldEnum[]
 }
 
 /**
