@@ -1,7 +1,6 @@
 /**
  * Insights Layout Route
  * Main layout with tab navigation for insights
- * PRO-ONLY: Requires Pro subscription tier
  */
 
 import {
@@ -19,27 +18,10 @@ import {
   Users,
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { ProFeatureGate } from '../../components/upgrade-modal'
 
 export const Route = createFileRoute('/_app/insights')({
-  component: InsightsLayoutWrapper,
+  component: InsightsLayout,
 })
-
-/**
- * Wrapper component that checks subscription tier
- */
-function InsightsLayoutWrapper() {
-  const { subscription } = Route.useRouteContext()
-
-  return (
-    <ProFeatureGate
-      subscriptionTier={subscription?.tier ?? null}
-      featureName="Insights"
-    >
-      <InsightsLayout />
-    </ProFeatureGate>
-  )
-}
 
 const TABS = [
   { path: '/insights', label: 'Overview', icon: LayoutDashboard },

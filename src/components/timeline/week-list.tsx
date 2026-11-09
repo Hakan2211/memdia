@@ -126,11 +126,11 @@ function WeekDay({
         {isEmpty ? (
           isToday ? (
             <Link
-              to="/memories/today"
+              to="/conversations/today"
               className="-mt-2.5 flex items-center gap-2 rounded-xl border border-dashed px-4 py-3 text-sm text-muted-foreground transition-colors hover:border-[#7e9ec9]/60 hover:bg-[#7e9ec9]/5 hover:text-foreground"
             >
               <Plus className="h-4 w-4" />
-              Record today's memory
+              Start today's conversation
             </Link>
           ) : (
             <p className="text-sm leading-5 text-muted-foreground/60">
@@ -157,7 +157,7 @@ function WeekDay({
               )}
               {reflection && (
                 <WeekImage
-                  to="/reflections/$date"
+                  to="/conversations/$date"
                   dateKey={dateKey}
                   imageUrl={reflection.imageUrl}
                   generating={reflection.imageStatus === 'generating'}
@@ -186,7 +186,7 @@ function WeekDay({
                 )}
                 {reflection?.summaryText && (
                   <CollapsibleSummary
-                    label="Reflection"
+                    label="Conversation"
                     text={reflection.summaryText}
                   />
                 )}
@@ -229,7 +229,7 @@ function TimelineDot({
 }
 
 interface WeekImageProps {
-  to: '/memories/$date' | '/reflections/$date'
+  to: '/memories/$date' | '/conversations/$date'
   dateKey: string
   imageUrl: string | null
   generating: boolean
@@ -274,7 +274,7 @@ function WeekImage({
       )}
       <span className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-full bg-background/85 px-2 py-0.5 text-[11px] font-medium shadow-sm backdrop-blur-sm">
         <Icon className="h-3 w-3" />
-        {kind === 'memory' ? 'Memory' : 'Reflection'}
+        {kind === 'memory' ? 'Check-in' : 'Conversation'}
       </span>
       {badge && <span className="absolute right-2.5 top-2.5">{badge}</span>}
     </Link>

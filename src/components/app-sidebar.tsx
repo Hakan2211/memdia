@@ -1,19 +1,14 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import {
-  Crown,
   Images,
   Lightbulb,
-  Lock,
   LogOut,
   MessageCircle,
-  Mic,
   Shield,
   User,
 } from 'lucide-react'
 import { signOut } from '../lib/auth-client'
 import MemdiaLogo from '@/components/common/MemdiaLogo'
-import { getSubscriptionFn } from '../server/billing.fn'
 import {
   Sidebar,
   SidebarContent,
@@ -50,37 +45,13 @@ interface AppSidebarProps {
   subscriptionTier: string | null
 }
 
-/**
- * PRO Badge with lock icon for Pro-only features in sidebar
- */
-function ProBadge() {
-  return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-semibold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-      <Lock className="h-2.5 w-2.5" />
-      <Crown className="h-2.5 w-2.5" />
-      PRO
-    </span>
-  )
-}
-
-export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
+export function AppSidebar({ user }: AppSidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { setOpenMobile } = useSidebar()
   const userName = user.name || 'User'
   const userEmail = user.email
   const userRole = user.role
-
-  // Fetch subscription data via TanStack Query for reactive updates
-  // This ensures the sidebar updates immediately when subscription is upgraded
-  // without requiring a page refresh. Falls back to prop for SSR/initial render.
-  const { data: subscription } = useQuery({
-    queryKey: ['subscription'],
-    queryFn: () => getSubscriptionFn(),
-  })
-
-  // Use query data as primary source, prop as fallback for SSR
-  const isPro = subscription?.tier === 'pro' || subscriptionTier === 'pro'
 
   const handleSignOut = async () => {
     await signOut()
@@ -123,34 +94,16 @@ export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive('/memories')}
-                  tooltip="Memories"
+                  isActive={isActive('/conversations')}
+                  tooltip="Conversations"
                   size="lg"
                   className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
                   onClick={handleNavClick}
                 >
-                  <Link to="/memories">
-                    <Mic className="h-5! w-5!" />
-                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
-                      Memories
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive('/reflections')}
-                  tooltip="Reflections (Pro)"
-                  size="lg"
-                  className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
-                  onClick={handleNavClick}
-                >
-                  <Link to="/reflections">
+                  <Link to="/conversations">
                     <MessageCircle className="h-5! w-5!" />
-                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden flex items-center gap-2">
-                      Reflections
-                      {!isPro && <ProBadge />}
+                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
+                      Conversations
                     </span>
                   </Link>
                 </SidebarMenuButton>
@@ -159,16 +112,15 @@ export function AppSidebar({ user, subscriptionTier }: AppSidebarProps) {
                 <SidebarMenuButton
                   asChild
                   isActive={isActive('/insights')}
-                  tooltip="Insights (Pro)"
+                  tooltip="Insights"
                   size="lg"
                   className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
                   onClick={handleNavClick}
                 >
                   <Link to="/insights">
                     <Lightbulb className="h-5! w-5!" />
-                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden flex items-center gap-2">
+                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
                       Insights
-                      {!isPro && <ProBadge />}
                     </span>
                   </Link>
                 </SidebarMenuButton>

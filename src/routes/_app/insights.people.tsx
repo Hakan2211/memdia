@@ -54,7 +54,7 @@ function PeopleTab() {
             <Users className="h-12 w-12 mx-auto text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-medium">No people tracked yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              People mentioned in your reflections will appear here.
+              People mentioned in your conversations will appear here.
             </p>
           </CardContent>
         </Card>
@@ -144,7 +144,7 @@ function PeopleTab() {
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Link
-                          to="/reflections/$date"
+                          to="/conversations/$date"
                           params={{
                             date: format(new Date(mention.date), 'yyyy-MM-dd'),
                           }}

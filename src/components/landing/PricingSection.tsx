@@ -5,39 +5,18 @@ import { motion } from 'framer-motion'
 import { Check, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { SUBSCRIPTION_TIERS, formatEuro } from '@/types/subscription'
 
+// One plan for sale. Copy lives in SUBSCRIPTION_TIERS so landing, signup and
+// subscribe pages never drift apart.
 const plans = [
   {
-    name: 'Starter',
-    price: '€19,99',
+    name: SUBSCRIPTION_TIERS.pro.name,
+    price: formatEuro(SUBSCRIPTION_TIERS.pro.priceMonthly),
     period: '/month',
-    description: 'Perfect for building a daily memory habit.',
-    features: [
-      '3-minute daily voice memories',
-      'Daily AI-generated image',
-      '2 recording attempts per day',
-      '2 AI personalities',
-      '5 image styles',
-      '32 supported languages',
-      'Full history access',
-    ],
-    cta: 'Start Journey',
-    popular: false,
-  },
-  {
-    name: 'Pro',
-    price: '€29,99',
-    period: '/month',
-    description: 'Deepen your self-discovery with extended sessions.',
-    features: [
-      'Everything in Starter',
-      '10-minute reflection conversations',
-      '1 extended recording attempt per day',
-      'Advanced Insights Dashboard',
-      'Automatic Information Extraction to Insight Dashboard',
-      'Tracking your mood, topics, insights, todos, and people over time',
-    ],
-    cta: 'Go Pro',
+    description: SUBSCRIPTION_TIERS.pro.description,
+    features: SUBSCRIPTION_TIERS.pro.features,
+    cta: 'Start Your Journey',
     popular: true,
   },
 ]
@@ -73,7 +52,7 @@ function PricingCard({
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#7e9ec9] to-[#5a7ba6] text-white text-sm font-medium shadow-lg backdrop-blur-sm"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            Most Popular
+            Everything Included
           </motion.div>
         </div>
       )}
@@ -107,11 +86,7 @@ function PricingCard({
         </p>
 
         {/* CTA Button */}
-        <Link
-          to="/signup"
-          search={{ tier: plan.name.toLowerCase() as 'starter' | 'pro' }}
-          className="block mb-8 w-full"
-        >
+        <Link to="/signup" className="block mb-8 w-full">
           <Button
             size="lg"
             className={cn(
@@ -185,13 +160,12 @@ export function PricingSection() {
             </span>
           </h2>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Choose the plan that fits your journey. Simple pricing, no hidden
-            fees.
+            One plan, everything included. Simple pricing, no hidden fees.
           </p>
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+        <div className="grid gap-8 max-w-md mx-auto items-stretch">
           {plans.map((plan, index) => (
             <PricingCard key={plan.name} plan={plan} index={index} />
           ))}

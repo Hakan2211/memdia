@@ -1,6 +1,6 @@
 /**
- * Today's Reflection Route
- * Main recording interface for today's 10-minute reflection session
+ * Today's Conversation Route
+ * Main recording interface for today's conversation (up to 15 minutes)
  *
  * Uses SSE streaming for AI responses with real-time audio playback
  * Similar to memories.today.tsx but with:
@@ -63,7 +63,7 @@ const USE_VAD = true
 // Minimum session duration in seconds (sessions shorter than this are discarded)
 const MIN_SESSION_DURATION = REFLECTION_CONFIG.MIN_DURATION_SECONDS
 
-export const Route = createFileRoute('/_app/reflections/today')({
+export const Route = createFileRoute('/_app/conversations/today')({
   component: TodayReflection,
 })
 
@@ -565,7 +565,7 @@ function TodayReflection() {
       setSessionState('recording')
 
       // Show warning about single attempt
-      toast.info('This is your only reflection for today', {
+      toast.info('This is your only conversation for today', {
         description:
           "Make it count! Take your time to explore what's on your mind.",
         duration: 5000,
@@ -612,7 +612,7 @@ function TodayReflection() {
     },
     onError: (error) => {
       console.error('Failed to start reflection:', error)
-      toast.error('Failed to start reflection', {
+      toast.error('Failed to start conversation', {
         description:
           error instanceof Error ? error.message : 'Please try again.',
         duration: 5000,
@@ -654,11 +654,11 @@ function TodayReflection() {
       }
 
       const dateStr = format(new Date(updatedSession.date), 'yyyy-MM-dd')
-      navigate({ to: '/reflections/$date', params: { date: dateStr } })
+      navigate({ to: '/conversations/$date', params: { date: dateStr } })
     },
     onError: (error) => {
       console.error('Failed to end reflection:', error)
-      toast.error('Failed to end reflection')
+      toast.error('Failed to end conversation')
       // Reset ending states to prevent stuck overlay
       isEndingSessionRef.current = false
       setIsAutoEnding(false)
@@ -847,7 +847,7 @@ function TodayReflection() {
           warningShownRef.current = true
           toast.warning('1 minute remaining', {
             description:
-              'Your reflection will end soon. Wrap up your thoughts!',
+              'Your conversation will end soon. Wrap up your thoughts!',
             duration: 5000,
           })
         }
@@ -864,7 +864,7 @@ function TodayReflection() {
               if (!hardCutoffTimerRef.current) {
                 hardCutoffTimerRef.current = setTimeout(() => {
                   toast.info('Session ending', {
-                    description: 'Saving your reflection...',
+                    description: 'Saving your conversation...',
                     duration: 2000,
                   })
                   forceEndSession()
@@ -978,7 +978,7 @@ function TodayReflection() {
       isEndingSessionRef.current = false
       setIsEndingSession(false)
 
-      toast.info('Reflection too short', {
+      toast.info('Conversation too short', {
         description:
           'You need at least 1 minute to record. Come back anytime to try again!',
         duration: 5000,
@@ -1056,7 +1056,7 @@ function TodayReflection() {
             <MessageCircle className="h-8 w-8 text-[#7e9ec9]" />
           </div>
           <h2 className="mt-6 text-xl font-semibold">
-            Processing your reflection...
+            Processing your conversation...
           </h2>
           <p className="mt-2 text-muted-foreground">Generating your summary</p>
         </div>
@@ -1071,7 +1071,9 @@ function TodayReflection() {
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-            <h2 className="mt-4 text-xl font-semibold">Ending reflection...</h2>
+            <h2 className="mt-4 text-xl font-semibold">
+              Ending conversation...
+            </h2>
             <p className="mt-2 text-muted-foreground">Saving your thoughts</p>
           </div>
         </div>
@@ -1159,7 +1161,7 @@ function TodayReflection() {
           <div className="text-center animate-in fade-in zoom-in-95 duration-700 delay-150">
             <MagicButton onClick={handleStartSession}>
               <Play className="mr-3 h-5 w-5 fill-current" />
-              Start Reflection
+              Start Conversation
             </MagicButton>
             <p className="mt-6 text-sm text-muted-foreground font-light tracking-wide">
               10 minutes to process your thoughts
@@ -1173,7 +1175,9 @@ function TodayReflection() {
         {sessionState === 'starting' && (
           <div className="text-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-            <p className="mt-4 text-muted-foreground">Starting reflection...</p>
+            <p className="mt-4 text-muted-foreground">
+              Starting conversation...
+            </p>
           </div>
         )}
 
@@ -1319,7 +1323,7 @@ function CompletedReflectionView({
         <h1 className="text-2xl font-light">
           {format(new Date(session.date), 'MMMM d, yyyy')}
         </h1>
-        <p className="mt-2 text-sm text-[#7e9ec9]">Reflection completed</p>
+        <p className="mt-2 text-sm text-[#7e9ec9]">Conversation completed</p>
       </div>
 
       {/* Reflection Image */}
@@ -1327,7 +1331,7 @@ function CompletedReflectionView({
         <div className="mb-8">
           <img
             src={session.imageUrl}
-            alt="Reflection"
+            alt="Conversation"
             className="w-full rounded-xl shadow-lg"
           />
         </div>
@@ -1336,7 +1340,7 @@ function CompletedReflectionView({
       {/* Summary */}
       {session.summaryText && (
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-3">Your Reflection</h2>
+          <h2 className="text-lg font-semibold mb-3">Summary</h2>
           <div className="prose prose-sm prose-zinc">
             {session.summaryText.split('\n\n').map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
@@ -1348,7 +1352,7 @@ function CompletedReflectionView({
       {/* Transcript */}
       {session.turns && session.turns.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-3">Conversation</h2>
+          <h2 className="text-lg font-semibold mb-3">Transcript</h2>
           <div className="space-y-4">
             {session.turns.map((turn, i) => (
               <div
@@ -1375,7 +1379,7 @@ function CompletedReflectionView({
         <div className="text-center py-8">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
           <p className="mt-4 text-muted-foreground">
-            Your reflection is being processed...
+            Your conversation is being processed...
           </p>
         </div>
       )}

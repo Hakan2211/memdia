@@ -1,6 +1,9 @@
 /**
  * Subscription Types
- * Types for paid subscription management (Starter & Pro tiers)
+ *
+ * There is ONE plan for sale: Pro. The 'starter' tier still exists because
+ * legacy Starter subscribers (and their Stripe price) are kept as-is — they
+ * get the full product at their existing price. Never offer Starter in the UI.
  */
 
 // ==========================================
@@ -26,31 +29,27 @@ export const SUBSCRIPTION_TIERS: Record<
     description: string
   }
 > = {
+  // Legacy tier — grandfathered subscribers get the full product.
   starter: {
     name: 'Starter',
-    maxDurationSeconds: 180, // 3 minutes for voice sessions
-    maxReflectionDurationSeconds: 600, // 10 minutes for reflections
+    maxDurationSeconds: 900,
+    maxReflectionDurationSeconds: 900,
     priceMonthly: 19.99,
-    description: 'Perfect for daily check-ins',
-    features: [
-      '3-minute daily voice check-ins',
-      'AI-generated memory images',
-      'Full transcripts & summaries',
-      'Calendar view & history',
-    ],
+    description: 'Legacy plan',
+    features: [],
   },
   pro: {
     name: 'Pro',
-    maxDurationSeconds: 180, // 3 minutes for voice sessions (same as starter)
-    maxReflectionDurationSeconds: 600, // 10 minutes for reflections
+    maxDurationSeconds: 900,
+    maxReflectionDurationSeconds: 900, // 15-minute conversations
     priceMonthly: 29.99,
-    description: 'For deeper daily reflections',
+    description: 'Deep daily conversations with an AI that remembers you',
     features: [
-      'Everything in Starter',
-      '10-minute reflection sessions',
-      'Insights Dashboard',
-      'Automatic Information Extraction to Insight Dashboard',
-      'Tracking your mood, topics, insights, todos, and people over time',
+      '15-minute daily voice conversations',
+      'Explore anything: feelings, philosophy, ideas, the world',
+      'An AI companion that remembers your past conversations',
+      'Summaries, transcripts & an AI-generated image of each day',
+      'Insights: moods, topics, ideas, people & intentions over time',
     ],
   },
 }
@@ -117,4 +116,9 @@ export function getPriceIdForTier(tier: SubscriptionTier): string {
   return tier === 'pro'
     ? STRIPE_PRICE_IDS.pro_monthly
     : STRIPE_PRICE_IDS.starter_monthly
+}
+
+/** Format a monthly price the way the app displays it, e.g. 29.99 → "€29,99" */
+export function formatEuro(amount: number): string {
+  return `€${amount.toFixed(2).replace('.', ',')}`
 }

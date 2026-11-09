@@ -1,24 +1,17 @@
-import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import { useState } from 'react'
-import { Check } from 'lucide-react'
 import { signUp } from '../../lib/auth-client'
 import { createCheckoutFn } from '../../server/billing.fn'
 import { SUBSCRIPTION_TIERS } from '../../types/subscription'
+import { PlanCard } from '../../components/billing/plan-card'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import { Honeypot, isHoneypotFilled } from '../../components/common/Honeypot'
-import type { SubscriptionTier } from '../../types/subscription'
-
-// Search params schema for tier selection
-const signupSearchSchema = z.object({
-  tier: z.enum(['starter', 'pro']).optional().default('starter'),
-})
 
 export const Route = createFileRoute('/_auth/signup')({
-  validateSearch: signupSearchSchema,
   component: SignupPage,
 })
 
@@ -30,8 +23,6 @@ const signupFormSchema = z.object({
 })
 
 function SignupPage() {
-  const router = useRouter()
-  const { tier: selectedTier } = Route.useSearch()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -68,7 +59,6 @@ function SignupPage() {
         // Step 2: Redirect to Stripe Checkout
         const checkoutResult = await createCheckoutFn({
           data: {
-            tier: selectedTier as SubscriptionTier,
             isNewUser: true,
           },
         })
@@ -83,87 +73,17 @@ function SignupPage() {
     },
   })
 
-  const handleTierChange = (tier: SubscriptionTier) => {
-    router.navigate({
-      to: '/signup',
-      search: { tier },
-      replace: true,
-    })
-  }
-
   return (
-    <div className="w-full max-w-4xl space-y-8">
+    <div className="w-full max-w-md space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight bg-linear-to-r from-[#5a7ba6] to-[#7e9ec9] bg-clip-text text-transparent">
           Create your account
         </h1>
-        <p className="mt-2 text-muted-foreground">
-          Choose your plan and get started with Memdia
-        </p>
+        <p className="mt-2 text-muted-foreground">Get started with Memdia</p>
       </div>
 
-      {/* Tier Selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(['starter', 'pro'] as const).map((tier) => {
-          const tierInfo = SUBSCRIPTION_TIERS[tier]
-          const isSelected = selectedTier === tier
-
-          return (
-            <button
-              key={tier}
-              type="button"
-              onClick={() => handleTierChange(tier)}
-              className={`relative p-6 rounded-xl border-2 text-left transition-all ${
-                isSelected
-                  ? 'border-[#7e9ec9] bg-[#7e9ec9]/5 ring-2 ring-[#7e9ec9]/20'
-                  : 'border-muted hover:border-[#7e9ec9]/30 hover:bg-accent/50'
-              }`}
-            >
-              {tier === 'pro' && (
-                <div className="absolute -top-3 right-4 rounded-full bg-[#7e9ec9] px-3 py-1 text-xs font-medium text-white shadow-sm">
-                  Best Value
-                </div>
-              )}
-
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold">{tierInfo.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {tierInfo.description}
-                  </p>
-                </div>
-                <div
-                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                    isSelected
-                      ? 'border-[#7e9ec9] bg-[#7e9ec9]'
-                      : 'border-muted'
-                  }`}
-                >
-                  {isSelected && (
-                    <Check className="w-3 h-3 text-primary-foreground" />
-                  )}
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <span className="text-3xl font-bold">
-                  €{tierInfo.priceMonthly.toString().replace('.', ',')}
-                </span>
-                <span className="text-muted-foreground">/month</span>
-              </div>
-
-              <ul className="space-y-2">
-                {tierInfo.features.slice(0, 4).map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm">
-                    <Check className="w-4 h-4 text-[#7e9ec9] shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </button>
-          )
-        })}
-      </div>
+      {/* Plan */}
+      <PlanCard />
 
       {/* Signup Form */}
       <div className="rounded-lg border bg-card p-8 shadow-sm">
@@ -282,7 +202,7 @@ function SignupPage() {
           >
             {loading
               ? 'Creating account...'
-              : `Continue with ${SUBSCRIPTION_TIERS[selectedTier].name} Plan`}
+              : `Continue with ${SUBSCRIPTION_TIERS.pro.name} Plan`}
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">

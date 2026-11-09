@@ -50,7 +50,7 @@ export function TimelineItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <Link
-            to="/reflections/$date"
+            to="/conversations/$date"
             params={{ date: dateStr }}
             className="text-sm font-medium hover:underline"
           >
@@ -107,7 +107,7 @@ export function TimelineCompact({
         return (
           <Link
             key={item.sessionId}
-            to="/reflections/$date"
+            to="/conversations/$date"
             params={{ date: dateStr }}
             className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
           >

@@ -1,6 +1,6 @@
 /**
- * Reflection by Date Route
- * View a specific day's reflection (transcript, summary - no image)
+ * Conversation by Date Route
+ * View a specific day's conversation (image, summary, insights, transcript)
  */
 
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
@@ -21,7 +21,7 @@ import { TopicList } from '../../components/insights/topic-pill'
 import type { ReflectionTurn } from '../../types/voice-session'
 import type { Mood } from '../../types/insights'
 
-export const Route = createFileRoute('/_app/reflections/$date')({
+export const Route = createFileRoute('/_app/conversations/$date')({
   component: ReflectionByDate,
 })
 
@@ -93,14 +93,14 @@ function ReflectionByDate() {
       deleteReflectionFn({ data: { sessionId } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reflections'] })
-      toast.success('Reflection deleted', {
-        description: 'Your reflection has been permanently deleted.',
+      toast.success('Conversation deleted', {
+        description: 'Your conversation has been permanently deleted.',
       })
-      navigate({ to: '/reflections' })
+      navigate({ to: '/conversations' })
     },
     onError: (error) => {
       console.error('Failed to delete reflection:', error)
-      toast.error('Failed to delete reflection', {
+      toast.error('Failed to delete conversation', {
         description:
           error instanceof Error ? error.message : 'Please try again.',
       })
@@ -121,7 +121,7 @@ function ReflectionByDate() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading reflection...</p>
+          <p className="mt-4 text-muted-foreground">Loading conversation...</p>
         </div>
       </div>
     )
@@ -132,15 +132,15 @@ function ReflectionByDate() {
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground">
-            No reflection found for this date.
+            No conversation found for this date.
           </p>
           <Button
             variant="link"
-            onClick={() => navigate({ to: '/reflections' })}
+            onClick={() => navigate({ to: '/conversations' })}
             className="mt-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to reflections
+            Back to conversations
           </Button>
         </div>
       </div>
@@ -154,7 +154,7 @@ function ReflectionByDate() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => navigate({ to: '/reflections' })}
+          onClick={() => navigate({ to: '/conversations' })}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back
@@ -229,14 +229,14 @@ function ReflectionByDate() {
           {session.imageUrl ? (
             <img
               src={session.imageUrl}
-              alt="Reflection"
+              alt="Conversation"
               className="w-full rounded-xl shadow-lg"
             />
           ) : (
             <div className="aspect-square bg-muted animate-pulse rounded-xl flex flex-col items-center justify-center">
               <div className="h-12 w-12 rounded-full border-4 border-primary/30 border-t-primary animate-spin mb-4" />
               <span className="text-muted-foreground text-sm">
-                Creating your reflection image...
+                Creating your conversation image...
               </span>
             </div>
           )}
@@ -245,7 +245,7 @@ function ReflectionByDate() {
 
       {/* Summary - with skeleton while processing */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Your Reflection</h2>
+        <h2 className="text-lg font-semibold mb-3">Summary</h2>
         {session.summaryText ? (
           <div className="prose prose-sm prose-zinc dark:prose-invert">
             {session.summaryText.split('\n\n').map((paragraph, i) => (
@@ -262,7 +262,7 @@ function ReflectionByDate() {
           </div>
         ) : (
           <p className="text-muted-foreground text-sm">
-            No summary available for this reflection.
+            No summary available for this conversation.
           </p>
         )}
       </div>
@@ -270,7 +270,7 @@ function ReflectionByDate() {
       {/* Transcript */}
       {session.turns && session.turns.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold mb-3">Conversation</h2>
+          <h2 className="text-lg font-semibold mb-3">Transcript</h2>
           <TranscriptView turns={session.turns} />
         </div>
       )}
@@ -280,7 +280,7 @@ function ReflectionByDate() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-background p-6 rounded-lg shadow-xl max-w-md">
             <h3 className="text-lg font-semibold mb-2">
-              Delete this reflection?
+              Delete this conversation?
             </h3>
             <p className="text-muted-foreground mb-4">
               This will permanently delete the transcript and summary. This

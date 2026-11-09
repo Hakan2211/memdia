@@ -55,7 +55,7 @@ function InsightsTab() {
             <Lightbulb className="h-12 w-12 mx-auto text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-medium">No insights yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Insights from your reflections will appear here, organized by
+              Insights from your conversations will appear here, organized by
               category.
             </p>
           </CardContent>

@@ -58,7 +58,7 @@ function TopicsTab() {
             <Tag className="h-12 w-12 mx-auto text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-medium">No topics yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Topics from your reflections will appear here.
+              Topics from your conversations will appear here.
             </p>
           </CardContent>
         </Card>
@@ -74,7 +74,7 @@ function TopicsTab() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Click a topic to see related reflections
+            Click a topic to see related conversations
           </p>
           <div className="flex flex-wrap gap-3">
             {topics.map((t) => (
@@ -115,7 +115,7 @@ function TopicsTab() {
                 {topicSessions.map((session) => (
                   <Link
                     key={session.id}
-                    to="/reflections/$date"
+                    to="/conversations/$date"
                     params={{
                       date: format(new Date(session.date), 'yyyy-MM-dd'),
                     }}
@@ -157,7 +157,7 @@ function TopicsTab() {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No reflections found for this topic
+                No conversations found for this topic
               </p>
             )}
           </div>

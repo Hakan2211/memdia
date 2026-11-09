@@ -24,14 +24,15 @@ import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
 import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
 import { Route as AppInsightsRouteImport } from './routes/_app/insights'
+import { Route as AppConversationsRouteImport } from './routes/_app/conversations'
 import { Route as AppAdminRouteImport } from './routes/_app/admin'
+import { Route as AppMemoriesIndexRouteImport } from './routes/_app/memories.index'
 import { Route as AppInsightsIndexRouteImport } from './routes/_app/insights.index'
 import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 import { Route as ApiStreamConversationRouteImport } from './routes/api/stream/conversation'
 import { Route as ApiStreamCancelRouteImport } from './routes/api/stream/cancel'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AppReflectionsTodayRouteImport } from './routes/_app/reflections.today'
-import { Route as AppReflectionsDateRouteImport } from './routes/_app/reflections.$date'
+import { Route as AppReflectionsDateRouteImport } from './routes/_app/reflections_.$date'
 import { Route as AppMemoriesTodayRouteImport } from './routes/_app/memories.today'
 import { Route as AppMemoriesDateRouteImport } from './routes/_app/memories.$date'
 import { Route as AppInsightsTopicsRouteImport } from './routes/_app/insights.topics'
@@ -39,6 +40,8 @@ import { Route as AppInsightsTodosRouteImport } from './routes/_app/insights.tod
 import { Route as AppInsightsPeopleRouteImport } from './routes/_app/insights.people'
 import { Route as AppInsightsMoodsRouteImport } from './routes/_app/insights.moods'
 import { Route as AppInsightsInsightsRouteImport } from './routes/_app/insights.insights'
+import { Route as AppConversationsTodayRouteImport } from './routes/_app/conversations.today'
+import { Route as AppConversationsDateRouteImport } from './routes/_app/conversations.$date'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -113,10 +116,20 @@ const AppInsightsRoute = AppInsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => AppRoute,
 } as any)
+const AppConversationsRoute = AppConversationsRouteImport.update({
+  id: '/conversations',
+  path: '/conversations',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AppRoute,
+} as any)
+const AppMemoriesIndexRoute = AppMemoriesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppMemoriesRoute,
 } as any)
 const AppInsightsIndexRoute = AppInsightsIndexRouteImport.update({
   id: '/',
@@ -143,15 +156,10 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppReflectionsTodayRoute = AppReflectionsTodayRouteImport.update({
-  id: '/today',
-  path: '/today',
-  getParentRoute: () => AppReflectionsRoute,
-} as any)
 const AppReflectionsDateRoute = AppReflectionsDateRouteImport.update({
-  id: '/$date',
-  path: '/$date',
-  getParentRoute: () => AppReflectionsRoute,
+  id: '/reflections_/$date',
+  path: '/reflections/$date',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppMemoriesTodayRoute = AppMemoriesTodayRouteImport.update({
   id: '/today',
@@ -188,6 +196,16 @@ const AppInsightsInsightsRoute = AppInsightsInsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => AppInsightsRoute,
 } as any)
+const AppConversationsTodayRoute = AppConversationsTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
+  getParentRoute: () => AppConversationsRoute,
+} as any)
+const AppConversationsDateRoute = AppConversationsDateRouteImport.update({
+  id: '/$date',
+  path: '/$date',
+  getParentRoute: () => AppConversationsRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -196,14 +214,17 @@ export interface FileRoutesByFullPath {
   '/subscribe': typeof SubscribeRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AppAdminRoute
+  '/conversations': typeof AppConversationsRouteWithChildren
   '/insights': typeof AppInsightsRouteWithChildren
   '/memories': typeof AppMemoriesRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
-  '/reflections': typeof AppReflectionsRouteWithChildren
+  '/reflections': typeof AppReflectionsRoute
   '/timeline': typeof AppTimelineRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/conversations/$date': typeof AppConversationsDateRoute
+  '/conversations/today': typeof AppConversationsTodayRoute
   '/insights/insights': typeof AppInsightsInsightsRoute
   '/insights/moods': typeof AppInsightsMoodsRoute
   '/insights/people': typeof AppInsightsPeopleRoute
@@ -212,12 +233,12 @@ export interface FileRoutesByFullPath {
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
   '/reflections/$date': typeof AppReflectionsDateRoute
-  '/reflections/today': typeof AppReflectionsTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/insights/': typeof AppInsightsIndexRoute
+  '/memories/': typeof AppMemoriesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -226,13 +247,15 @@ export interface FileRoutesByTo {
   '/subscribe': typeof SubscribeRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AppAdminRoute
-  '/memories': typeof AppMemoriesRouteWithChildren
+  '/conversations': typeof AppConversationsRouteWithChildren
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
-  '/reflections': typeof AppReflectionsRouteWithChildren
+  '/reflections': typeof AppReflectionsRoute
   '/timeline': typeof AppTimelineRoute
   '/login': typeof AuthLoginRoute
   '/signup': typeof AuthSignupRoute
+  '/conversations/$date': typeof AppConversationsDateRoute
+  '/conversations/today': typeof AppConversationsTodayRoute
   '/insights/insights': typeof AppInsightsInsightsRoute
   '/insights/moods': typeof AppInsightsMoodsRoute
   '/insights/people': typeof AppInsightsPeopleRoute
@@ -241,12 +264,12 @@ export interface FileRoutesByTo {
   '/memories/$date': typeof AppMemoriesDateRoute
   '/memories/today': typeof AppMemoriesTodayRoute
   '/reflections/$date': typeof AppReflectionsDateRoute
-  '/reflections/today': typeof AppReflectionsTodayRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/insights': typeof AppInsightsIndexRoute
+  '/memories': typeof AppMemoriesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -258,14 +281,17 @@ export interface FileRoutesById {
   '/subscribe': typeof SubscribeRoute
   '/terms': typeof TermsRoute
   '/_app/admin': typeof AppAdminRoute
+  '/_app/conversations': typeof AppConversationsRouteWithChildren
   '/_app/insights': typeof AppInsightsRouteWithChildren
   '/_app/memories': typeof AppMemoriesRouteWithChildren
   '/_app/onboarding': typeof AppOnboardingRoute
   '/_app/profile': typeof AppProfileRoute
-  '/_app/reflections': typeof AppReflectionsRouteWithChildren
+  '/_app/reflections': typeof AppReflectionsRoute
   '/_app/timeline': typeof AppTimelineRoute
   '/_auth/login': typeof AuthLoginRoute
   '/_auth/signup': typeof AuthSignupRoute
+  '/_app/conversations/$date': typeof AppConversationsDateRoute
+  '/_app/conversations/today': typeof AppConversationsTodayRoute
   '/_app/insights/insights': typeof AppInsightsInsightsRoute
   '/_app/insights/moods': typeof AppInsightsMoodsRoute
   '/_app/insights/people': typeof AppInsightsPeopleRoute
@@ -273,13 +299,13 @@ export interface FileRoutesById {
   '/_app/insights/topics': typeof AppInsightsTopicsRoute
   '/_app/memories/$date': typeof AppMemoriesDateRoute
   '/_app/memories/today': typeof AppMemoriesTodayRoute
-  '/_app/reflections/$date': typeof AppReflectionsDateRoute
-  '/_app/reflections/today': typeof AppReflectionsTodayRoute
+  '/_app/reflections_/$date': typeof AppReflectionsDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/stream/cancel': typeof ApiStreamCancelRoute
   '/api/stream/conversation': typeof ApiStreamConversationRoute
   '/api/stripe/webhook': typeof ApiStripeWebhookRoute
   '/_app/insights/': typeof AppInsightsIndexRoute
+  '/_app/memories/': typeof AppMemoriesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,6 +316,7 @@ export interface FileRouteTypes {
     | '/subscribe'
     | '/terms'
     | '/admin'
+    | '/conversations'
     | '/insights'
     | '/memories'
     | '/onboarding'
@@ -298,6 +325,8 @@ export interface FileRouteTypes {
     | '/timeline'
     | '/login'
     | '/signup'
+    | '/conversations/$date'
+    | '/conversations/today'
     | '/insights/insights'
     | '/insights/moods'
     | '/insights/people'
@@ -306,12 +335,12 @@ export interface FileRouteTypes {
     | '/memories/$date'
     | '/memories/today'
     | '/reflections/$date'
-    | '/reflections/today'
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
     | '/api/stripe/webhook'
     | '/insights/'
+    | '/memories/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -320,13 +349,15 @@ export interface FileRouteTypes {
     | '/subscribe'
     | '/terms'
     | '/admin'
-    | '/memories'
+    | '/conversations'
     | '/onboarding'
     | '/profile'
     | '/reflections'
     | '/timeline'
     | '/login'
     | '/signup'
+    | '/conversations/$date'
+    | '/conversations/today'
     | '/insights/insights'
     | '/insights/moods'
     | '/insights/people'
@@ -335,12 +366,12 @@ export interface FileRouteTypes {
     | '/memories/$date'
     | '/memories/today'
     | '/reflections/$date'
-    | '/reflections/today'
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
     | '/api/stripe/webhook'
     | '/insights'
+    | '/memories'
   id:
     | '__root__'
     | '/'
@@ -351,6 +382,7 @@ export interface FileRouteTypes {
     | '/subscribe'
     | '/terms'
     | '/_app/admin'
+    | '/_app/conversations'
     | '/_app/insights'
     | '/_app/memories'
     | '/_app/onboarding'
@@ -359,6 +391,8 @@ export interface FileRouteTypes {
     | '/_app/timeline'
     | '/_auth/login'
     | '/_auth/signup'
+    | '/_app/conversations/$date'
+    | '/_app/conversations/today'
     | '/_app/insights/insights'
     | '/_app/insights/moods'
     | '/_app/insights/people'
@@ -366,13 +400,13 @@ export interface FileRouteTypes {
     | '/_app/insights/topics'
     | '/_app/memories/$date'
     | '/_app/memories/today'
-    | '/_app/reflections/$date'
-    | '/_app/reflections/today'
+    | '/_app/reflections_/$date'
     | '/api/auth/$'
     | '/api/stream/cancel'
     | '/api/stream/conversation'
     | '/api/stripe/webhook'
     | '/_app/insights/'
+    | '/_app/memories/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -496,12 +530,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInsightsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/conversations': {
+      id: '/_app/conversations'
+      path: '/conversations'
+      fullPath: '/conversations'
+      preLoaderRoute: typeof AppConversationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/admin': {
       id: '/_app/admin'
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AppAdminRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/memories/': {
+      id: '/_app/memories/'
+      path: '/'
+      fullPath: '/memories/'
+      preLoaderRoute: typeof AppMemoriesIndexRouteImport
+      parentRoute: typeof AppMemoriesRoute
     }
     '/_app/insights/': {
       id: '/_app/insights/'
@@ -538,19 +586,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/reflections/today': {
-      id: '/_app/reflections/today'
-      path: '/today'
-      fullPath: '/reflections/today'
-      preLoaderRoute: typeof AppReflectionsTodayRouteImport
-      parentRoute: typeof AppReflectionsRoute
-    }
-    '/_app/reflections/$date': {
-      id: '/_app/reflections/$date'
-      path: '/$date'
+    '/_app/reflections_/$date': {
+      id: '/_app/reflections_/$date'
+      path: '/reflections/$date'
       fullPath: '/reflections/$date'
       preLoaderRoute: typeof AppReflectionsDateRouteImport
-      parentRoute: typeof AppReflectionsRoute
+      parentRoute: typeof AppRoute
     }
     '/_app/memories/today': {
       id: '/_app/memories/today'
@@ -601,8 +642,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInsightsInsightsRouteImport
       parentRoute: typeof AppInsightsRoute
     }
+    '/_app/conversations/today': {
+      id: '/_app/conversations/today'
+      path: '/today'
+      fullPath: '/conversations/today'
+      preLoaderRoute: typeof AppConversationsTodayRouteImport
+      parentRoute: typeof AppConversationsRoute
+    }
+    '/_app/conversations/$date': {
+      id: '/_app/conversations/$date'
+      path: '/$date'
+      fullPath: '/conversations/$date'
+      preLoaderRoute: typeof AppConversationsDateRouteImport
+      parentRoute: typeof AppConversationsRoute
+    }
   }
 }
+
+interface AppConversationsRouteChildren {
+  AppConversationsDateRoute: typeof AppConversationsDateRoute
+  AppConversationsTodayRoute: typeof AppConversationsTodayRoute
+}
+
+const AppConversationsRouteChildren: AppConversationsRouteChildren = {
+  AppConversationsDateRoute: AppConversationsDateRoute,
+  AppConversationsTodayRoute: AppConversationsTodayRoute,
+}
+
+const AppConversationsRouteWithChildren =
+  AppConversationsRoute._addFileChildren(AppConversationsRouteChildren)
 
 interface AppInsightsRouteChildren {
   AppInsightsInsightsRoute: typeof AppInsightsInsightsRoute
@@ -629,49 +697,41 @@ const AppInsightsRouteWithChildren = AppInsightsRoute._addFileChildren(
 interface AppMemoriesRouteChildren {
   AppMemoriesDateRoute: typeof AppMemoriesDateRoute
   AppMemoriesTodayRoute: typeof AppMemoriesTodayRoute
+  AppMemoriesIndexRoute: typeof AppMemoriesIndexRoute
 }
 
 const AppMemoriesRouteChildren: AppMemoriesRouteChildren = {
   AppMemoriesDateRoute: AppMemoriesDateRoute,
   AppMemoriesTodayRoute: AppMemoriesTodayRoute,
+  AppMemoriesIndexRoute: AppMemoriesIndexRoute,
 }
 
 const AppMemoriesRouteWithChildren = AppMemoriesRoute._addFileChildren(
   AppMemoriesRouteChildren,
 )
 
-interface AppReflectionsRouteChildren {
-  AppReflectionsDateRoute: typeof AppReflectionsDateRoute
-  AppReflectionsTodayRoute: typeof AppReflectionsTodayRoute
-}
-
-const AppReflectionsRouteChildren: AppReflectionsRouteChildren = {
-  AppReflectionsDateRoute: AppReflectionsDateRoute,
-  AppReflectionsTodayRoute: AppReflectionsTodayRoute,
-}
-
-const AppReflectionsRouteWithChildren = AppReflectionsRoute._addFileChildren(
-  AppReflectionsRouteChildren,
-)
-
 interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
+  AppConversationsRoute: typeof AppConversationsRouteWithChildren
   AppInsightsRoute: typeof AppInsightsRouteWithChildren
   AppMemoriesRoute: typeof AppMemoriesRouteWithChildren
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppProfileRoute: typeof AppProfileRoute
-  AppReflectionsRoute: typeof AppReflectionsRouteWithChildren
+  AppReflectionsRoute: typeof AppReflectionsRoute
   AppTimelineRoute: typeof AppTimelineRoute
+  AppReflectionsDateRoute: typeof AppReflectionsDateRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
+  AppConversationsRoute: AppConversationsRouteWithChildren,
   AppInsightsRoute: AppInsightsRouteWithChildren,
   AppMemoriesRoute: AppMemoriesRouteWithChildren,
   AppOnboardingRoute: AppOnboardingRoute,
   AppProfileRoute: AppProfileRoute,
-  AppReflectionsRoute: AppReflectionsRouteWithChildren,
+  AppReflectionsRoute: AppReflectionsRoute,
   AppTimelineRoute: AppTimelineRoute,
+  AppReflectionsDateRoute: AppReflectionsDateRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

@@ -18,9 +18,9 @@ const features = [
   },
   {
     icon: Heart,
-    title: '10-Minute Reflections',
+    title: '15-Minute Conversations',
     description:
-      'Dive deeper with therapeutic conversations. Our AI asks thoughtful questions to help you process emotions and gain clarity.',
+      'Talk through your day, your feelings, or the big questions about life and the world. Your companion listens like a therapist and thinks with you like a friend who has read everything.',
     color: 'from-rose-400 to-rose-500',
     iconBg: 'bg-rose-50',
     borderColor: 'group-hover:border-rose-200',
@@ -40,7 +40,7 @@ const features = [
     icon: Image,
     title: 'AI-Generated Memories',
     description:
-      'Each voice session creates a unique, personalized image that captures the essence of your day as a visual memory.',
+      'Each conversation creates a unique, personalized image that captures the essence of your day as a visual memory.',
     color: 'from-amber-400 to-amber-500',
     iconBg: 'bg-amber-50',
     borderColor: 'group-hover:border-amber-200',

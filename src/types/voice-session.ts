@@ -261,8 +261,8 @@ export const SESSION_CONFIG = {
 // ==========================================
 
 export const REFLECTION_CONFIG = {
-  /** Maximum reflection duration in seconds (10 minutes) */
-  MAX_DURATION_SECONDS: 600,
+  /** Maximum conversation duration in seconds (15 minutes of user speaking time) */
+  MAX_DURATION_SECONDS: 900,
 
   /** Hard cutoff grace period after timer ends (30 seconds) */
   HARD_CUTOFF_GRACE_SECONDS: 30,
@@ -429,7 +429,7 @@ export interface ReflectionSession {
   status: SessionStatus
   recordingAttempt: number // max 1 allowed for reflections
   totalUserSpeakingTime: number // seconds
-  maxDuration: number // seconds (600 = 10 minutes)
+  maxDuration: number // seconds (900 = 15 minutes; older rows may be 600)
   summaryText: string | null
   imageUrl: string | null
   imageStatus: ReflectionImageStatus

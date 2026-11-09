@@ -39,9 +39,9 @@ export function DayTile({
     if (isToday) {
       return (
         <Link
-          to="/memories/today"
+          to="/conversations/today"
           className={cn(base, 'hover:bg-muted transition-colors group')}
-          title="Record today's memory"
+          title="Start today's conversation"
         >
           <span className="font-medium">{dayNumber}</span>
           <Plus className="absolute inset-0 m-auto h-5 w-5 opacity-50 group-hover:opacity-100 transition-opacity" />
@@ -68,7 +68,7 @@ export function DayTile({
   const linkProps =
     main.kind === 'memory'
       ? ({ to: '/memories/$date', params: { date: dateKey } } as const)
-      : ({ to: '/reflections/$date', params: { date: dateKey } } as const)
+      : ({ to: '/conversations/$date', params: { date: dateKey } } as const)
 
   return (
     <div
@@ -104,9 +104,9 @@ export function DayTile({
 
       {showReflectionThumb && (
         <Link
-          to="/reflections/$date"
+          to="/conversations/$date"
           params={{ date: dateKey }}
-          title="Reflection"
+          title="Conversation"
           className="absolute bottom-1 right-1 h-1/3 w-1/3 min-h-5 min-w-5 rounded-md overflow-hidden ring-2 ring-background bg-muted"
         >
           {reflection.imageUrl ? (

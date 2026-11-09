@@ -55,7 +55,7 @@ function MoodsTab() {
             <Smile className="h-12 w-12 mx-auto text-muted-foreground/50" />
             <h3 className="mt-4 text-lg font-medium">No mood data yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Complete reflections to track your moods over time.
+              Complete conversations to track your moods over time.
             </p>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ function MoodsTab() {
             {history.map((entry) => (
               <Link
                 key={entry.id}
-                to="/reflections/$date"
+                to="/conversations/$date"
                 params={{ date: format(new Date(entry.date), 'yyyy-MM-dd') }}
                 className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
               >

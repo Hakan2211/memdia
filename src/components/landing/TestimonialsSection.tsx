@@ -34,13 +34,6 @@ const testimonials = [
     role: 'Marketing Manager',
     avatar: 'CR',
   },
-  {
-    quote:
-      'The 3-minute format is perfect for my busy schedule. Quick enough to do daily, meaningful enough to make a difference.',
-    author: 'Emily W.',
-    role: 'Startup Founder',
-    avatar: 'EW',
-  },
 ]
 
 export function TestimonialsSection() {

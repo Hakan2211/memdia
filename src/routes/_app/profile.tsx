@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { z } from 'zod'
@@ -7,10 +7,9 @@ import { updateProfileFn } from '../../server/auth.fn'
 import {
   createBillingPortalFn,
   createCheckoutFn,
-  createUpgradeFn,
   getSubscriptionFn,
 } from '../../server/billing.fn'
-import { SUBSCRIPTION_TIERS } from '../../types/subscription'
+import { SUBSCRIPTION_TIERS, formatEuro } from '../../types/subscription'
 import {
   getUserPreferencesFn,
   updateUserPreferencesFn,
@@ -100,7 +99,6 @@ function ProfilePage() {
   const routeContext = Route.useRouteContext()
   const { data: session } = useSession()
   const queryClient = useQueryClient()
-  const router = useRouter()
   const [success, setSuccess] = useState(false)
 
   // User from session takes precedence, fallback to route context
@@ -160,20 +158,6 @@ function ProfilePage() {
     mutationFn: () => createBillingPortalFn(),
     onSuccess: (data: UrlResponse) => {
       window.location.href = data.url
-    },
-  })
-
-  const upgradeMutation = useMutation({
-    mutationFn: () => createUpgradeFn(),
-    onSuccess: (data: UrlResponse) => {
-      // If URL is returned, redirect (direct upgrade without checkout)
-      // Otherwise just refetch subscription data
-      if (data.url !== window.location.href) {
-        window.location.href = data.url
-      } else {
-        void queryClient.invalidateQueries({ queryKey: ['subscription'] })
-        void router.invalidate()
-      }
     },
   })
 
@@ -303,16 +287,14 @@ function ProfilePage() {
                 <div>
                   <p className="font-medium">
                     {subscription?.status === 'active'
-                      ? subscription.tier === 'pro'
-                        ? SUBSCRIPTION_TIERS.pro.name
-                        : SUBSCRIPTION_TIERS.starter.name
+                      ? subscription.tier === 'starter'
+                        ? `${SUBSCRIPTION_TIERS.starter.name} (legacy plan, full access)`
+                        : SUBSCRIPTION_TIERS.pro.name
                       : 'No Subscription'}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     {subscription?.status === 'active'
-                      ? subscription.tier === 'pro'
-                        ? `$${SUBSCRIPTION_TIERS.pro.priceMonthly}/month - ${SUBSCRIPTION_TIERS.pro.maxDurationSeconds / 60} min sessions`
-                        : `$${SUBSCRIPTION_TIERS.starter.priceMonthly}/month - ${SUBSCRIPTION_TIERS.starter.maxDurationSeconds / 60} min sessions`
+                      ? `${formatEuro(SUBSCRIPTION_TIERS[subscription.tier === 'starter' ? 'starter' : 'pro'].priceMonthly)}/month - ${SUBSCRIPTION_TIERS.pro.maxReflectionDurationSeconds / 60} min conversations`
                       : 'Subscribe to access all features'}
                   </p>
                 </div>
@@ -371,19 +353,6 @@ function ProfilePage() {
             </div>
 
             <div className="space-y-2">
-              {subscription?.status === 'active' &&
-                subscription.tier === 'starter' && (
-                  <Button
-                    onClick={() => upgradeMutation.mutate()}
-                    disabled={upgradeMutation.isPending}
-                    className="w-full"
-                  >
-                    {upgradeMutation.isPending
-                      ? 'Processing...'
-                      : 'Upgrade to Pro'}
-                  </Button>
-                )}
-
               {subscription?.status === 'active' ? (
                 <Button
                   variant="outline"

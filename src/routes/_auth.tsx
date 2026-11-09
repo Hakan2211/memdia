@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button'
 /**
  * Auth Layout
  * Centered layout for authentication pages (login, signup)
- * Redirects to memories if already authenticated
+ * Redirects to conversations if already authenticated
  */
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
     const session = await getSessionFn()
     if (session?.user) {
-      throw redirect({ to: '/memories' })
+      throw redirect({ to: '/conversations' })
     }
   },
   component: AuthLayout,

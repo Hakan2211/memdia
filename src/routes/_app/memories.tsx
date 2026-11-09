@@ -1,21 +1,19 @@
 /**
- * Memories Layout Route
- * Parent route for all /memories/* routes
- * Contains the sidebar navigation and calendar view
+ * Check-in Archive Layout Route
+ * Parent route for /memories/* — a READ-ONLY archive of the legacy 3-minute
+ * daily check-ins (VoiceSession). New sessions happen in /conversations.
  */
 
 import {
   Link,
   Outlet,
   createFileRoute,
-  redirect,
-  useLocation,
   useNavigate,
   useParams,
 } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { Calendar, Clock, Home } from 'lucide-react'
+import { Calendar, Clock, MessageCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '../../components/ui/button'
 import {
@@ -30,26 +28,15 @@ import {
 
 export const Route = createFileRoute('/_app/memories')({
   component: MemoriesLayout,
-  beforeLoad: async ({ location }) => {
-    // Redirect /memories to /memories/today for default microphone view
-    if (location.pathname === '/memories') {
-      throw redirect({ to: '/memories/today' })
-    }
-  },
 })
 
 function MemoriesLayout() {
   const navigate = useNavigate()
-  // Use location/params to determine current date selection
+  // Use params to determine current date selection
   const params = useParams({ strict: false })
-  const location = useLocation()
 
   // Parse currently selected date from URL
   const selectedDate = (() => {
-    // If on /memories/today, it's today
-    if (location.pathname.endsWith('/today')) {
-      return new Date()
-    }
     // If on /memories/YYYY-MM-DD
     if (params.date) {
       const parsed = new Date(params.date)
@@ -77,9 +64,8 @@ function MemoriesLayout() {
     queryFn: () => getRecentSessionsFn({ data: { limit: 10 } }),
   })
 
-  const goToToday = () => {
-    setCurrentMonth(new Date())
-    navigate({ to: '/memories/today' })
+  const startConversation = () => {
+    navigate({ to: '/conversations/today' })
   }
 
   return (
@@ -96,14 +82,7 @@ function MemoriesLayout() {
             onSelect={(date) => {
               if (!date) return // Prevent deselection
               const dateStr = format(date, 'yyyy-MM-dd')
-              const today = format(new Date(), 'yyyy-MM-dd')
-              const hasSession = !!(sessionsByDate || {})[dateStr]
-
-              if (dateStr === today && !hasSession) {
-                navigate({ to: '/memories/today' })
-              } else {
-                navigate({ to: '/memories/$date', params: { date: dateStr } })
-              }
+              navigate({ to: '/memories/$date', params: { date: dateStr } })
             }}
             className="w-full flex justify-center p-3 [--cell-size:2.6rem] md:[--cell-size:2.9rem]"
             classNames={{
@@ -149,20 +128,20 @@ function MemoriesLayout() {
         {/* Quick Actions */}
         <div className="border-b p-4">
           <Button
-            onClick={goToToday}
+            onClick={startConversation}
             className="w-full justify-start gap-2 cursor-pointer"
             variant="premium"
             size="lg"
           >
-            <Home className="h-4 w-4" />
-            Start Memory
+            <MessageCircle className="h-4 w-4" />
+            Start a Conversation
           </Button>
         </div>
 
         {/* Recent Sessions List */}
         <div className="flex-1 overflow-auto p-4">
           <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-            Recent Memories
+            Earlier Check-ins
           </h3>
           <div className="space-y-2">
             {recentSessions?.sessions.map((session) => (
@@ -206,7 +185,7 @@ function MemoriesLayout() {
             {(!recentSessions?.sessions ||
               recentSessions.sessions.length === 0) && (
               <p className="text-sm text-muted-foreground text-center py-4">
-                No memories yet. Start your first session today!
+                No earlier check-ins.
               </p>
             )}
           </div>

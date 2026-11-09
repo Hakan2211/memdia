@@ -15,8 +15,6 @@ import type { SubscriptionTier } from '../types/subscription'
  * Create Stripe Checkout Session for new subscription
  */
 const checkoutSchema = z.object({
-  tier: z.enum(['starter', 'pro']).optional(),
-  priceId: z.string().optional(),
   isNewUser: z.boolean().optional(), // If true, redirect to onboarding after success
 })
 
@@ -24,12 +22,13 @@ export const createCheckoutFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .inputValidator(checkoutSchema)
   .handler(async ({ data, context }) => {
-    const tier = (data.tier ?? 'starter') as SubscriptionTier
-    const priceId = data.priceId || getPriceIdForTier(tier)
+    // Pro is the only plan for sale (Starter is legacy-only, never sold).
+    const tier: SubscriptionTier = 'pro'
+    const priceId = getPriceIdForTier(tier)
     const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000'
 
-    // New users go to onboarding, existing users go to memories
-    const successPath = data.isNewUser ? '/onboarding' : '/memories'
+    // New users go to onboarding, existing users go to conversations
+    const successPath = data.isNewUser ? '/onboarding' : '/conversations'
 
     const result = await createCheckoutSession(
       context.user.id,

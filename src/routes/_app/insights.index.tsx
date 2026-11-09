@@ -47,7 +47,7 @@ function OverviewTab() {
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Total Reflections"
+          title="Total Conversations"
           value={overview?.totalReflections || 0}
           icon={<Calendar className="h-5 w-5" />}
         />
@@ -181,10 +181,10 @@ function OverviewTab() {
             </div>
             {timeline.length > 5 && (
               <Link
-                to="/reflections"
+                to="/conversations"
                 className="block text-center text-sm text-muted-foreground hover:text-foreground mt-4"
               >
-                View all reflections
+                View all conversations
               </Link>
             )}
           </CardContent>
@@ -196,15 +196,15 @@ function OverviewTab() {
         <Card>
           <CardContent className="py-12 text-center">
             <Smile className="h-12 w-12 mx-auto text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-medium">No reflections yet</h3>
+            <h3 className="mt-4 text-lg font-medium">No conversations yet</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Start a reflection to see insights here.
+              Start a conversation to see insights here.
             </p>
             <Link
-              to="/reflections/today"
+              to="/conversations/today"
               className="inline-block mt-4 text-sm text-blue-600 hover:underline"
             >
-              Start your first reflection
+              Start your first conversation
             </Link>
           </CardContent>
         </Card>

@@ -29,12 +29,12 @@ const faqs = [
   {
     question: 'How does the AI generate images for my day?',
     answer:
-      'After your 3-minute voice session, our AI analyzes the themes, emotions, and key moments you described. It then creates a unique, artistic image that captures the essence of your day. These images serve as visual memories that complement your voice recordings.',
+      'After your conversation, our AI analyzes the themes, emotions, and key moments you described. It then creates a unique, artistic image that captures the essence of your day. These images serve as visual memories that complement your voice recordings.',
   },
   {
-    question: "What's the difference between voice sessions and reflections?",
+    question: 'What can I talk about in a conversation?',
     answer:
-      'Voice sessions (3 minutes) are quick daily check-ins where you share what happened in your day and receive an AI-generated image. Reflection sessions (10 minutes, Pro only) are deeper, therapeutic conversations where the AI asks thoughtful questions to help you process emotions, explore thoughts, and gain insights.',
+      "Anything. Each day you get one voice conversation of up to 15 minutes. Some days that's processing a hard week or a relationship; other days it's philosophy, meaning, science, or a question about how the world works. Your companion adapts: it listens and reflects like a therapist when you need it, and explains, challenges and explores ideas with you when you're curious. It also remembers your past conversations, so you can pick up where you left off. End whenever you like.",
   },
 ]
 

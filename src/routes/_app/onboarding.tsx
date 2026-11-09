@@ -221,7 +221,7 @@ function OnboardingPage() {
     mutationFn: () => completeOnboardingFn(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['auth'] })
-      navigate({ to: '/memories/today' })
+      navigate({ to: '/conversations/today' })
     },
   })
 
