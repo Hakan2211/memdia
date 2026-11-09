@@ -1,6 +1,5 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router'
 import {
-  Brain,
   Images,
   Lightbulb,
   LogOut,
@@ -139,23 +138,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     <Images className="h-5! w-5!" />
                     <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
                       Timeline
-                    </span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive('/memory')}
-                  tooltip="Memory"
-                  size="lg"
-                  className="data-[active=true]:bg-primary/5 data-[active=true]:text-primary group-data-[collapsible=icon]:justify-center"
-                  onClick={handleNavClick}
-                >
-                  <Link to="/memory">
-                    <Brain className="h-5! w-5!" />
-                    <span className="text-base font-medium group-data-[collapsible=icon]:hidden">
-                      Memory
                     </span>
                   </Link>
                 </SidebarMenuButton>

@@ -16,6 +16,7 @@ import {
 } from '../../server/session.fn'
 import { useSession } from '../../lib/auth-client'
 import { Button } from '../../components/ui/button'
+import { MemorySettings } from '../../components/profile/MemorySettings'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import {
@@ -662,6 +663,8 @@ function ProfilePage() {
               </div>
             </div>
           </div>
+
+          <MemorySettings />
         </div>
       </div>
     </div>

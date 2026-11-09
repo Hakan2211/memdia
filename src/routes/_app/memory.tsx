@@ -3,21 +3,23 @@
  *
  * Shows what the companion remembers about the user — the long-term profile
  * and the notes it wrote after recent conversations — and lets them delete
- * single items, forget a conversation, or wipe everything.
+ * single items or forget a conversation. Deliberately not in the main
+ * navigation: it's reached from Profile → Memory, which also holds
+ * "forget everything".
  */
 
 import { useState } from 'react'
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { format, formatDistanceToNow } from 'date-fns'
-import { Brain, Loader2, Trash2, X } from 'lucide-react'
+import { Brain, ChevronLeft, Loader2, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   deleteMemoryItemFn,
   forgetConversationFn,
   getMemoryFn,
-  wipeMemoryFn,
 } from '../../server/memory.fn'
+import { MEMORY_QUERY_KEY } from '../../components/profile/MemorySettings'
 import { Button } from '../../components/ui/button'
 import {
   Card,
@@ -50,11 +52,7 @@ const SECTION_LABELS: Record<string, string> = {
   'How they like to talk': 'How you like to talk',
 }
 
-const MEMORY_QUERY_KEY = ['memory'] as const
-
-type ConfirmAction =
-  | { type: 'forget'; sessionId: string; date: Date }
-  | { type: 'wipe' }
+type ConfirmAction = { sessionId: string; date: Date }
 
 function MemoryPage() {
   const queryClient = useQueryClient()
@@ -93,16 +91,6 @@ function MemoryPage() {
     onSettled: () => void refresh(),
   })
 
-  const wipe = useMutation({
-    mutationFn: () => wipeMemoryFn(),
-    onSuccess: () => {
-      toast.success('Your companion’s memory has been wiped')
-      setConfirm(null)
-    },
-    onError: () => toast.error('Failed to wipe memory'),
-    onSettled: () => void refresh(),
-  })
-
   const sections = (data?.sections ?? []).filter((s) => s.items.length > 0)
   const notes = data?.notes ?? []
   const isEmpty = sections.length === 0 && notes.length === 0
@@ -111,6 +99,13 @@ function MemoryPage() {
     <div className="flex flex-col">
       {/* Header */}
       <div className="border-b px-6 py-4">
+        <Link
+          to="/profile"
+          className="mb-2 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ChevronLeft className="mr-0.5 h-4 w-4" />
+          Profile
+        </Link>
         <h1 className="text-2xl font-bold tracking-tight">Memory</h1>
         <p className="text-sm text-muted-foreground mt-1">
           What your companion remembers about you, and what it forgets
@@ -234,7 +229,6 @@ function MemoryPage() {
                           className="cursor-pointer text-muted-foreground hover:text-destructive"
                           onClick={() =>
                             setConfirm({
-                              type: 'forget',
                               sessionId: n.sessionId,
                               date: new Date(n.date),
                             })
@@ -265,59 +259,29 @@ function MemoryPage() {
             </p>
           </>
         )}
-
-        {/* Danger zone */}
-        {!isLoading && !isEmpty && (
-          <Card className="border-destructive/30">
-            <CardHeader>
-              <CardTitle className="text-base">Forget everything</CardTitle>
-              <CardDescription>
-                Wipe everything your companion remembers and start fresh. Your
-                conversations, journal entries and Insights are kept.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                variant="destructive"
-                className="cursor-pointer"
-                onClick={() => setConfirm({ type: 'wipe' })}
-              >
-                Wipe memory
-              </Button>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Confirmation */}
       <Dialog
         open={!!confirm}
         onOpenChange={(open) => {
-          if (!open && !forgetConversation.isPending && !wipe.isPending) {
-            setConfirm(null)
-          }
+          if (!open && !forgetConversation.isPending) setConfirm(null)
         }}
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {confirm?.type === 'wipe'
-                ? 'Wipe your companion’s memory?'
-                : 'Forget this conversation?'}
-            </DialogTitle>
+            <DialogTitle>Forget this conversation?</DialogTitle>
             <DialogDescription>
-              {confirm?.type === 'wipe'
-                ? 'Your companion will no longer remember anything from your past conversations or check-ins: not what it learned about you, not its notes, and it won’t look back at them anymore. Your conversations, journal entries and Insights stay. This can’t be undone.'
-                : confirm?.type === 'forget'
-                  ? `Your companion will delete its note from ${format(confirm.date, 'MMMM d')} and won’t look back at that conversation anymore. Anything it already learned from it stays in the cards above; delete those items separately. The conversation itself stays in your journal.`
-                  : ''}
+              {confirm
+                ? `Your companion will delete its note from ${format(confirm.date, 'MMMM d')} and won’t look back at that conversation anymore. Anything it already learned from it stays in the cards above; delete those items separately. The conversation itself stays in your journal.`
+                : ''}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
               className="cursor-pointer"
-              disabled={forgetConversation.isPending || wipe.isPending}
+              disabled={forgetConversation.isPending}
               onClick={() => setConfirm(null)}
             >
               Cancel
@@ -325,17 +289,15 @@ function MemoryPage() {
             <Button
               variant="destructive"
               className="cursor-pointer"
-              disabled={forgetConversation.isPending || wipe.isPending}
+              disabled={forgetConversation.isPending}
               onClick={() => {
-                if (confirm?.type === 'wipe') wipe.mutate()
-                else if (confirm?.type === 'forget')
-                  forgetConversation.mutate(confirm.sessionId)
+                if (confirm) forgetConversation.mutate(confirm.sessionId)
               }}
             >
-              {(forgetConversation.isPending || wipe.isPending) && (
+              {forgetConversation.isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
-              {confirm?.type === 'wipe' ? 'Wipe memory' : 'Forget'}
+              Forget
             </Button>
           </DialogFooter>
         </DialogContent>

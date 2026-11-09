@@ -22,6 +22,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { format } from 'date-fns'
 import { AlertCircle, MessageCircle, Play, Volume2 } from 'lucide-react'
 import { toast } from 'sonner'
+import { useSession } from '../../lib/auth-client'
 import { Button } from '../../components/ui/button'
 import { MagicButton } from '../../components/ui/magic-button'
 import {
@@ -78,6 +79,13 @@ type SessionState =
 function TodayReflection() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const routeContext = Route.useRouteContext()
+  const { data: authSession } = useSession()
+  // Session user first (reflects a just-changed name), route context as fallback
+  const userFirstName =
+    (authSession?.user.name ?? routeContext.user.name ?? '')
+      .trim()
+      .split(/\s+/)[0] || null
   const [sessionState, setSessionState] = useState<SessionState>('idle')
   const [currentSpeaker, setCurrentSpeaker] = useState<'user' | 'ai' | null>(
     null,
@@ -1079,15 +1087,8 @@ function TodayReflection() {
         </div>
       )}
 
-      {/* Date Header - positioned at top */}
-      <div className="flex flex-col items-center justify-center pt-4 pb-8 space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <h1 className="text-3xl md:text-4xl font-extralight tracking-tight text-foreground/90">
-          {format(new Date(), 'EEEE')}
-        </h1>
-        <p className="text-sm text-muted-foreground font-light tracking-wide uppercase">
-          {format(new Date(), 'MMMM d, yyyy')}
-        </p>
-      </div>
+      {/* Greeting header - positioned at top */}
+      <TodayHeader name={userFirstName} />
 
       {/* Main content area - centered vertically */}
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -1384,6 +1385,60 @@ function CompletedReflectionView({
           </p>
         </div>
       )}
+    </div>
+  )
+}
+
+// ==========================================
+// Greeting header
+// ==========================================
+
+/** Time-of-day greeting in the user's local time. */
+function greetingFor(date: Date): string {
+  const hour = date.getHours()
+  if (hour < 5) return 'Still up'
+  if (hour < 12) return 'Good morning'
+  if (hour < 18) return 'Good afternoon'
+  return 'Good evening'
+}
+
+/**
+ * "MONDAY · NOVEMBER 9" over "Good evening, Hakan".
+ *
+ * Rendered only after mount: the server runs in UTC, so a server-rendered
+ * greeting/date would be wrong for most users and cause a hydration mismatch.
+ * A same-height placeholder keeps the layout from jumping.
+ */
+function TodayHeader({ name }: { name: string | null }) {
+  const [now, setNow] = useState<Date | null>(null)
+  useEffect(() => {
+    setNow(new Date())
+  }, [])
+
+  if (!now) return <div className="pt-6 pb-8 h-[104px] md:h-[112px]" />
+
+  const greeting = greetingFor(now)
+  const isLateNight = greeting === 'Still up'
+
+  return (
+    <div className="flex flex-col items-center pt-6 pb-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <p className="text-xs font-medium uppercase tracking-[0.25em] text-muted-foreground">
+        {format(now, 'EEEE')}
+        <span className="mx-2 text-muted-foreground/40">·</span>
+        {format(now, 'MMMM d')}
+      </p>
+      <h1 className="mt-3 text-3xl md:text-4xl font-extralight tracking-tight text-foreground/90">
+        {greeting}
+        {name && (
+          <>
+            {', '}
+            <span className="font-normal bg-linear-to-r from-[#7e9ec9] to-[#5a7ba6] bg-clip-text text-transparent">
+              {name}
+            </span>
+          </>
+        )}
+        {isLateNight ? '?' : ''}
+      </h1>
     </div>
   )
 }
