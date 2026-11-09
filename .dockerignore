@@ -10,7 +10,10 @@ dist
 
 # Development files
 .git
-.gitignore
+# NOTE: keep .gitignore in the build context. Tailwind v4 uses it to decide
+# which files to scan for classes; without it the server build also scans the
+# client output in .output/, produces different CSS, and links a stylesheet
+# hash that doesn't exist in production (unstyled site).
 .vscode
 .cursor
 *.log
