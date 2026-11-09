@@ -10,7 +10,7 @@ import { prisma } from '../db'
 import {
   EXTRACTION_SYSTEM_PROMPT,
   buildExtractionPrompt,
-  isValidExtractionResult,
+  normalizeExtractionResult,
 } from '../lib/prompts/extraction'
 import {
   OPENROUTER_MODELS,
@@ -47,19 +47,23 @@ async function saveExtractedInsights(
 ): Promise<void> {
   // Use transaction for atomicity
   await prisma.$transaction(async (tx) => {
-    // 1. Save mood
-    await tx.reflectionMood.upsert({
-      where: { sessionId },
-      create: {
-        sessionId,
-        mood: extracted.mood.primary,
-        confidence: extracted.mood.confidence,
-      },
-      update: {
-        mood: extracted.mood.primary,
-        confidence: extracted.mood.confidence,
-      },
-    })
+    // 1. Save mood (optional — purely intellectual conversations may have none)
+    if (extracted.mood) {
+      await tx.reflectionMood.upsert({
+        where: { sessionId },
+        create: {
+          sessionId,
+          mood: extracted.mood.primary,
+          confidence: extracted.mood.confidence,
+        },
+        update: {
+          mood: extracted.mood.primary,
+          confidence: extracted.mood.confidence,
+        },
+      })
+    } else {
+      await tx.reflectionMood.deleteMany({ where: { sessionId } })
+    }
 
     // 2. Save topics (delete existing first)
     await tx.reflectionTopic.deleteMany({ where: { sessionId } })
@@ -84,7 +88,20 @@ async function saveExtractedInsights(
       })
     }
 
-    // 4. Save todos
+    // 4. Save references: thinkers, books, works, concepts (delete existing first)
+    await tx.reflectionReference.deleteMany({ where: { sessionId } })
+    if (extracted.references.length > 0) {
+      await tx.reflectionReference.createMany({
+        data: extracted.references.map((ref) => ({
+          sessionId,
+          name: ref.name,
+          kind: ref.kind,
+          note: ref.note,
+        })),
+      })
+    }
+
+    // 5. Save todos
     if (extracted.todos.length > 0) {
       await tx.todo.createMany({
         data: extracted.todos.map((todo) => ({
@@ -98,7 +115,7 @@ async function saveExtractedInsights(
       })
     }
 
-    // 5. Save people and mentions
+    // 6. Save people and mentions
     for (const personData of extracted.people) {
       // Upsert person
       const person = await tx.person.upsert({
@@ -239,25 +256,27 @@ export async function extractInsightsFromSession(
       .replace(/```\n?/g, '')
       .trim()
 
-    let extracted: ExtractedInsights
+    let parsed: unknown
     try {
-      extracted = JSON.parse(cleanedResponse)
+      parsed = JSON.parse(cleanedResponse)
     } catch (parseError) {
       console.error('[Extraction] Failed to parse JSON:', parseError)
       console.error('[Extraction] Raw response:', response)
       return null
     }
 
-    // Validate structure
-    if (!isValidExtractionResult(extracted)) {
+    // Validate + normalize (drops malformed items instead of failing outright)
+    const extracted = normalizeExtractionResult(parsed)
+    if (!extracted) {
       console.error('[Extraction] Invalid extraction result structure')
       return null
     }
 
     console.log(
-      `[Extraction] Successfully extracted: mood=${extracted.mood.primary}, ` +
+      `[Extraction] Successfully extracted: mood=${extracted.mood?.primary ?? 'none'}, ` +
         `topics=${extracted.topics.length}, insights=${extracted.insights.length}, ` +
-        `todos=${extracted.todos.length}, people=${extracted.people.length}`,
+        `todos=${extracted.todos.length}, people=${extracted.people.length}, ` +
+        `references=${extracted.references.length}`,
     )
 
     // Save to database

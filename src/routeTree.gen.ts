@@ -40,6 +40,7 @@ import { Route as AppInsightsTodosRouteImport } from './routes/_app/insights.tod
 import { Route as AppInsightsPeopleRouteImport } from './routes/_app/insights.people'
 import { Route as AppInsightsMoodsRouteImport } from './routes/_app/insights.moods'
 import { Route as AppInsightsInsightsRouteImport } from './routes/_app/insights.insights'
+import { Route as AppInsightsIdeasRouteImport } from './routes/_app/insights.ideas'
 import { Route as AppConversationsTodayRouteImport } from './routes/_app/conversations.today'
 import { Route as AppConversationsDateRouteImport } from './routes/_app/conversations.$date'
 
@@ -196,6 +197,11 @@ const AppInsightsInsightsRoute = AppInsightsInsightsRouteImport.update({
   path: '/insights',
   getParentRoute: () => AppInsightsRoute,
 } as any)
+const AppInsightsIdeasRoute = AppInsightsIdeasRouteImport.update({
+  id: '/ideas',
+  path: '/ideas',
+  getParentRoute: () => AppInsightsRoute,
+} as any)
 const AppConversationsTodayRoute = AppConversationsTodayRouteImport.update({
   id: '/today',
   path: '/today',
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof AuthSignupRoute
   '/conversations/$date': typeof AppConversationsDateRoute
   '/conversations/today': typeof AppConversationsTodayRoute
+  '/insights/ideas': typeof AppInsightsIdeasRoute
   '/insights/insights': typeof AppInsightsInsightsRoute
   '/insights/moods': typeof AppInsightsMoodsRoute
   '/insights/people': typeof AppInsightsPeopleRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/signup': typeof AuthSignupRoute
   '/conversations/$date': typeof AppConversationsDateRoute
   '/conversations/today': typeof AppConversationsTodayRoute
+  '/insights/ideas': typeof AppInsightsIdeasRoute
   '/insights/insights': typeof AppInsightsInsightsRoute
   '/insights/moods': typeof AppInsightsMoodsRoute
   '/insights/people': typeof AppInsightsPeopleRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/_auth/signup': typeof AuthSignupRoute
   '/_app/conversations/$date': typeof AppConversationsDateRoute
   '/_app/conversations/today': typeof AppConversationsTodayRoute
+  '/_app/insights/ideas': typeof AppInsightsIdeasRoute
   '/_app/insights/insights': typeof AppInsightsInsightsRoute
   '/_app/insights/moods': typeof AppInsightsMoodsRoute
   '/_app/insights/people': typeof AppInsightsPeopleRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/conversations/$date'
     | '/conversations/today'
+    | '/insights/ideas'
     | '/insights/insights'
     | '/insights/moods'
     | '/insights/people'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/conversations/$date'
     | '/conversations/today'
+    | '/insights/ideas'
     | '/insights/insights'
     | '/insights/moods'
     | '/insights/people'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/_auth/signup'
     | '/_app/conversations/$date'
     | '/_app/conversations/today'
+    | '/_app/insights/ideas'
     | '/_app/insights/insights'
     | '/_app/insights/moods'
     | '/_app/insights/people'
@@ -642,6 +654,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppInsightsInsightsRouteImport
       parentRoute: typeof AppInsightsRoute
     }
+    '/_app/insights/ideas': {
+      id: '/_app/insights/ideas'
+      path: '/ideas'
+      fullPath: '/insights/ideas'
+      preLoaderRoute: typeof AppInsightsIdeasRouteImport
+      parentRoute: typeof AppInsightsRoute
+    }
     '/_app/conversations/today': {
       id: '/_app/conversations/today'
       path: '/today'
@@ -673,6 +692,7 @@ const AppConversationsRouteWithChildren =
   AppConversationsRoute._addFileChildren(AppConversationsRouteChildren)
 
 interface AppInsightsRouteChildren {
+  AppInsightsIdeasRoute: typeof AppInsightsIdeasRoute
   AppInsightsInsightsRoute: typeof AppInsightsInsightsRoute
   AppInsightsMoodsRoute: typeof AppInsightsMoodsRoute
   AppInsightsPeopleRoute: typeof AppInsightsPeopleRoute
@@ -682,6 +702,7 @@ interface AppInsightsRouteChildren {
 }
 
 const AppInsightsRouteChildren: AppInsightsRouteChildren = {
+  AppInsightsIdeasRoute: AppInsightsIdeasRoute,
   AppInsightsInsightsRoute: AppInsightsInsightsRoute,
   AppInsightsMoodsRoute: AppInsightsMoodsRoute,
   AppInsightsPeopleRoute: AppInsightsPeopleRoute,

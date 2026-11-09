@@ -64,6 +64,7 @@ export const getSessionInsightsFn = createServerFn({ method: 'GET' })
         mood: true,
         topics: true,
         insights: true,
+        references: { orderBy: { createdAt: 'asc' } },
         personMentions: {
           include: {
             person: true,
@@ -88,6 +89,7 @@ export const getSessionInsightsFn = createServerFn({ method: 'GET' })
       mood: session.mood,
       topics: session.topics,
       insights: session.insights,
+      references: session.references,
       people: session.personMentions.map((m) => ({
         ...m.person,
         sentiment: m.sentiment,

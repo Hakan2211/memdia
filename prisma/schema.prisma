@@ -10,11 +10,11 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
+  id            String  @id @default(cuid())
+  email         String  @unique
   name          String?
   image         String?
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean @default(false)
 
   // RBAC
   role String @default("user") // "admin", "user"
@@ -194,9 +194,9 @@ model DeletedSessionAttempt {
   id     String   @id @default(cuid())
   userId String
   date   DateTime // The date of the deleted session (start of day)
-  
+
   createdAt DateTime @default(now())
-  
+
   // Unique constraint: one record per user per day (tracks that an attempt was used)
   @@unique([userId, date])
   @@map("deleted_session_attempt")
@@ -271,6 +271,7 @@ model ReflectionSession {
   topics         ReflectionTopic[]
   insights       ReflectionInsight[]
   personMentions PersonMention[]
+  references     ReflectionReference[]
 
   // Ensure one reflection session per user per day
   @@unique([userId, date])
@@ -458,6 +459,30 @@ model PersonMention {
 
   @@unique([personId, sessionId])
   @@map("person_mention")
+}
+
+// References - thinkers, books, works and named concepts that came up in a
+// conversation (by the user or the companion). Powers the "Ideas" insights tab
+// and lets the companion recall what the user has been exploring.
+model ReflectionReference {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   ReflectionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  // Canonical display name: "Seneca", "Thinking, Fast and Slow", "the hedonic treadmill"
+  name String
+
+  // thinker | book | work | concept
+  kind String
+
+  // One line on how it came up / why it mattered in this conversation
+  note String?
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([kind])
+  @@map("reflection_reference")
 }
 
 // ==========================================

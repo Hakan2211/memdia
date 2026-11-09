@@ -9,6 +9,7 @@ import {
   Heart,
   HelpCircle,
   Lightbulb,
+  Scale,
   Sparkles,
   Star,
   Target,
@@ -27,6 +28,7 @@ const CATEGORY_ICONS: Record<InsightCategory, React.ElementType> = {
   learning: BookOpen,
   idea: Sparkles,
   inspiration: Star,
+  view: Scale,
 }
 
 // Color classes for each category
@@ -39,6 +41,7 @@ const CATEGORY_COLORS: Record<InsightCategory, string> = {
   learning: 'border-green-500 bg-green-50 dark:bg-green-950/20',
   idea: 'border-cyan-500 bg-cyan-50 dark:bg-cyan-950/20',
   inspiration: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20',
+  view: 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20',
 }
 
 const ICON_COLORS: Record<InsightCategory, string> = {
@@ -50,6 +53,7 @@ const ICON_COLORS: Record<InsightCategory, string> = {
   learning: 'text-green-500',
   idea: 'text-cyan-500',
   inspiration: 'text-yellow-500',
+  view: 'text-indigo-500',
 }
 
 interface InsightCardProps {

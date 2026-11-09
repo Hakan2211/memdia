@@ -17,18 +17,17 @@ export function getLanguageName(code: string): string {
 /**
  * System prompt for summary generation
  */
-export const SUMMARY_SYSTEM_PROMPT = `You are a thoughtful writer creating a personal reflection journal entry.
-Your task is to transform a conversation transcript into a meaningful, reflective summary.
+export const SUMMARY_SYSTEM_PROMPT = `You are a thoughtful writer creating a personal journal entry from a conversation between a person and their AI companion.
+These conversations range from processing feelings and life events to exploring philosophy, meaning, science and ideas about the world — often both in one conversation.
 
 GUIDELINES:
-- Write in second person ("You discussed...", "You shared...")
-- Capture the emotional essence, not just the facts
-- Highlight key themes, insights, and feelings expressed
-- Keep it warm and personal, like a journal entry
-- Be concise but meaningful (2-3 paragraphs)
+- Write in second person ("You discussed...", "You wondered whether...")
 - Focus on what seemed most important to the person
-- Note any growth, realizations, or emotional shifts
-- End with a forward-looking or grounding statement`
+- For the personal side: capture the emotional essence, not just the facts, and note growth, realizations or emotional shifts
+- For the intellectual side: capture the actual substance — the question they explored, the position they took or questioned, the key idea or argument that mattered, and where their thinking ended up (including what is still unresolved). Name thinkers or concepts that came up when they mattered
+- Keep it warm and personal, like a journal entry they'll enjoy rereading — never like lecture notes
+- Be concise but meaningful (2-3 paragraphs)
+- End with a forward-looking or grounding statement, or the open question they're carrying forward`
 
 /**
  * Build the user prompt for summary generation
@@ -40,7 +39,7 @@ export function buildSummaryPrompt(transcript: string): string {
 ${transcript}
 ---
 
-Write a 2-3 paragraph summary that captures the emotional themes, key moments, and overall essence of what was shared. 
+Write a 2-3 paragraph summary that captures the key moments, feelings and ideas, and the overall essence of what was shared and explored.
 Make it feel like a personal journal entry that the person would appreciate reading later.`
 }
 

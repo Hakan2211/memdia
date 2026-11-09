@@ -1,6 +1,6 @@
 /**
  * Insights Types
- * Types for extracted insights from reflection sessions
+ * Types for insights extracted from conversations (ReflectionSession)
  */
 
 // ==========================================
@@ -78,6 +78,9 @@ export const INSIGHT_CATEGORIES = [
   'learning',
   'idea',
   'inspiration',
+  // A position the user holds or argued for (and may revise over time):
+  // "I think free will is an illusion, but we have to live as if it isn't"
+  'view',
 ] as const
 
 export type InsightCategory = (typeof INSIGHT_CATEGORIES)[number]
@@ -115,6 +118,33 @@ export const INSIGHT_CATEGORY_META: Record<
   learning: { label: 'Learning', icon: 'book-open', color: 'text-green-500' },
   idea: { label: 'Idea', icon: 'sparkles', color: 'text-cyan-500' },
   inspiration: { label: 'Inspiration', icon: 'star', color: 'text-yellow-500' },
+  view: { label: 'View', icon: 'scale', color: 'text-indigo-500' },
+}
+
+// ==========================================
+// Reference Types (thinkers, books, works, concepts)
+// ==========================================
+
+export const REFERENCE_KINDS = ['thinker', 'book', 'work', 'concept'] as const
+export type ReferenceKind = (typeof REFERENCE_KINDS)[number]
+
+export const REFERENCE_KIND_META: Record<
+  ReferenceKind,
+  { label: string; plural: string }
+> = {
+  thinker: { label: 'Thinker', plural: 'Thinkers' },
+  book: { label: 'Book', plural: 'Books' },
+  work: { label: 'Work', plural: 'Films, articles & other works' },
+  concept: { label: 'Concept', plural: 'Concepts & theories' },
+}
+
+export interface ReflectionReference {
+  id: string
+  sessionId: string
+  name: string
+  kind: ReferenceKind
+  note: string | null
+  createdAt: Date
 }
 
 // ==========================================
@@ -233,10 +263,12 @@ export interface PersonWithMentions extends Person {
 
 // Structure returned by AI extraction
 export interface ExtractedInsights {
+  // null when the conversation carried no clear emotional tone (e.g. a purely
+  // intellectual discussion) — better no mood than a made-up one
   mood: {
     primary: Mood
     confidence: number
-  }
+  } | null
   topics: Array<string>
   insights: Array<{
     text: string
@@ -252,6 +284,11 @@ export interface ExtractedInsights {
     name: string
     relationship: RelationshipType | null
     sentiment: Sentiment
+  }>
+  references: Array<{
+    name: string
+    kind: ReferenceKind
+    note: string | null
   }>
 }
 

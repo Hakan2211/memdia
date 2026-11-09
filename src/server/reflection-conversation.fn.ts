@@ -471,7 +471,7 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       .then((result) => {
         if (result) {
           console.log(
-            `[Process Reflection] Extracted insights: mood=${result.mood.primary}, ` +
+            `[Process Reflection] Extracted insights: mood=${result.mood?.primary ?? 'none'}, ` +
               `topics=${result.topics.length}, insights=${result.insights.length}, ` +
               `todos=${result.todos.length}, people=${result.people.length}`,
           )

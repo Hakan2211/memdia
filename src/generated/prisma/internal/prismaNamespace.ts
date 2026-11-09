@@ -403,6 +403,7 @@ export const ModelName = {
   Todo: 'Todo',
   Person: 'Person',
   PersonMention: 'PersonMention',
+  ReflectionReference: 'ReflectionReference',
   SubscriptionEvent: 'SubscriptionEvent'
 } as const
 
@@ -419,7 +420,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting" | "reflectionSession" | "reflectionTurn" | "deletedReflectionAttempt" | "dailyReflectionGreeting" | "reflectionMood" | "reflectionTopic" | "reflectionInsight" | "todo" | "person" | "personMention" | "subscriptionEvent"
+    modelProps: "user" | "session" | "account" | "verification" | "voiceSession" | "transcriptTurn" | "userPreferences" | "deletedSessionAttempt" | "dailyGreeting" | "reflectionSession" | "reflectionTurn" | "deletedReflectionAttempt" | "dailyReflectionGreeting" | "reflectionMood" | "reflectionTopic" | "reflectionInsight" | "todo" | "person" | "personMention" | "reflectionReference" | "subscriptionEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1829,6 +1830,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ReflectionReference: {
+      payload: Prisma.$ReflectionReferencePayload<ExtArgs>
+      fields: Prisma.ReflectionReferenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ReflectionReferenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ReflectionReferenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>
+        }
+        findFirst: {
+          args: Prisma.ReflectionReferenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ReflectionReferenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>
+        }
+        findMany: {
+          args: Prisma.ReflectionReferenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>[]
+        }
+        create: {
+          args: Prisma.ReflectionReferenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>
+        }
+        createMany: {
+          args: Prisma.ReflectionReferenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ReflectionReferenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>[]
+        }
+        delete: {
+          args: Prisma.ReflectionReferenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>
+        }
+        update: {
+          args: Prisma.ReflectionReferenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>
+        }
+        deleteMany: {
+          args: Prisma.ReflectionReferenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ReflectionReferenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ReflectionReferenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>[]
+        }
+        upsert: {
+          args: Prisma.ReflectionReferenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ReflectionReferencePayload>
+        }
+        aggregate: {
+          args: Prisma.ReflectionReferenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateReflectionReference>
+        }
+        groupBy: {
+          args: Prisma.ReflectionReferenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReflectionReferenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ReflectionReferenceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ReflectionReferenceCountAggregateOutputType> | number
+        }
+      }
+    }
     SubscriptionEvent: {
       payload: Prisma.$SubscriptionEventPayload<ExtArgs>
       fields: Prisma.SubscriptionEventFieldRefs
@@ -2213,6 +2288,18 @@ export const PersonMentionScalarFieldEnum = {
 export type PersonMentionScalarFieldEnum = (typeof PersonMentionScalarFieldEnum)[keyof typeof PersonMentionScalarFieldEnum]
 
 
+export const ReflectionReferenceScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  name: 'name',
+  kind: 'kind',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionReferenceScalarFieldEnum = (typeof ReflectionReferenceScalarFieldEnum)[keyof typeof ReflectionReferenceScalarFieldEnum]
+
+
 export const SubscriptionEventScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -2398,6 +2485,7 @@ export type GlobalOmitConfig = {
   todo?: Prisma.TodoOmit
   person?: Prisma.PersonOmit
   personMention?: Prisma.PersonMentionOmit
+  reflectionReference?: Prisma.ReflectionReferenceOmit
   subscriptionEvent?: Prisma.SubscriptionEventOmit
 }
 

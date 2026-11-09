@@ -310,6 +310,7 @@ export type ReflectionSessionWhereInput = {
   topics?: Prisma.ReflectionTopicListRelationFilter
   insights?: Prisma.ReflectionInsightListRelationFilter
   personMentions?: Prisma.PersonMentionListRelationFilter
+  references?: Prisma.ReflectionReferenceListRelationFilter
 }
 
 export type ReflectionSessionOrderByWithRelationInput = {
@@ -334,6 +335,7 @@ export type ReflectionSessionOrderByWithRelationInput = {
   topics?: Prisma.ReflectionTopicOrderByRelationAggregateInput
   insights?: Prisma.ReflectionInsightOrderByRelationAggregateInput
   personMentions?: Prisma.PersonMentionOrderByRelationAggregateInput
+  references?: Prisma.ReflectionReferenceOrderByRelationAggregateInput
 }
 
 export type ReflectionSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -362,6 +364,7 @@ export type ReflectionSessionWhereUniqueInput = Prisma.AtLeast<{
   topics?: Prisma.ReflectionTopicListRelationFilter
   insights?: Prisma.ReflectionInsightListRelationFilter
   personMentions?: Prisma.PersonMentionListRelationFilter
+  references?: Prisma.ReflectionReferenceListRelationFilter
 }, "id" | "userId_date">
 
 export type ReflectionSessionOrderByWithAggregationInput = {
@@ -429,6 +432,7 @@ export type ReflectionSessionCreateInput = {
   topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateInput = {
@@ -452,6 +456,7 @@ export type ReflectionSessionUncheckedCreateInput = {
   topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUpdateInput = {
@@ -475,6 +480,7 @@ export type ReflectionSessionUpdateInput = {
   topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateInput = {
@@ -498,6 +504,7 @@ export type ReflectionSessionUncheckedUpdateInput = {
   topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionCreateManyInput = {
@@ -751,6 +758,20 @@ export type ReflectionSessionUpdateOneRequiredWithoutPersonMentionsNestedInput =
   update?: Prisma.XOR<Prisma.XOR<Prisma.ReflectionSessionUpdateToOneWithWhereWithoutPersonMentionsInput, Prisma.ReflectionSessionUpdateWithoutPersonMentionsInput>, Prisma.ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput>
 }
 
+export type ReflectionSessionCreateNestedOneWithoutReferencesInput = {
+  create?: Prisma.XOR<Prisma.ReflectionSessionCreateWithoutReferencesInput, Prisma.ReflectionSessionUncheckedCreateWithoutReferencesInput>
+  connectOrCreate?: Prisma.ReflectionSessionCreateOrConnectWithoutReferencesInput
+  connect?: Prisma.ReflectionSessionWhereUniqueInput
+}
+
+export type ReflectionSessionUpdateOneRequiredWithoutReferencesNestedInput = {
+  create?: Prisma.XOR<Prisma.ReflectionSessionCreateWithoutReferencesInput, Prisma.ReflectionSessionUncheckedCreateWithoutReferencesInput>
+  connectOrCreate?: Prisma.ReflectionSessionCreateOrConnectWithoutReferencesInput
+  upsert?: Prisma.ReflectionSessionUpsertWithoutReferencesInput
+  connect?: Prisma.ReflectionSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReflectionSessionUpdateToOneWithWhereWithoutReferencesInput, Prisma.ReflectionSessionUpdateWithoutReferencesInput>, Prisma.ReflectionSessionUncheckedUpdateWithoutReferencesInput>
+}
+
 export type ReflectionSessionCreateWithoutUserInput = {
   id?: string
   date: Date | string
@@ -771,6 +792,7 @@ export type ReflectionSessionCreateWithoutUserInput = {
   topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateWithoutUserInput = {
@@ -793,6 +815,7 @@ export type ReflectionSessionUncheckedCreateWithoutUserInput = {
   topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionCreateOrConnectWithoutUserInput = {
@@ -861,6 +884,7 @@ export type ReflectionSessionCreateWithoutTurnsInput = {
   topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateWithoutTurnsInput = {
@@ -883,6 +907,7 @@ export type ReflectionSessionUncheckedCreateWithoutTurnsInput = {
   topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionCreateOrConnectWithoutTurnsInput = {
@@ -921,6 +946,7 @@ export type ReflectionSessionUpdateWithoutTurnsInput = {
   topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateWithoutTurnsInput = {
@@ -943,6 +969,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTurnsInput = {
   topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionCreateWithoutMoodInput = {
@@ -965,6 +992,7 @@ export type ReflectionSessionCreateWithoutMoodInput = {
   topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateWithoutMoodInput = {
@@ -987,6 +1015,7 @@ export type ReflectionSessionUncheckedCreateWithoutMoodInput = {
   topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionCreateOrConnectWithoutMoodInput = {
@@ -1025,6 +1054,7 @@ export type ReflectionSessionUpdateWithoutMoodInput = {
   topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateWithoutMoodInput = {
@@ -1047,6 +1077,7 @@ export type ReflectionSessionUncheckedUpdateWithoutMoodInput = {
   topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionCreateWithoutTopicsInput = {
@@ -1069,6 +1100,7 @@ export type ReflectionSessionCreateWithoutTopicsInput = {
   mood?: Prisma.ReflectionMoodCreateNestedOneWithoutSessionInput
   insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateWithoutTopicsInput = {
@@ -1091,6 +1123,7 @@ export type ReflectionSessionUncheckedCreateWithoutTopicsInput = {
   mood?: Prisma.ReflectionMoodUncheckedCreateNestedOneWithoutSessionInput
   insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionCreateOrConnectWithoutTopicsInput = {
@@ -1129,6 +1162,7 @@ export type ReflectionSessionUpdateWithoutTopicsInput = {
   mood?: Prisma.ReflectionMoodUpdateOneWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateWithoutTopicsInput = {
@@ -1151,6 +1185,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTopicsInput = {
   mood?: Prisma.ReflectionMoodUncheckedUpdateOneWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionCreateWithoutInsightsInput = {
@@ -1173,6 +1208,7 @@ export type ReflectionSessionCreateWithoutInsightsInput = {
   mood?: Prisma.ReflectionMoodCreateNestedOneWithoutSessionInput
   topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateWithoutInsightsInput = {
@@ -1195,6 +1231,7 @@ export type ReflectionSessionUncheckedCreateWithoutInsightsInput = {
   mood?: Prisma.ReflectionMoodUncheckedCreateNestedOneWithoutSessionInput
   topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
   personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionCreateOrConnectWithoutInsightsInput = {
@@ -1233,6 +1270,7 @@ export type ReflectionSessionUpdateWithoutInsightsInput = {
   mood?: Prisma.ReflectionMoodUpdateOneWithoutSessionNestedInput
   topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateWithoutInsightsInput = {
@@ -1255,6 +1293,7 @@ export type ReflectionSessionUncheckedUpdateWithoutInsightsInput = {
   mood?: Prisma.ReflectionMoodUncheckedUpdateOneWithoutSessionNestedInput
   topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionCreateWithoutPersonMentionsInput = {
@@ -1277,6 +1316,7 @@ export type ReflectionSessionCreateWithoutPersonMentionsInput = {
   mood?: Prisma.ReflectionMoodCreateNestedOneWithoutSessionInput
   topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionUncheckedCreateWithoutPersonMentionsInput = {
@@ -1299,6 +1339,7 @@ export type ReflectionSessionUncheckedCreateWithoutPersonMentionsInput = {
   mood?: Prisma.ReflectionMoodUncheckedCreateNestedOneWithoutSessionInput
   topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
   insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
+  references?: Prisma.ReflectionReferenceUncheckedCreateNestedManyWithoutSessionInput
 }
 
 export type ReflectionSessionCreateOrConnectWithoutPersonMentionsInput = {
@@ -1337,6 +1378,7 @@ export type ReflectionSessionUpdateWithoutPersonMentionsInput = {
   mood?: Prisma.ReflectionMoodUpdateOneWithoutSessionNestedInput
   topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput = {
@@ -1359,6 +1401,115 @@ export type ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput = {
   mood?: Prisma.ReflectionMoodUncheckedUpdateOneWithoutSessionNestedInput
   topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
+}
+
+export type ReflectionSessionCreateWithoutReferencesInput = {
+  id?: string
+  date: Date | string
+  status?: string
+  recordingAttempt?: number
+  totalUserSpeakingTime?: number
+  maxDuration?: number
+  contextBrief?: string | null
+  summaryText?: string | null
+  imageUrl?: string | null
+  imageStatus?: string
+  pausedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutReflectionSessionsInput
+  turns?: Prisma.ReflectionTurnCreateNestedManyWithoutSessionInput
+  mood?: Prisma.ReflectionMoodCreateNestedOneWithoutSessionInput
+  topics?: Prisma.ReflectionTopicCreateNestedManyWithoutSessionInput
+  insights?: Prisma.ReflectionInsightCreateNestedManyWithoutSessionInput
+  personMentions?: Prisma.PersonMentionCreateNestedManyWithoutSessionInput
+}
+
+export type ReflectionSessionUncheckedCreateWithoutReferencesInput = {
+  id?: string
+  userId: string
+  date: Date | string
+  status?: string
+  recordingAttempt?: number
+  totalUserSpeakingTime?: number
+  maxDuration?: number
+  contextBrief?: string | null
+  summaryText?: string | null
+  imageUrl?: string | null
+  imageStatus?: string
+  pausedAt?: Date | string | null
+  completedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  turns?: Prisma.ReflectionTurnUncheckedCreateNestedManyWithoutSessionInput
+  mood?: Prisma.ReflectionMoodUncheckedCreateNestedOneWithoutSessionInput
+  topics?: Prisma.ReflectionTopicUncheckedCreateNestedManyWithoutSessionInput
+  insights?: Prisma.ReflectionInsightUncheckedCreateNestedManyWithoutSessionInput
+  personMentions?: Prisma.PersonMentionUncheckedCreateNestedManyWithoutSessionInput
+}
+
+export type ReflectionSessionCreateOrConnectWithoutReferencesInput = {
+  where: Prisma.ReflectionSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReflectionSessionCreateWithoutReferencesInput, Prisma.ReflectionSessionUncheckedCreateWithoutReferencesInput>
+}
+
+export type ReflectionSessionUpsertWithoutReferencesInput = {
+  update: Prisma.XOR<Prisma.ReflectionSessionUpdateWithoutReferencesInput, Prisma.ReflectionSessionUncheckedUpdateWithoutReferencesInput>
+  create: Prisma.XOR<Prisma.ReflectionSessionCreateWithoutReferencesInput, Prisma.ReflectionSessionUncheckedCreateWithoutReferencesInput>
+  where?: Prisma.ReflectionSessionWhereInput
+}
+
+export type ReflectionSessionUpdateToOneWithWhereWithoutReferencesInput = {
+  where?: Prisma.ReflectionSessionWhereInput
+  data: Prisma.XOR<Prisma.ReflectionSessionUpdateWithoutReferencesInput, Prisma.ReflectionSessionUncheckedUpdateWithoutReferencesInput>
+}
+
+export type ReflectionSessionUpdateWithoutReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
+  maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutReflectionSessionsNestedInput
+  turns?: Prisma.ReflectionTurnUpdateManyWithoutSessionNestedInput
+  mood?: Prisma.ReflectionMoodUpdateOneWithoutSessionNestedInput
+  topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
+  insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
+  personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+}
+
+export type ReflectionSessionUncheckedUpdateWithoutReferencesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  recordingAttempt?: Prisma.IntFieldUpdateOperationsInput | number
+  totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
+  maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
+  contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  pausedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  turns?: Prisma.ReflectionTurnUncheckedUpdateManyWithoutSessionNestedInput
+  mood?: Prisma.ReflectionMoodUncheckedUpdateOneWithoutSessionNestedInput
+  topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
+  insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
+  personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionCreateManyUserInput = {
@@ -1398,6 +1549,7 @@ export type ReflectionSessionUpdateWithoutUserInput = {
   topics?: Prisma.ReflectionTopicUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateWithoutUserInput = {
@@ -1420,6 +1572,7 @@ export type ReflectionSessionUncheckedUpdateWithoutUserInput = {
   topics?: Prisma.ReflectionTopicUncheckedUpdateManyWithoutSessionNestedInput
   insights?: Prisma.ReflectionInsightUncheckedUpdateManyWithoutSessionNestedInput
   personMentions?: Prisma.PersonMentionUncheckedUpdateManyWithoutSessionNestedInput
+  references?: Prisma.ReflectionReferenceUncheckedUpdateManyWithoutSessionNestedInput
 }
 
 export type ReflectionSessionUncheckedUpdateManyWithoutUserInput = {
@@ -1449,6 +1602,7 @@ export type ReflectionSessionCountOutputType = {
   topics: number
   insights: number
   personMentions: number
+  references: number
 }
 
 export type ReflectionSessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1456,6 +1610,7 @@ export type ReflectionSessionCountOutputTypeSelect<ExtArgs extends runtime.Types
   topics?: boolean | ReflectionSessionCountOutputTypeCountTopicsArgs
   insights?: boolean | ReflectionSessionCountOutputTypeCountInsightsArgs
   personMentions?: boolean | ReflectionSessionCountOutputTypeCountPersonMentionsArgs
+  references?: boolean | ReflectionSessionCountOutputTypeCountReferencesArgs
 }
 
 /**
@@ -1496,6 +1651,13 @@ export type ReflectionSessionCountOutputTypeCountPersonMentionsArgs<ExtArgs exte
   where?: Prisma.PersonMentionWhereInput
 }
 
+/**
+ * ReflectionSessionCountOutputType without action
+ */
+export type ReflectionSessionCountOutputTypeCountReferencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReflectionReferenceWhereInput
+}
+
 
 export type ReflectionSessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1519,6 +1681,7 @@ export type ReflectionSessionSelect<ExtArgs extends runtime.Types.Extensions.Int
   topics?: boolean | Prisma.ReflectionSession$topicsArgs<ExtArgs>
   insights?: boolean | Prisma.ReflectionSession$insightsArgs<ExtArgs>
   personMentions?: boolean | Prisma.ReflectionSession$personMentionsArgs<ExtArgs>
+  references?: boolean | Prisma.ReflectionSession$referencesArgs<ExtArgs>
   _count?: boolean | Prisma.ReflectionSessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["reflectionSession"]>
 
@@ -1586,6 +1749,7 @@ export type ReflectionSessionInclude<ExtArgs extends runtime.Types.Extensions.In
   topics?: boolean | Prisma.ReflectionSession$topicsArgs<ExtArgs>
   insights?: boolean | Prisma.ReflectionSession$insightsArgs<ExtArgs>
   personMentions?: boolean | Prisma.ReflectionSession$personMentionsArgs<ExtArgs>
+  references?: boolean | Prisma.ReflectionSession$referencesArgs<ExtArgs>
   _count?: boolean | Prisma.ReflectionSessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReflectionSessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1604,6 +1768,7 @@ export type $ReflectionSessionPayload<ExtArgs extends runtime.Types.Extensions.I
     topics: Prisma.$ReflectionTopicPayload<ExtArgs>[]
     insights: Prisma.$ReflectionInsightPayload<ExtArgs>[]
     personMentions: Prisma.$PersonMentionPayload<ExtArgs>[]
+    references: Prisma.$ReflectionReferencePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2021,6 +2186,7 @@ export interface Prisma__ReflectionSessionClient<T, Null = never, ExtArgs extend
   topics<T extends Prisma.ReflectionSession$topicsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReflectionSession$topicsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReflectionTopicPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   insights<T extends Prisma.ReflectionSession$insightsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReflectionSession$insightsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReflectionInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   personMentions<T extends Prisma.ReflectionSession$personMentionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReflectionSession$personMentionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PersonMentionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  references<T extends Prisma.ReflectionSession$referencesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ReflectionSession$referencesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReflectionReferencePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2571,6 +2737,30 @@ export type ReflectionSession$personMentionsArgs<ExtArgs extends runtime.Types.E
   take?: number
   skip?: number
   distinct?: Prisma.PersonMentionScalarFieldEnum | Prisma.PersonMentionScalarFieldEnum[]
+}
+
+/**
+ * ReflectionSession.references
+ */
+export type ReflectionSession$referencesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReflectionReference
+   */
+  select?: Prisma.ReflectionReferenceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ReflectionReference
+   */
+  omit?: Prisma.ReflectionReferenceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReflectionReferenceInclude<ExtArgs> | null
+  where?: Prisma.ReflectionReferenceWhereInput
+  orderBy?: Prisma.ReflectionReferenceOrderByWithRelationInput | Prisma.ReflectionReferenceOrderByWithRelationInput[]
+  cursor?: Prisma.ReflectionReferenceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReflectionReferenceScalarFieldEnum | Prisma.ReflectionReferenceScalarFieldEnum[]
 }
 
 /**

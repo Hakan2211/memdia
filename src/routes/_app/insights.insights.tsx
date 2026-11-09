@@ -23,6 +23,7 @@ export const Route = createFileRoute('/_app/insights/insights')({
 })
 
 const CATEGORY_ORDER: Array<InsightCategory> = [
+  'view',
   'realization',
   'goal',
   'gratitude',
@@ -111,6 +112,7 @@ function getCategoryEmoji(category: InsightCategory): string {
     learning: '',
     idea: '',
     inspiration: '',
+    view: '',
   }
   return emojis[category]
 }

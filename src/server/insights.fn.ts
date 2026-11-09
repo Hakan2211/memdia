@@ -10,6 +10,7 @@ import { authMiddleware } from './middleware'
 import type {
   InsightCategory,
   Mood,
+  ReferenceKind,
   Sentiment,
   TodoPriority,
 } from '../types/insights'
@@ -418,6 +419,64 @@ export const getSessionsByTopicFn = createServerFn({ method: 'GET' })
   })
 
 // ==========================================
+// References (thinkers, books, works, concepts)
+// ==========================================
+
+/**
+ * All references across the user's conversations, merged by kind + name
+ * (case-insensitive), most-discussed first. Each entry lists the
+ * conversations it came up in so the UI can link back to them.
+ */
+export const getReferencesFn = createServerFn({ method: 'GET' })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const userId = context.user.id
+
+    const refs = await prisma.reflectionReference.findMany({
+      where: { session: { userId } },
+      include: { session: { select: { date: true } } },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    const merged = new Map<
+      string,
+      {
+        name: string
+        kind: ReferenceKind
+        count: number
+        lastDate: Date
+        mentions: Array<{ date: Date; note: string | null }>
+      }
+    >()
+
+    for (const ref of refs) {
+      const key = `${ref.kind}:${ref.name.toLowerCase()}`
+      const existing = merged.get(key)
+      const mention = { date: ref.session.date, note: ref.note }
+      if (existing) {
+        existing.count += 1
+        existing.mentions.push(mention)
+        if (ref.session.date > existing.lastDate) {
+          existing.lastDate = ref.session.date
+        }
+      } else {
+        merged.set(key, {
+          name: ref.name,
+          kind: ref.kind as ReferenceKind,
+          count: 1,
+          lastDate: ref.session.date,
+          mentions: [mention],
+        })
+      }
+    }
+
+    return [...merged.values()].sort(
+      (a, b) =>
+        b.count - a.count || b.lastDate.getTime() - a.lastDate.getTime(),
+    )
+  })
+
+// ==========================================
 // Insights (Categorized)
 // ==========================================
 
@@ -477,6 +536,7 @@ export const getInsightsByCategoryFn = createServerFn({ method: 'GET' })
       learning: [],
       idea: [],
       inspiration: [],
+      view: [],
     }
 
     for (const insight of insights) {

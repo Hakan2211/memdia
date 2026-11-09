@@ -10,6 +10,7 @@ import {
   useLocation,
 } from '@tanstack/react-router'
 import {
+  BookOpen,
   CheckSquare,
   LayoutDashboard,
   Lightbulb,
@@ -30,6 +31,7 @@ const TABS = [
   { path: '/insights/moods', label: 'Moods', icon: Smile },
   { path: '/insights/topics', label: 'Topics', icon: Tag },
   { path: '/insights/insights', label: 'Insights', icon: Lightbulb },
+  { path: '/insights/ideas', label: 'Ideas', icon: BookOpen },
 ] as const
 
 function InsightsLayout() {
@@ -41,7 +43,7 @@ function InsightsLayout() {
       <div className="border-b px-6 py-4">
         <h1 className="text-2xl font-bold tracking-tight">Insights</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Discover patterns from your reflections
+          Discover patterns from your conversations
         </p>
       </div>
 

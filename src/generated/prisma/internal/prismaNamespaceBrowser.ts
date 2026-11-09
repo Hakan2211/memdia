@@ -70,6 +70,7 @@ export const ModelName = {
   Todo: 'Todo',
   Person: 'Person',
   PersonMention: 'PersonMention',
+  ReflectionReference: 'ReflectionReference',
   SubscriptionEvent: 'SubscriptionEvent'
 } as const
 
@@ -358,6 +359,18 @@ export const PersonMentionScalarFieldEnum = {
 } as const
 
 export type PersonMentionScalarFieldEnum = (typeof PersonMentionScalarFieldEnum)[keyof typeof PersonMentionScalarFieldEnum]
+
+
+export const ReflectionReferenceScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  name: 'name',
+  kind: 'kind',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type ReflectionReferenceScalarFieldEnum = (typeof ReflectionReferenceScalarFieldEnum)[keyof typeof ReflectionReferenceScalarFieldEnum]
 
 
 export const SubscriptionEventScalarFieldEnum = {

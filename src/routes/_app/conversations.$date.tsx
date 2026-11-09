@@ -207,6 +207,14 @@ function ReflectionByDate() {
               )}
             </div>
           )}
+
+        {/* Thinkers, books and concepts explored */}
+        {insights && insights.references.length > 0 && (
+          <p className="mx-auto mt-3 max-w-xl text-center text-xs text-muted-foreground">
+            <span className="font-medium">Explored: </span>
+            {insights.references.map((r) => r.name).join(' · ')}
+          </p>
+        )}
       </div>
 
       {/* View Full Insights Link */}
