@@ -238,6 +238,7 @@ export const ReflectionSessionScalarFieldEnum = {
   contextBrief: 'contextBrief',
   memoryNote: 'memoryNote',
   memoryMergedAt: 'memoryMergedAt',
+  memoryForgotten: 'memoryForgotten',
   summaryText: 'summaryText',
   imageUrl: 'imageUrl',
   imageStatus: 'imageStatus',
@@ -398,6 +399,7 @@ export const UserMemoryScalarFieldEnum = {
   profile: 'profile',
   sessionCount: 'sessionCount',
   backfilledAt: 'backfilledAt',
+  wipedAt: 'wipedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

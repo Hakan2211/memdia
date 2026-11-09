@@ -334,6 +334,10 @@ export function buildMemoryBrief(input: {
   const now = input.now ?? new Date()
   const parts: Array<string> = []
 
+  // No profile and no notes (first conversations, or the user wiped their
+  // memory): inject nothing — todos alone would contradict "forgotten".
+  if (!input.profile?.trim() && input.recentNotes.length === 0) return null
+
   if (input.profile?.trim()) {
     parts.push(
       `WHAT YOU KNOW ABOUT THEM (long-term profile):\n${input.profile.trim()}`,
@@ -427,4 +431,77 @@ export function cleanOpeningLine(raw: string): string | null {
     .trim()
   if (line.length < 8 || line.length > 300) return null
   return line
+}
+
+// ==========================================
+// Viewing / editing the profile (memory page)
+// ==========================================
+
+export interface ProfileSection {
+  heading: string
+  items: Array<string>
+}
+
+const HEADING_RE = /^##\s*(.+?)\s*$/
+const BULLET_RE = /^\s*[-*•]\s*(.*)$/
+
+/**
+ * Parse the profile into sections of bullet items. Continuation lines are
+ * joined onto the previous bullet; empty "-" placeholders are dropped.
+ */
+export function parseProfile(profile: string | null): Array<ProfileSection> {
+  if (!profile?.trim()) return []
+  const sections: Array<ProfileSection> = []
+  let current: ProfileSection | null = null
+
+  for (const line of profile.split(/\r?\n/)) {
+    const heading = line.match(HEADING_RE)
+    if (heading) {
+      current = { heading: heading[1], items: [] }
+      sections.push(current)
+      continue
+    }
+    if (!current || !line.trim()) continue
+    const bullet = line.match(BULLET_RE)
+    if (bullet) {
+      current.items.push(bullet[1].trim())
+    } else if (current.items.length > 0) {
+      current.items[current.items.length - 1] += ` ${line.trim()}`
+    } else {
+      current.items.push(line.trim())
+    }
+  }
+
+  return sections.map((s) => ({
+    heading: s.heading,
+    items: s.items.filter((i) => i.length > 0),
+  }))
+}
+
+/** Serialize sections back into the profile format. */
+export function serializeProfile(sections: Array<ProfileSection>): string {
+  return sections
+    .map(
+      (s) =>
+        `## ${s.heading}\n${s.items.length > 0 ? s.items.map((i) => `- ${i}`).join('\n') : '-'}`,
+    )
+    .join('\n\n')
+}
+
+/**
+ * Remove one item from the profile. Returns the new profile, or null if the
+ * section/item wasn't found (e.g. the profile changed in the meantime).
+ */
+export function removeProfileItem(
+  profile: string,
+  heading: string,
+  item: string,
+): string | null {
+  const sections = parseProfile(profile)
+  const section = sections.find((s) => s.heading === heading)
+  if (!section) return null
+  const index = section.items.indexOf(item)
+  if (index === -1) return null
+  section.items.splice(index, 1)
+  return serializeProfile(sections)
 }

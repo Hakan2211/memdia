@@ -40,6 +40,14 @@ const SESSION_STATE_TTL_MS = 60 * 60 * 1000
 
 const indexLockKey = (userId: string) => `recall-index:${userId}`
 
+/** Serialize work with this user's recall indexing (used by memory deletion). */
+export function withRecallIndexLock<T>(
+  userId: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  return withLock(indexLockKey(userId), fn)
+}
+
 // ==========================================
 // Per-user chunk cache
 // ==========================================
@@ -159,7 +167,12 @@ export function indexConversation(
 ): Promise<void> {
   return withLock(indexLockKey(userId), async () => {
     const session = await prisma.reflectionSession.findFirst({
-      where: { id: sessionId, userId, status: 'completed' },
+      where: {
+        id: sessionId,
+        userId,
+        status: 'completed',
+        memoryForgotten: false,
+      },
       select: {
         id: true,
         userId: true,
@@ -187,11 +200,17 @@ export function indexConversation(
  */
 export function ensureRecallIndex(userId: string): Promise<void> {
   return withLock(indexLockKey(userId), async () => {
+    // After a wipe, legacy check-ins (which predate it by definition) stay out.
+    const memory = await prisma.userMemory.findUnique({
+      where: { userId },
+      select: { wipedAt: true },
+    })
     const [conversations, checkIns] = await Promise.all([
       prisma.reflectionSession.findMany({
         where: {
           userId,
           status: 'completed',
+          memoryForgotten: false,
           OR: [{ memoryNote: { not: null } }, { summaryText: { not: null } }],
           memoryChunks: { none: {} },
         },
@@ -204,15 +223,17 @@ export function ensureRecallIndex(userId: string): Promise<void> {
           insights: { select: { text: true, category: true } },
         },
       }),
-      prisma.voiceSession.findMany({
-        where: {
-          userId,
-          status: 'completed',
-          summaryText: { not: null },
-          memoryChunks: { none: {} },
-        },
-        select: { id: true, date: true, summaryText: true },
-      }),
+      memory?.wipedAt
+        ? Promise.resolve([])
+        : prisma.voiceSession.findMany({
+            where: {
+              userId,
+              status: 'completed',
+              summaryText: { not: null },
+              memoryChunks: { none: {} },
+            },
+            select: { id: true, date: true, summaryText: true },
+          }),
     ])
     if (conversations.length === 0 && checkIns.length === 0) return
 

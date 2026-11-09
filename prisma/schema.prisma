@@ -265,6 +265,9 @@ model ReflectionSession {
   // When this session was folded into the user's long-term UserMemory profile.
   // Null = not yet merged (used to make merges/backfill idempotent).
   memoryMergedAt DateTime?
+  // The user asked the companion to forget this conversation (or wiped their
+  // memory): never noted, merged into the profile, or indexed for recall again.
+  memoryForgotten Boolean @default(false)
 
   // Post-processing results
   summaryText String?
@@ -552,6 +555,10 @@ model UserMemory {
 
   // Set once the one-time backfill from past sessions has run
   backfilledAt DateTime?
+
+  // Set when the user wiped their memory: history from before is never
+  // re-learned (legacy check-ins aren't re-indexed, etc.)
+  wipedAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

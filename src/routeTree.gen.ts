@@ -22,6 +22,7 @@ import { Route as AppTimelineRouteImport } from './routes/_app/timeline'
 import { Route as AppReflectionsRouteImport } from './routes/_app/reflections'
 import { Route as AppProfileRouteImport } from './routes/_app/profile'
 import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
+import { Route as AppMemoryRouteImport } from './routes/_app/memory'
 import { Route as AppMemoriesRouteImport } from './routes/_app/memories'
 import { Route as AppInsightsRouteImport } from './routes/_app/insights'
 import { Route as AppConversationsRouteImport } from './routes/_app/conversations'
@@ -105,6 +106,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
 const AppOnboardingRoute = AppOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMemoryRoute = AppMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMemoriesRoute = AppMemoriesRouteImport.update({
@@ -223,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/conversations': typeof AppConversationsRouteWithChildren
   '/insights': typeof AppInsightsRouteWithChildren
   '/memories': typeof AppMemoriesRouteWithChildren
+  '/memory': typeof AppMemoryRoute
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
   '/reflections': typeof AppReflectionsRoute
@@ -255,6 +262,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AppAdminRoute
   '/conversations': typeof AppConversationsRouteWithChildren
+  '/memory': typeof AppMemoryRoute
   '/onboarding': typeof AppOnboardingRoute
   '/profile': typeof AppProfileRoute
   '/reflections': typeof AppReflectionsRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/_app/conversations': typeof AppConversationsRouteWithChildren
   '/_app/insights': typeof AppInsightsRouteWithChildren
   '/_app/memories': typeof AppMemoriesRouteWithChildren
+  '/_app/memory': typeof AppMemoryRoute
   '/_app/onboarding': typeof AppOnboardingRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/reflections': typeof AppReflectionsRoute
@@ -328,6 +337,7 @@ export interface FileRouteTypes {
     | '/conversations'
     | '/insights'
     | '/memories'
+    | '/memory'
     | '/onboarding'
     | '/profile'
     | '/reflections'
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/conversations'
+    | '/memory'
     | '/onboarding'
     | '/profile'
     | '/reflections'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '/_app/conversations'
     | '/_app/insights'
     | '/_app/memories'
+    | '/_app/memory'
     | '/_app/onboarding'
     | '/_app/profile'
     | '/_app/reflections'
@@ -526,6 +538,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof AppOnboardingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/memory': {
+      id: '/_app/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AppMemoryRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/memories': {
@@ -736,6 +755,7 @@ interface AppRouteChildren {
   AppConversationsRoute: typeof AppConversationsRouteWithChildren
   AppInsightsRoute: typeof AppInsightsRouteWithChildren
   AppMemoriesRoute: typeof AppMemoriesRouteWithChildren
+  AppMemoryRoute: typeof AppMemoryRoute
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReflectionsRoute: typeof AppReflectionsRoute
@@ -748,6 +768,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppConversationsRoute: AppConversationsRouteWithChildren,
   AppInsightsRoute: AppInsightsRouteWithChildren,
   AppMemoriesRoute: AppMemoriesRouteWithChildren,
+  AppMemoryRoute: AppMemoryRoute,
   AppOnboardingRoute: AppOnboardingRoute,
   AppProfileRoute: AppProfileRoute,
   AppReflectionsRoute: AppReflectionsRoute,

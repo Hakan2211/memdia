@@ -67,7 +67,9 @@ export async function buildReflectionContextBrief(
   // back to the aggregated fragments below until a user's memory exists (e.g.
   // while their one-time backfill is still running).
   const memory = await loadMemoryContext(userId)
-  if (memory.profile || memory.recentNotes.length > 0) {
+  if (memory.hasMemory || memory.recentNotes.length > 0) {
+    // An existing-but-empty memory (e.g. after the user wiped it) must NOT
+    // fall back to the legacy brief, which would resurface the past.
     return buildMemoryBrief(memory)
   }
 

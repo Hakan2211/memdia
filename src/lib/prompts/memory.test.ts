@@ -4,7 +4,9 @@ import {
   buildMemoryBrief,
   cleanOpeningLine,
   describeWhen,
+  parseProfile,
   parseSessionMemoryResult,
+  removeProfileItem,
   validateProfile,
 } from './memory'
 
@@ -62,6 +64,17 @@ describe('buildMemoryBrief', () => {
     ).toBeNull()
   })
 
+  it('returns null with only todos (e.g. after a wipe)', () => {
+    expect(
+      buildMemoryBrief({
+        profile: '',
+        recentNotes: [],
+        openTodos: ['Call Mom'],
+        now,
+      }),
+    ).toBeNull()
+  })
+
   it('includes profile, dated notes and todos', () => {
     const brief = buildMemoryBrief({
       profile,
@@ -102,5 +115,47 @@ describe('cleanOpeningLine', () => {
   it('rejects empty or runaway output', () => {
     expect(cleanOpeningLine('')).toBeNull()
     expect(cleanOpeningLine('x'.repeat(400))).toBeNull()
+  })
+})
+
+describe('parseProfile / removeProfileItem', () => {
+  const doc = `## About their life
+- Builds an app
+- Lives in Berlin
+  and works remotely
+
+## People
+-
+
+## Views and how they have changed
+- Thinks free will is compatible with determinism (Mar 2026)`
+
+  it('parses sections, joins continuation lines, drops placeholders', () => {
+    expect(parseProfile(doc)).toEqual([
+      {
+        heading: 'About their life',
+        items: ['Builds an app', 'Lives in Berlin and works remotely'],
+      },
+      { heading: 'People', items: [] },
+      {
+        heading: 'Views and how they have changed',
+        items: ['Thinks free will is compatible with determinism (Mar 2026)'],
+      },
+    ])
+    expect(parseProfile('')).toEqual([])
+  })
+
+  it('removes exactly one item and keeps the format', () => {
+    const next = removeProfileItem(doc, 'About their life', 'Builds an app')!
+    expect(parseProfile(next)[0].items).toEqual([
+      'Lives in Berlin and works remotely',
+    ])
+    expect(next).toContain('## People\n-')
+    expect(validateProfile(next, null)).toBeNull() // only 3 of 6 headings: not a full profile
+  })
+
+  it('returns null when the item is gone', () => {
+    expect(removeProfileItem(doc, 'People', 'Sarah')).toBeNull()
+    expect(removeProfileItem(doc, 'Nope', 'Builds an app')).toBeNull()
   })
 })

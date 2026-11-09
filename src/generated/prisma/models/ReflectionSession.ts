@@ -49,6 +49,7 @@ export type ReflectionSessionMinAggregateOutputType = {
   contextBrief: string | null
   memoryNote: string | null
   memoryMergedAt: Date | null
+  memoryForgotten: boolean | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string | null
@@ -69,6 +70,7 @@ export type ReflectionSessionMaxAggregateOutputType = {
   contextBrief: string | null
   memoryNote: string | null
   memoryMergedAt: Date | null
+  memoryForgotten: boolean | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string | null
@@ -89,6 +91,7 @@ export type ReflectionSessionCountAggregateOutputType = {
   contextBrief: number
   memoryNote: number
   memoryMergedAt: number
+  memoryForgotten: number
   summaryText: number
   imageUrl: number
   imageStatus: number
@@ -123,6 +126,7 @@ export type ReflectionSessionMinAggregateInputType = {
   contextBrief?: true
   memoryNote?: true
   memoryMergedAt?: true
+  memoryForgotten?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -143,6 +147,7 @@ export type ReflectionSessionMaxAggregateInputType = {
   contextBrief?: true
   memoryNote?: true
   memoryMergedAt?: true
+  memoryForgotten?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -163,6 +168,7 @@ export type ReflectionSessionCountAggregateInputType = {
   contextBrief?: true
   memoryNote?: true
   memoryMergedAt?: true
+  memoryForgotten?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -270,6 +276,7 @@ export type ReflectionSessionGroupByOutputType = {
   contextBrief: string | null
   memoryNote: string | null
   memoryMergedAt: Date | null
+  memoryForgotten: boolean
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string
@@ -313,6 +320,7 @@ export type ReflectionSessionWhereInput = {
   contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   memoryNote?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   memoryMergedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
+  memoryForgotten?: Prisma.BoolFilter<"ReflectionSession"> | boolean
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -341,6 +349,7 @@ export type ReflectionSessionOrderByWithRelationInput = {
   contextBrief?: Prisma.SortOrderInput | Prisma.SortOrder
   memoryNote?: Prisma.SortOrderInput | Prisma.SortOrder
   memoryMergedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  memoryForgotten?: Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -373,6 +382,7 @@ export type ReflectionSessionWhereUniqueInput = Prisma.AtLeast<{
   contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   memoryNote?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   memoryMergedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
+  memoryForgotten?: Prisma.BoolFilter<"ReflectionSession"> | boolean
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -401,6 +411,7 @@ export type ReflectionSessionOrderByWithAggregationInput = {
   contextBrief?: Prisma.SortOrderInput | Prisma.SortOrder
   memoryNote?: Prisma.SortOrderInput | Prisma.SortOrder
   memoryMergedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  memoryForgotten?: Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -429,6 +440,7 @@ export type ReflectionSessionScalarWhereWithAggregatesInput = {
   contextBrief?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   memoryNote?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   memoryMergedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReflectionSession"> | Date | string | null
+  memoryForgotten?: Prisma.BoolWithAggregatesFilter<"ReflectionSession"> | boolean
   summaryText?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringWithAggregatesFilter<"ReflectionSession"> | string
@@ -448,6 +460,7 @@ export type ReflectionSessionCreateInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -476,6 +489,7 @@ export type ReflectionSessionUncheckedCreateInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -502,6 +516,7 @@ export type ReflectionSessionUpdateInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -530,6 +545,7 @@ export type ReflectionSessionUncheckedUpdateInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -557,6 +573,7 @@ export type ReflectionSessionCreateManyInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -576,6 +593,7 @@ export type ReflectionSessionUpdateManyMutationInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -596,6 +614,7 @@ export type ReflectionSessionUncheckedUpdateManyInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -631,6 +650,7 @@ export type ReflectionSessionCountOrderByAggregateInput = {
   contextBrief?: Prisma.SortOrder
   memoryNote?: Prisma.SortOrder
   memoryMergedAt?: Prisma.SortOrder
+  memoryForgotten?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -657,6 +677,7 @@ export type ReflectionSessionMaxOrderByAggregateInput = {
   contextBrief?: Prisma.SortOrder
   memoryNote?: Prisma.SortOrder
   memoryMergedAt?: Prisma.SortOrder
+  memoryForgotten?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -677,6 +698,7 @@ export type ReflectionSessionMinOrderByAggregateInput = {
   contextBrief?: Prisma.SortOrder
   memoryNote?: Prisma.SortOrder
   memoryMergedAt?: Prisma.SortOrder
+  memoryForgotten?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -854,6 +876,7 @@ export type ReflectionSessionCreateWithoutUserInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -880,6 +903,7 @@ export type ReflectionSessionUncheckedCreateWithoutUserInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -935,6 +959,7 @@ export type ReflectionSessionScalarWhereInput = {
   contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   memoryNote?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   memoryMergedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
+  memoryForgotten?: Prisma.BoolFilter<"ReflectionSession"> | boolean
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -954,6 +979,7 @@ export type ReflectionSessionCreateWithoutTurnsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -981,6 +1007,7 @@ export type ReflectionSessionUncheckedCreateWithoutTurnsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1022,6 +1049,7 @@ export type ReflectionSessionUpdateWithoutTurnsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1049,6 +1077,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTurnsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1074,6 +1103,7 @@ export type ReflectionSessionCreateWithoutMoodInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1101,6 +1131,7 @@ export type ReflectionSessionUncheckedCreateWithoutMoodInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1142,6 +1173,7 @@ export type ReflectionSessionUpdateWithoutMoodInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1169,6 +1201,7 @@ export type ReflectionSessionUncheckedUpdateWithoutMoodInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1194,6 +1227,7 @@ export type ReflectionSessionCreateWithoutTopicsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1221,6 +1255,7 @@ export type ReflectionSessionUncheckedCreateWithoutTopicsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1262,6 +1297,7 @@ export type ReflectionSessionUpdateWithoutTopicsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1289,6 +1325,7 @@ export type ReflectionSessionUncheckedUpdateWithoutTopicsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1314,6 +1351,7 @@ export type ReflectionSessionCreateWithoutInsightsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1341,6 +1379,7 @@ export type ReflectionSessionUncheckedCreateWithoutInsightsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1382,6 +1421,7 @@ export type ReflectionSessionUpdateWithoutInsightsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1409,6 +1449,7 @@ export type ReflectionSessionUncheckedUpdateWithoutInsightsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1434,6 +1475,7 @@ export type ReflectionSessionCreateWithoutPersonMentionsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1461,6 +1503,7 @@ export type ReflectionSessionUncheckedCreateWithoutPersonMentionsInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1502,6 +1545,7 @@ export type ReflectionSessionUpdateWithoutPersonMentionsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1529,6 +1573,7 @@ export type ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1554,6 +1599,7 @@ export type ReflectionSessionCreateWithoutReferencesInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1581,6 +1627,7 @@ export type ReflectionSessionUncheckedCreateWithoutReferencesInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1622,6 +1669,7 @@ export type ReflectionSessionUpdateWithoutReferencesInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1649,6 +1697,7 @@ export type ReflectionSessionUncheckedUpdateWithoutReferencesInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1674,6 +1723,7 @@ export type ReflectionSessionCreateWithoutMemoryChunksInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1701,6 +1751,7 @@ export type ReflectionSessionUncheckedCreateWithoutMemoryChunksInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1742,6 +1793,7 @@ export type ReflectionSessionUpdateWithoutMemoryChunksInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1769,6 +1821,7 @@ export type ReflectionSessionUncheckedUpdateWithoutMemoryChunksInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1794,6 +1847,7 @@ export type ReflectionSessionCreateManyUserInput = {
   contextBrief?: string | null
   memoryNote?: string | null
   memoryMergedAt?: Date | string | null
+  memoryForgotten?: boolean
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1813,6 +1867,7 @@ export type ReflectionSessionUpdateWithoutUserInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1839,6 +1894,7 @@ export type ReflectionSessionUncheckedUpdateWithoutUserInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1865,6 +1921,7 @@ export type ReflectionSessionUncheckedUpdateManyWithoutUserInput = {
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  memoryForgotten?: Prisma.BoolFieldUpdateOperationsInput | boolean
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1961,6 +2018,7 @@ export type ReflectionSessionSelect<ExtArgs extends runtime.Types.Extensions.Int
   contextBrief?: boolean
   memoryNote?: boolean
   memoryMergedAt?: boolean
+  memoryForgotten?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1990,6 +2048,7 @@ export type ReflectionSessionSelectCreateManyAndReturn<ExtArgs extends runtime.T
   contextBrief?: boolean
   memoryNote?: boolean
   memoryMergedAt?: boolean
+  memoryForgotten?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -2011,6 +2070,7 @@ export type ReflectionSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   contextBrief?: boolean
   memoryNote?: boolean
   memoryMergedAt?: boolean
+  memoryForgotten?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -2032,6 +2092,7 @@ export type ReflectionSessionSelectScalar = {
   contextBrief?: boolean
   memoryNote?: boolean
   memoryMergedAt?: boolean
+  memoryForgotten?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -2041,7 +2102,7 @@ export type ReflectionSessionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "contextBrief" | "memoryNote" | "memoryMergedAt" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
+export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "contextBrief" | "memoryNote" | "memoryMergedAt" | "memoryForgotten" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
 export type ReflectionSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.ReflectionSession$turnsArgs<ExtArgs>
@@ -2083,6 +2144,7 @@ export type $ReflectionSessionPayload<ExtArgs extends runtime.Types.Extensions.I
     contextBrief: string | null
     memoryNote: string | null
     memoryMergedAt: Date | null
+    memoryForgotten: boolean
     summaryText: string | null
     imageUrl: string | null
     imageStatus: string
@@ -2531,6 +2593,7 @@ export interface ReflectionSessionFieldRefs {
   readonly contextBrief: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly memoryNote: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly memoryMergedAt: Prisma.FieldRef<"ReflectionSession", 'DateTime'>
+  readonly memoryForgotten: Prisma.FieldRef<"ReflectionSession", 'Boolean'>
   readonly summaryText: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageUrl: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageStatus: Prisma.FieldRef<"ReflectionSession", 'String'>

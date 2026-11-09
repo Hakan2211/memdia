@@ -60,6 +60,9 @@ function withUserLock<T>(userId: string, fn: () => Promise<T>): Promise<T> {
   return withLock(memoryLockKey(userId), fn)
 }
 
+/** Serialize work with this user's memory merges/backfill (used by memory deletion). */
+export const withMemoryLock = withUserLock
+
 // ==========================================
 // Helpers
 // ==========================================
@@ -104,6 +107,7 @@ async function backfillUnlocked(
         status: 'completed',
         summaryText: { not: null },
         memoryMergedAt: null,
+        memoryForgotten: false,
         ...(excludeSessionId ? { id: { not: excludeSessionId } } : {}),
       },
       orderBy: { date: 'asc' },
@@ -220,6 +224,7 @@ async function backfillUnlocked(
       userId,
       status: 'completed',
       memoryNote: null,
+      memoryForgotten: false,
       ...(excludeSessionId ? { id: { not: excludeSessionId } } : {}),
     },
     orderBy: { date: 'desc' },
@@ -314,6 +319,10 @@ export function updateMemoryAfterSession(
     ])
 
     if (!session) return
+    if (session.memoryForgotten) {
+      console.log(`[Memory] Session ${sessionId} was forgotten by the user`)
+      return
+    }
     if (session.memoryMergedAt) {
       console.log(`[Memory] Session ${sessionId} already merged`)
       return
@@ -388,6 +397,8 @@ export function updateMemoryAfterSession(
 // ==========================================
 
 export interface MemoryContext {
+  /** A UserMemory row exists (possibly empty, e.g. after a wipe) */
+  hasMemory: boolean
   profile: string | null
   recentNotes: Array<RecentNote>
   openTodos: Array<string>
@@ -416,6 +427,7 @@ export async function loadMemoryContext(
   ])
 
   return {
+    hasMemory: !!memory,
     profile: memory?.profile.trim() || null,
     recentNotes: notes.map((n) => ({ date: n.date, note: n.memoryNote ?? '' })),
     openTodos: todos.map((t) => t.text),
