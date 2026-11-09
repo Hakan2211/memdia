@@ -47,6 +47,8 @@ export type ReflectionSessionMinAggregateOutputType = {
   totalUserSpeakingTime: number | null
   maxDuration: number | null
   contextBrief: string | null
+  memoryNote: string | null
+  memoryMergedAt: Date | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string | null
@@ -65,6 +67,8 @@ export type ReflectionSessionMaxAggregateOutputType = {
   totalUserSpeakingTime: number | null
   maxDuration: number | null
   contextBrief: string | null
+  memoryNote: string | null
+  memoryMergedAt: Date | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string | null
@@ -83,6 +87,8 @@ export type ReflectionSessionCountAggregateOutputType = {
   totalUserSpeakingTime: number
   maxDuration: number
   contextBrief: number
+  memoryNote: number
+  memoryMergedAt: number
   summaryText: number
   imageUrl: number
   imageStatus: number
@@ -115,6 +121,8 @@ export type ReflectionSessionMinAggregateInputType = {
   totalUserSpeakingTime?: true
   maxDuration?: true
   contextBrief?: true
+  memoryNote?: true
+  memoryMergedAt?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -133,6 +141,8 @@ export type ReflectionSessionMaxAggregateInputType = {
   totalUserSpeakingTime?: true
   maxDuration?: true
   contextBrief?: true
+  memoryNote?: true
+  memoryMergedAt?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -151,6 +161,8 @@ export type ReflectionSessionCountAggregateInputType = {
   totalUserSpeakingTime?: true
   maxDuration?: true
   contextBrief?: true
+  memoryNote?: true
+  memoryMergedAt?: true
   summaryText?: true
   imageUrl?: true
   imageStatus?: true
@@ -256,6 +268,8 @@ export type ReflectionSessionGroupByOutputType = {
   totalUserSpeakingTime: number
   maxDuration: number
   contextBrief: string | null
+  memoryNote: string | null
+  memoryMergedAt: Date | null
   summaryText: string | null
   imageUrl: string | null
   imageStatus: string
@@ -297,6 +311,8 @@ export type ReflectionSessionWhereInput = {
   totalUserSpeakingTime?: Prisma.IntFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
   contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  memoryNote?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  memoryMergedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -322,6 +338,8 @@ export type ReflectionSessionOrderByWithRelationInput = {
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   contextBrief?: Prisma.SortOrderInput | Prisma.SortOrder
+  memoryNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  memoryMergedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -351,6 +369,8 @@ export type ReflectionSessionWhereUniqueInput = Prisma.AtLeast<{
   totalUserSpeakingTime?: Prisma.IntFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
   contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  memoryNote?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  memoryMergedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -376,6 +396,8 @@ export type ReflectionSessionOrderByWithAggregationInput = {
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   contextBrief?: Prisma.SortOrderInput | Prisma.SortOrder
+  memoryNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  memoryMergedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   summaryText?: Prisma.SortOrderInput | Prisma.SortOrder
   imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -402,6 +424,8 @@ export type ReflectionSessionScalarWhereWithAggregatesInput = {
   totalUserSpeakingTime?: Prisma.IntWithAggregatesFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntWithAggregatesFilter<"ReflectionSession"> | number
   contextBrief?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
+  memoryNote?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
+  memoryMergedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ReflectionSession"> | Date | string | null
   summaryText?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableWithAggregatesFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringWithAggregatesFilter<"ReflectionSession"> | string
@@ -419,6 +443,8 @@ export type ReflectionSessionCreateInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -444,6 +470,8 @@ export type ReflectionSessionUncheckedCreateInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -467,6 +495,8 @@ export type ReflectionSessionUpdateInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -492,6 +522,8 @@ export type ReflectionSessionUncheckedUpdateInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -516,6 +548,8 @@ export type ReflectionSessionCreateManyInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -533,6 +567,8 @@ export type ReflectionSessionUpdateManyMutationInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -551,6 +587,8 @@ export type ReflectionSessionUncheckedUpdateManyInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -584,6 +622,8 @@ export type ReflectionSessionCountOrderByAggregateInput = {
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   contextBrief?: Prisma.SortOrder
+  memoryNote?: Prisma.SortOrder
+  memoryMergedAt?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -608,6 +648,8 @@ export type ReflectionSessionMaxOrderByAggregateInput = {
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   contextBrief?: Prisma.SortOrder
+  memoryNote?: Prisma.SortOrder
+  memoryMergedAt?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -626,6 +668,8 @@ export type ReflectionSessionMinOrderByAggregateInput = {
   totalUserSpeakingTime?: Prisma.SortOrder
   maxDuration?: Prisma.SortOrder
   contextBrief?: Prisma.SortOrder
+  memoryNote?: Prisma.SortOrder
+  memoryMergedAt?: Prisma.SortOrder
   summaryText?: Prisma.SortOrder
   imageUrl?: Prisma.SortOrder
   imageStatus?: Prisma.SortOrder
@@ -780,6 +824,8 @@ export type ReflectionSessionCreateWithoutUserInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -803,6 +849,8 @@ export type ReflectionSessionUncheckedCreateWithoutUserInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -855,6 +903,8 @@ export type ReflectionSessionScalarWhereInput = {
   totalUserSpeakingTime?: Prisma.IntFilter<"ReflectionSession"> | number
   maxDuration?: Prisma.IntFilter<"ReflectionSession"> | number
   contextBrief?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  memoryNote?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
+  memoryMergedAt?: Prisma.DateTimeNullableFilter<"ReflectionSession"> | Date | string | null
   summaryText?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageUrl?: Prisma.StringNullableFilter<"ReflectionSession"> | string | null
   imageStatus?: Prisma.StringFilter<"ReflectionSession"> | string
@@ -872,6 +922,8 @@ export type ReflectionSessionCreateWithoutTurnsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -896,6 +948,8 @@ export type ReflectionSessionUncheckedCreateWithoutTurnsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -934,6 +988,8 @@ export type ReflectionSessionUpdateWithoutTurnsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -958,6 +1014,8 @@ export type ReflectionSessionUncheckedUpdateWithoutTurnsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -980,6 +1038,8 @@ export type ReflectionSessionCreateWithoutMoodInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1004,6 +1064,8 @@ export type ReflectionSessionUncheckedCreateWithoutMoodInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1042,6 +1104,8 @@ export type ReflectionSessionUpdateWithoutMoodInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1066,6 +1130,8 @@ export type ReflectionSessionUncheckedUpdateWithoutMoodInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1088,6 +1154,8 @@ export type ReflectionSessionCreateWithoutTopicsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1112,6 +1180,8 @@ export type ReflectionSessionUncheckedCreateWithoutTopicsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1150,6 +1220,8 @@ export type ReflectionSessionUpdateWithoutTopicsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1174,6 +1246,8 @@ export type ReflectionSessionUncheckedUpdateWithoutTopicsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1196,6 +1270,8 @@ export type ReflectionSessionCreateWithoutInsightsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1220,6 +1296,8 @@ export type ReflectionSessionUncheckedCreateWithoutInsightsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1258,6 +1336,8 @@ export type ReflectionSessionUpdateWithoutInsightsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1282,6 +1362,8 @@ export type ReflectionSessionUncheckedUpdateWithoutInsightsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1304,6 +1386,8 @@ export type ReflectionSessionCreateWithoutPersonMentionsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1328,6 +1412,8 @@ export type ReflectionSessionUncheckedCreateWithoutPersonMentionsInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1366,6 +1452,8 @@ export type ReflectionSessionUpdateWithoutPersonMentionsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1390,6 +1478,8 @@ export type ReflectionSessionUncheckedUpdateWithoutPersonMentionsInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1412,6 +1502,8 @@ export type ReflectionSessionCreateWithoutReferencesInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1436,6 +1528,8 @@ export type ReflectionSessionUncheckedCreateWithoutReferencesInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1474,6 +1568,8 @@ export type ReflectionSessionUpdateWithoutReferencesInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1498,6 +1594,8 @@ export type ReflectionSessionUncheckedUpdateWithoutReferencesInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1520,6 +1618,8 @@ export type ReflectionSessionCreateManyUserInput = {
   totalUserSpeakingTime?: number
   maxDuration?: number
   contextBrief?: string | null
+  memoryNote?: string | null
+  memoryMergedAt?: Date | string | null
   summaryText?: string | null
   imageUrl?: string | null
   imageStatus?: string
@@ -1537,6 +1637,8 @@ export type ReflectionSessionUpdateWithoutUserInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1560,6 +1662,8 @@ export type ReflectionSessionUncheckedUpdateWithoutUserInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1583,6 +1687,8 @@ export type ReflectionSessionUncheckedUpdateManyWithoutUserInput = {
   totalUserSpeakingTime?: Prisma.IntFieldUpdateOperationsInput | number
   maxDuration?: Prisma.IntFieldUpdateOperationsInput | number
   contextBrief?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  memoryMergedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   summaryText?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   imageStatus?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1668,6 +1774,8 @@ export type ReflectionSessionSelect<ExtArgs extends runtime.Types.Extensions.Int
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   contextBrief?: boolean
+  memoryNote?: boolean
+  memoryMergedAt?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1694,6 +1802,8 @@ export type ReflectionSessionSelectCreateManyAndReturn<ExtArgs extends runtime.T
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   contextBrief?: boolean
+  memoryNote?: boolean
+  memoryMergedAt?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1713,6 +1823,8 @@ export type ReflectionSessionSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   contextBrief?: boolean
+  memoryNote?: boolean
+  memoryMergedAt?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1732,6 +1844,8 @@ export type ReflectionSessionSelectScalar = {
   totalUserSpeakingTime?: boolean
   maxDuration?: boolean
   contextBrief?: boolean
+  memoryNote?: boolean
+  memoryMergedAt?: boolean
   summaryText?: boolean
   imageUrl?: boolean
   imageStatus?: boolean
@@ -1741,7 +1855,7 @@ export type ReflectionSessionSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "contextBrief" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
+export type ReflectionSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "status" | "recordingAttempt" | "totalUserSpeakingTime" | "maxDuration" | "contextBrief" | "memoryNote" | "memoryMergedAt" | "summaryText" | "imageUrl" | "imageStatus" | "pausedAt" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["reflectionSession"]>
 export type ReflectionSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   turns?: boolean | Prisma.ReflectionSession$turnsArgs<ExtArgs>
@@ -1779,6 +1893,8 @@ export type $ReflectionSessionPayload<ExtArgs extends runtime.Types.Extensions.I
     totalUserSpeakingTime: number
     maxDuration: number
     contextBrief: string | null
+    memoryNote: string | null
+    memoryMergedAt: Date | null
     summaryText: string | null
     imageUrl: string | null
     imageStatus: string
@@ -2224,6 +2340,8 @@ export interface ReflectionSessionFieldRefs {
   readonly totalUserSpeakingTime: Prisma.FieldRef<"ReflectionSession", 'Int'>
   readonly maxDuration: Prisma.FieldRef<"ReflectionSession", 'Int'>
   readonly contextBrief: Prisma.FieldRef<"ReflectionSession", 'String'>
+  readonly memoryNote: Prisma.FieldRef<"ReflectionSession", 'String'>
+  readonly memoryMergedAt: Prisma.FieldRef<"ReflectionSession", 'DateTime'>
   readonly summaryText: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageUrl: Prisma.FieldRef<"ReflectionSession", 'String'>
   readonly imageStatus: Prisma.FieldRef<"ReflectionSession", 'String'>

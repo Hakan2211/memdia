@@ -144,3 +144,8 @@ export type ReflectionReference = Prisma.ReflectionReferenceModel
  * 
  */
 export type SubscriptionEvent = Prisma.SubscriptionEventModel
+/**
+ * Model UserMemory
+ * 
+ */
+export type UserMemory = Prisma.UserMemoryModel

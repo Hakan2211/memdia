@@ -23,6 +23,11 @@ import { generateImage, generateSpeech } from './services/falai.service'
 import { generateImageScene } from './image-scene'
 import { uploadImageFromUrl } from './services/bunny.service'
 import { extractInsightsFromSession } from './extraction.internal'
+import {
+  ensureUserMemoryInBackground,
+  generateOpeningLine,
+  updateMemoryAfterSession,
+} from './memory.internal'
 import type { ChatMessage } from './services/openrouter.service'
 import type {
   AIPersonality,
@@ -66,6 +71,10 @@ export const preGenerateReflectionGreetingFn = createServerFn({
       where: { userId },
     })
     const language = (preferences?.language || 'en') as Language
+
+    // Make sure the user's past sessions have been folded into long-term
+    // memory (one-time backfill; no-op once done).
+    ensureUserMemoryInBackground(userId)
 
     console.log(
       '[PreReflectionGreeting] Checking cache for user:',
@@ -116,8 +125,17 @@ export const preGenerateReflectionGreetingFn = createServerFn({
       language,
     )
 
-    // Get a random reflection greeting in the user's language
-    const greeting = getRandomReflectionGreeting(language)
+    // Pick up where they left off when we remember them; otherwise (first
+    // conversation, or memory unavailable) a random open-ended greeting.
+    const memoryGreeting = await generateOpeningLine({
+      userId,
+      language,
+      userName: context.user.name || undefined,
+    })
+    const greeting = memoryGreeting ?? getRandomReflectionGreeting(language)
+    console.log(
+      `[PreReflectionGreeting] Using ${memoryGreeting ? 'memory-based' : 'static'} greeting`,
+    )
 
     // Generate TTS for the greeting
     let audioBase64: string | null = null
@@ -480,6 +498,12 @@ export const processReflectionFn = createServerFn({ method: 'POST' })
       .catch((error) => {
         console.error('[Process Reflection] Failed to extract insights:', error)
       })
+
+    // Update long-term memory (session note + profile merge), also in the
+    // background. Independent of extraction, so they run in parallel.
+    updateMemoryAfterSession(session.id, context.user.id).catch((error) => {
+      console.error('[Process Reflection] Failed to update memory:', error)
+    })
 
     return {
       session: updatedSession,

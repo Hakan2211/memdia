@@ -47,6 +47,9 @@ model User {
   todos  Todo[]
   people Person[]
 
+  // Long-term memory (Phase 3)
+  memory UserMemory?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -250,6 +253,14 @@ model ReflectionSession {
   // start and injected into the system prompt so the companion has continuity.
   // Null for the user's first-ever reflection (no history yet).
   contextBrief String?
+
+  // Note written FOR the companion (not shown to the user) after the session:
+  // what was explored, positions taken, what's unresolved, what to follow up.
+  // The last few are injected verbatim into the next conversation's prompt.
+  memoryNote     String?
+  // When this session was folded into the user's long-term UserMemory profile.
+  // Null = not yet merged (used to make merges/backfill idempotent).
+  memoryMergedAt DateTime?
 
   // Post-processing results
   summaryText String?
@@ -514,4 +525,31 @@ model SubscriptionEvent {
   @@index([event])
   @@index([createdAt])
   @@map("subscription_event")
+}
+
+// ==========================================
+// Long-term Memory
+// ==========================================
+
+// One living profile per user, written and maintained by the AI. Updated after
+// every conversation (and built once from history by the backfill), then
+// injected into every conversation so nothing is forgotten after a few sessions.
+model UserMemory {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // The profile document (plain text with fixed section headings)
+  profile String
+
+  // How many sessions have been folded into the profile
+  sessionCount Int @default(0)
+
+  // Set once the one-time backfill from past sessions has run
+  backfilledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_memory")
 }

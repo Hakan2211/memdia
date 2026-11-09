@@ -71,7 +71,8 @@ export const ModelName = {
   Person: 'Person',
   PersonMention: 'PersonMention',
   ReflectionReference: 'ReflectionReference',
-  SubscriptionEvent: 'SubscriptionEvent'
+  SubscriptionEvent: 'SubscriptionEvent',
+  UserMemory: 'UserMemory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -234,6 +235,8 @@ export const ReflectionSessionScalarFieldEnum = {
   totalUserSpeakingTime: 'totalUserSpeakingTime',
   maxDuration: 'maxDuration',
   contextBrief: 'contextBrief',
+  memoryNote: 'memoryNote',
+  memoryMergedAt: 'memoryMergedAt',
   summaryText: 'summaryText',
   imageUrl: 'imageUrl',
   imageStatus: 'imageStatus',
@@ -386,6 +389,19 @@ export const SubscriptionEventScalarFieldEnum = {
 } as const
 
 export type SubscriptionEventScalarFieldEnum = (typeof SubscriptionEventScalarFieldEnum)[keyof typeof SubscriptionEventScalarFieldEnum]
+
+
+export const UserMemoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  profile: 'profile',
+  sessionCount: 'sessionCount',
+  backfilledAt: 'backfilledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserMemoryScalarFieldEnum = (typeof UserMemoryScalarFieldEnum)[keyof typeof UserMemoryScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -17,6 +17,8 @@
  */
 
 import { prisma } from '../db'
+import { buildMemoryBrief, describeWhen } from '../lib/prompts/memory'
+import { loadMemoryContext } from './memory.internal'
 
 // How much history to fold into the brief. Kept small on purpose: recent +
 // recurring is what creates the feeling of being known; ancient one-offs just
@@ -31,30 +33,6 @@ const SUMMARY_SNIPPET_CHARS = 180
 // transient ones (e.g. gratitude) and keep open threads the user might still be
 // sitting with.
 const CARRY_FORWARD_CATEGORIES = ['goal', 'concern', 'question', 'realization']
-
-/**
- * Human-friendly relative time ("yesterday", "3 days ago") from a session date.
- * Compared at day granularity so a session late last night still reads as
- * "yesterday" rather than "1 day ago" off by hours.
- */
-function describeWhen(date: Date): string {
-  const startOfToday = new Date()
-  startOfToday.setHours(0, 0, 0, 0)
-  const startOfThen = new Date(date)
-  startOfThen.setHours(0, 0, 0, 0)
-
-  const diffDays = Math.round(
-    (startOfToday.getTime() - startOfThen.getTime()) / 86_400_000,
-  )
-
-  if (diffDays <= 0) return 'earlier today'
-  if (diffDays === 1) return 'yesterday'
-  if (diffDays < 7) return `${diffDays} days ago`
-  if (diffDays < 14) return 'last week'
-  if (diffDays < 31) return `${Math.round(diffDays / 7)} weeks ago`
-  if (diffDays < 60) return 'last month'
-  return `${Math.round(diffDays / 30)} months ago`
-}
 
 /**
  * Turn the stored -1..1 average sentiment into a soft, human label. Intentionally
@@ -85,6 +63,19 @@ function snippet(text: string): string {
 export async function buildReflectionContextBrief(
   userId: string,
 ): Promise<string | null> {
+  // Preferred: the long-term memory (profile + recent session notes). Falls
+  // back to the aggregated fragments below until a user's memory exists (e.g.
+  // while their one-time backfill is still running).
+  const memory = await loadMemoryContext(userId)
+  if (memory.profile || memory.recentNotes.length > 0) {
+    return buildMemoryBrief(memory)
+  }
+
+  return buildLegacyContextBrief(userId)
+}
+
+/** Pre-memory brief built from structured data (moods, people, todos...). */
+async function buildLegacyContextBrief(userId: string): Promise<string | null> {
   const [recentSessions, people, todos, insights] = await Promise.all([
     prisma.reflectionSession.findMany({
       where: { userId, status: 'completed' },
