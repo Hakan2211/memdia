@@ -10,8 +10,10 @@ import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 import { format } from 'date-fns'
 import { prisma } from '../db'
+import { isVoiceAvailable } from '../lib/voices'
 import { authMiddleware } from './middleware'
 import type {
+  Language,
   SessionStatus,
   TranscriptTurn,
   VoiceSession,
@@ -46,6 +48,8 @@ const updatePreferencesSchema = z.object({
   imageStyle: z.string().optional(),
   aiPersonality: z.string().optional(),
   language: z.string().optional(),
+  // Voice key from src/lib/voices.ts; null resets to the language default
+  voice: z.string().nullable().optional(),
 })
 
 // ==========================================
@@ -247,18 +251,34 @@ export const getUserPreferencesFn = createServerFn({ method: 'GET' })
       })
     }
 
-    return preferences
+    return {
+      ...preferences,
+      // Base URL of the voice preview clips (BUNNY_CDN_URL is server-only)
+      voiceSampleBaseUrl: process.env.BUNNY_CDN_URL || '',
+    }
   })
 
 export const updateUserPreferencesFn = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
   .inputValidator(updatePreferencesSchema)
   .handler(async ({ data, context }) => {
-    const updateData: Record<string, string> = {}
+    const updateData: Record<string, string | null> = {}
     if (data.timezone) updateData.timezone = data.timezone
     if (data.imageStyle) updateData.imageStyle = data.imageStyle
     if (data.aiPersonality) updateData.aiPersonality = data.aiPersonality
     if (data.language) updateData.language = data.language
+
+    // Only keep a voice that is offered for the (possibly new) language;
+    // otherwise store null so the language default is used.
+    if (data.voice !== undefined || data.language) {
+      const existing = await prisma.userPreferences.findUnique({
+        where: { userId: context.user.id },
+        select: { language: true, voice: true },
+      })
+      const language = (data.language || existing?.language || 'en') as Language
+      const voice = data.voice !== undefined ? data.voice : existing?.voice
+      updateData.voice = isVoiceAvailable(language, voice) ? voice! : null
+    }
 
     const preferences = await prisma.userPreferences.upsert({
       where: { userId: context.user.id },
@@ -269,6 +289,7 @@ export const updateUserPreferencesFn = createServerFn({ method: 'POST' })
         imageStyle: data.imageStyle || 'realistic',
         aiPersonality: data.aiPersonality || 'empathetic',
         language: data.language || 'en',
+        voice: updateData.voice ?? null,
       },
     })
 

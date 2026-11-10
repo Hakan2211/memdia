@@ -17,6 +17,7 @@ import {
 import { useSession } from '../../lib/auth-client'
 import { Button } from '../../components/ui/button'
 import { MemorySettings } from '../../components/profile/MemorySettings'
+import { VoicePicker } from '../../components/voice/VoicePicker'
 import { Input } from '../../components/ui/input'
 import { Label } from '../../components/ui/label'
 import {
@@ -127,6 +128,7 @@ function ProfilePage() {
   const [selectedPersonality, setSelectedPersonality] =
     useState<AIPersonality>('empathetic')
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('en')
+  const [selectedVoice, setSelectedVoice] = useState<string | null>(null)
   const [prefsSuccess, setPrefsSuccess] = useState(false)
 
   // Update local state when preferences load
@@ -136,6 +138,7 @@ function ProfilePage() {
       setSelectedImageStyle(preferences.imageStyle as ImageStyle)
       setSelectedPersonality(preferences.aiPersonality as AIPersonality)
       setSelectedLanguage((preferences.language as Language) || 'en')
+      setSelectedVoice(preferences.voice)
     }
   }, [preferences])
 
@@ -640,6 +643,22 @@ function ProfilePage() {
                 </div>
               </div>
 
+              {/* Companion voice (offered per language, so right below it) */}
+              <div id="voice" className="space-y-3 scroll-mt-24">
+                <div>
+                  <Label className="text-sm font-medium">Companion Voice</Label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Tap a voice to hear it. Used from your next conversation.
+                  </p>
+                </div>
+                <VoicePicker
+                  language={selectedLanguage}
+                  value={selectedVoice}
+                  onChange={setSelectedVoice}
+                  sampleBaseUrl={preferences?.voiceSampleBaseUrl ?? ''}
+                />
+              </div>
+
               {/* Save Button */}
               <div className="flex justify-end pt-4 border-t">
                 <Button
@@ -650,6 +669,7 @@ function ProfilePage() {
                         imageStyle: selectedImageStyle,
                         aiPersonality: selectedPersonality,
                         language: selectedLanguage,
+                        voice: selectedVoice,
                       },
                     })
                   }

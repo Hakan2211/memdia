@@ -31,6 +31,7 @@ export type UserPreferencesMinAggregateOutputType = {
   imageStyle: string | null
   aiPersonality: string | null
   language: string | null
+  voice: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -42,6 +43,7 @@ export type UserPreferencesMaxAggregateOutputType = {
   imageStyle: string | null
   aiPersonality: string | null
   language: string | null
+  voice: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -53,6 +55,7 @@ export type UserPreferencesCountAggregateOutputType = {
   imageStyle: number
   aiPersonality: number
   language: number
+  voice: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -66,6 +69,7 @@ export type UserPreferencesMinAggregateInputType = {
   imageStyle?: true
   aiPersonality?: true
   language?: true
+  voice?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -77,6 +81,7 @@ export type UserPreferencesMaxAggregateInputType = {
   imageStyle?: true
   aiPersonality?: true
   language?: true
+  voice?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,6 +93,7 @@ export type UserPreferencesCountAggregateInputType = {
   imageStyle?: true
   aiPersonality?: true
   language?: true
+  voice?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -172,6 +178,7 @@ export type UserPreferencesGroupByOutputType = {
   imageStyle: string
   aiPersonality: string
   language: string
+  voice: string | null
   createdAt: Date
   updatedAt: Date
   _count: UserPreferencesCountAggregateOutputType | null
@@ -204,6 +211,7 @@ export type UserPreferencesWhereInput = {
   imageStyle?: Prisma.StringFilter<"UserPreferences"> | string
   aiPersonality?: Prisma.StringFilter<"UserPreferences"> | string
   language?: Prisma.StringFilter<"UserPreferences"> | string
+  voice?: Prisma.StringNullableFilter<"UserPreferences"> | string | null
   createdAt?: Prisma.DateTimeFilter<"UserPreferences"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserPreferences"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -216,6 +224,7 @@ export type UserPreferencesOrderByWithRelationInput = {
   imageStyle?: Prisma.SortOrder
   aiPersonality?: Prisma.SortOrder
   language?: Prisma.SortOrder
+  voice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
@@ -231,6 +240,7 @@ export type UserPreferencesWhereUniqueInput = Prisma.AtLeast<{
   imageStyle?: Prisma.StringFilter<"UserPreferences"> | string
   aiPersonality?: Prisma.StringFilter<"UserPreferences"> | string
   language?: Prisma.StringFilter<"UserPreferences"> | string
+  voice?: Prisma.StringNullableFilter<"UserPreferences"> | string | null
   createdAt?: Prisma.DateTimeFilter<"UserPreferences"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserPreferences"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -243,6 +253,7 @@ export type UserPreferencesOrderByWithAggregationInput = {
   imageStyle?: Prisma.SortOrder
   aiPersonality?: Prisma.SortOrder
   language?: Prisma.SortOrder
+  voice?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.UserPreferencesCountOrderByAggregateInput
@@ -260,6 +271,7 @@ export type UserPreferencesScalarWhereWithAggregatesInput = {
   imageStyle?: Prisma.StringWithAggregatesFilter<"UserPreferences"> | string
   aiPersonality?: Prisma.StringWithAggregatesFilter<"UserPreferences"> | string
   language?: Prisma.StringWithAggregatesFilter<"UserPreferences"> | string
+  voice?: Prisma.StringNullableWithAggregatesFilter<"UserPreferences"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"UserPreferences"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"UserPreferences"> | Date | string
 }
@@ -270,6 +282,7 @@ export type UserPreferencesCreateInput = {
   imageStyle?: string
   aiPersonality?: string
   language?: string
+  voice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutPreferencesInput
@@ -282,6 +295,7 @@ export type UserPreferencesUncheckedCreateInput = {
   imageStyle?: string
   aiPersonality?: string
   language?: string
+  voice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -292,6 +306,7 @@ export type UserPreferencesUpdateInput = {
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
   aiPersonality?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutPreferencesNestedInput
@@ -304,6 +319,7 @@ export type UserPreferencesUncheckedUpdateInput = {
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
   aiPersonality?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -315,6 +331,7 @@ export type UserPreferencesCreateManyInput = {
   imageStyle?: string
   aiPersonality?: string
   language?: string
+  voice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -325,6 +342,7 @@ export type UserPreferencesUpdateManyMutationInput = {
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
   aiPersonality?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -336,6 +354,7 @@ export type UserPreferencesUncheckedUpdateManyInput = {
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
   aiPersonality?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -352,6 +371,7 @@ export type UserPreferencesCountOrderByAggregateInput = {
   imageStyle?: Prisma.SortOrder
   aiPersonality?: Prisma.SortOrder
   language?: Prisma.SortOrder
+  voice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -363,6 +383,7 @@ export type UserPreferencesMaxOrderByAggregateInput = {
   imageStyle?: Prisma.SortOrder
   aiPersonality?: Prisma.SortOrder
   language?: Prisma.SortOrder
+  voice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -374,6 +395,7 @@ export type UserPreferencesMinOrderByAggregateInput = {
   imageStyle?: Prisma.SortOrder
   aiPersonality?: Prisma.SortOrder
   language?: Prisma.SortOrder
+  voice?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -416,6 +438,7 @@ export type UserPreferencesCreateWithoutUserInput = {
   imageStyle?: string
   aiPersonality?: string
   language?: string
+  voice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -426,6 +449,7 @@ export type UserPreferencesUncheckedCreateWithoutUserInput = {
   imageStyle?: string
   aiPersonality?: string
   language?: string
+  voice?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -452,6 +476,7 @@ export type UserPreferencesUpdateWithoutUserInput = {
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
   aiPersonality?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -462,6 +487,7 @@ export type UserPreferencesUncheckedUpdateWithoutUserInput = {
   imageStyle?: Prisma.StringFieldUpdateOperationsInput | string
   aiPersonality?: Prisma.StringFieldUpdateOperationsInput | string
   language?: Prisma.StringFieldUpdateOperationsInput | string
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -475,6 +501,7 @@ export type UserPreferencesSelect<ExtArgs extends runtime.Types.Extensions.Inter
   imageStyle?: boolean
   aiPersonality?: boolean
   language?: boolean
+  voice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -487,6 +514,7 @@ export type UserPreferencesSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   imageStyle?: boolean
   aiPersonality?: boolean
   language?: boolean
+  voice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -499,6 +527,7 @@ export type UserPreferencesSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   imageStyle?: boolean
   aiPersonality?: boolean
   language?: boolean
+  voice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -511,11 +540,12 @@ export type UserPreferencesSelectScalar = {
   imageStyle?: boolean
   aiPersonality?: boolean
   language?: boolean
+  voice?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserPreferencesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "timezone" | "imageStyle" | "aiPersonality" | "language" | "createdAt" | "updatedAt", ExtArgs["result"]["userPreferences"]>
+export type UserPreferencesOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "timezone" | "imageStyle" | "aiPersonality" | "language" | "voice" | "createdAt" | "updatedAt", ExtArgs["result"]["userPreferences"]>
 export type UserPreferencesInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -538,6 +568,7 @@ export type $UserPreferencesPayload<ExtArgs extends runtime.Types.Extensions.Int
     imageStyle: string
     aiPersonality: string
     language: string
+    voice: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["userPreferences"]>
@@ -970,6 +1001,7 @@ export interface UserPreferencesFieldRefs {
   readonly imageStyle: Prisma.FieldRef<"UserPreferences", 'String'>
   readonly aiPersonality: Prisma.FieldRef<"UserPreferences", 'String'>
   readonly language: Prisma.FieldRef<"UserPreferences", 'String'>
+  readonly voice: Prisma.FieldRef<"UserPreferences", 'String'>
   readonly createdAt: Prisma.FieldRef<"UserPreferences", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"UserPreferences", 'DateTime'>
 }

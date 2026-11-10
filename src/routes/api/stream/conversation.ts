@@ -8,6 +8,7 @@ import { auth } from '../../../lib/auth'
 import { prisma } from '../../../db'
 import { streamChatCompletion } from '../../../server/services/openrouter.service'
 import { streamSpeech } from '../../../server/services/falai-streaming.service'
+import { resolveVoice } from '../../../lib/voices'
 import {
   buildReflectionContext,
   buildReflectionSystemPrompt,
@@ -108,6 +109,11 @@ export const Route = createFileRoute('/api/stream/conversation')({
         const personality = (preferences?.aiPersonality ||
           'empathetic') as AIPersonality
         const userLanguage = (preferences?.language || 'en') as Language
+        // Voice snapshotted at session start (fallback: current preference)
+        const ttsVoice = resolveVoice(
+          userLanguage,
+          activeSession.ttsVoice ?? preferences?.voice,
+        )
 
         const sessionTurns = activeSession.turns.map((t) => ({
           speaker: t.speaker as 'user' | 'ai',
@@ -256,6 +262,9 @@ export const Route = createFileRoute('/api/stream/conversation')({
                   // Sentence keeps its audio tags - v4 interprets them
                   for await (const chunk of streamSpeech(sentence, {
                     languageCode: ttsLanguageCode,
+                    voiceId: ttsVoice.elevenLabsVoice,
+                    stability: ttsVoice.stability,
+                    similarityBoost: ttsVoice.similarityBoost,
                   })) {
                     // Check for cancellation during TTS streaming
                     if (isCancelled()) {

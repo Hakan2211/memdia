@@ -31,6 +31,7 @@ export type DailyReflectionGreetingMinAggregateOutputType = {
   language: string | null
   text: string | null
   audioBase64: string | null
+  voice: string | null
   contentType: string | null
   createdAt: Date | null
 }
@@ -42,6 +43,7 @@ export type DailyReflectionGreetingMaxAggregateOutputType = {
   language: string | null
   text: string | null
   audioBase64: string | null
+  voice: string | null
   contentType: string | null
   createdAt: Date | null
 }
@@ -53,6 +55,7 @@ export type DailyReflectionGreetingCountAggregateOutputType = {
   language: number
   text: number
   audioBase64: number
+  voice: number
   contentType: number
   createdAt: number
   _all: number
@@ -66,6 +69,7 @@ export type DailyReflectionGreetingMinAggregateInputType = {
   language?: true
   text?: true
   audioBase64?: true
+  voice?: true
   contentType?: true
   createdAt?: true
 }
@@ -77,6 +81,7 @@ export type DailyReflectionGreetingMaxAggregateInputType = {
   language?: true
   text?: true
   audioBase64?: true
+  voice?: true
   contentType?: true
   createdAt?: true
 }
@@ -88,6 +93,7 @@ export type DailyReflectionGreetingCountAggregateInputType = {
   language?: true
   text?: true
   audioBase64?: true
+  voice?: true
   contentType?: true
   createdAt?: true
   _all?: true
@@ -172,6 +178,7 @@ export type DailyReflectionGreetingGroupByOutputType = {
   language: string
   text: string
   audioBase64: string | null
+  voice: string | null
   contentType: string
   createdAt: Date
   _count: DailyReflectionGreetingCountAggregateOutputType | null
@@ -204,6 +211,7 @@ export type DailyReflectionGreetingWhereInput = {
   language?: Prisma.StringFilter<"DailyReflectionGreeting"> | string
   text?: Prisma.StringFilter<"DailyReflectionGreeting"> | string
   audioBase64?: Prisma.StringNullableFilter<"DailyReflectionGreeting"> | string | null
+  voice?: Prisma.StringNullableFilter<"DailyReflectionGreeting"> | string | null
   contentType?: Prisma.StringFilter<"DailyReflectionGreeting"> | string
   createdAt?: Prisma.DateTimeFilter<"DailyReflectionGreeting"> | Date | string
 }
@@ -215,6 +223,7 @@ export type DailyReflectionGreetingOrderByWithRelationInput = {
   language?: Prisma.SortOrder
   text?: Prisma.SortOrder
   audioBase64?: Prisma.SortOrderInput | Prisma.SortOrder
+  voice?: Prisma.SortOrderInput | Prisma.SortOrder
   contentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -230,6 +239,7 @@ export type DailyReflectionGreetingWhereUniqueInput = Prisma.AtLeast<{
   language?: Prisma.StringFilter<"DailyReflectionGreeting"> | string
   text?: Prisma.StringFilter<"DailyReflectionGreeting"> | string
   audioBase64?: Prisma.StringNullableFilter<"DailyReflectionGreeting"> | string | null
+  voice?: Prisma.StringNullableFilter<"DailyReflectionGreeting"> | string | null
   contentType?: Prisma.StringFilter<"DailyReflectionGreeting"> | string
   createdAt?: Prisma.DateTimeFilter<"DailyReflectionGreeting"> | Date | string
 }, "id" | "userId_date_language">
@@ -241,6 +251,7 @@ export type DailyReflectionGreetingOrderByWithAggregationInput = {
   language?: Prisma.SortOrder
   text?: Prisma.SortOrder
   audioBase64?: Prisma.SortOrderInput | Prisma.SortOrder
+  voice?: Prisma.SortOrderInput | Prisma.SortOrder
   contentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.DailyReflectionGreetingCountOrderByAggregateInput
@@ -258,6 +269,7 @@ export type DailyReflectionGreetingScalarWhereWithAggregatesInput = {
   language?: Prisma.StringWithAggregatesFilter<"DailyReflectionGreeting"> | string
   text?: Prisma.StringWithAggregatesFilter<"DailyReflectionGreeting"> | string
   audioBase64?: Prisma.StringNullableWithAggregatesFilter<"DailyReflectionGreeting"> | string | null
+  voice?: Prisma.StringNullableWithAggregatesFilter<"DailyReflectionGreeting"> | string | null
   contentType?: Prisma.StringWithAggregatesFilter<"DailyReflectionGreeting"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DailyReflectionGreeting"> | Date | string
 }
@@ -269,6 +281,7 @@ export type DailyReflectionGreetingCreateInput = {
   language?: string
   text: string
   audioBase64?: string | null
+  voice?: string | null
   contentType?: string
   createdAt?: Date | string
 }
@@ -280,6 +293,7 @@ export type DailyReflectionGreetingUncheckedCreateInput = {
   language?: string
   text: string
   audioBase64?: string | null
+  voice?: string | null
   contentType?: string
   createdAt?: Date | string
 }
@@ -291,6 +305,7 @@ export type DailyReflectionGreetingUpdateInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   text?: Prisma.StringFieldUpdateOperationsInput | string
   audioBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -302,6 +317,7 @@ export type DailyReflectionGreetingUncheckedUpdateInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   text?: Prisma.StringFieldUpdateOperationsInput | string
   audioBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -313,6 +329,7 @@ export type DailyReflectionGreetingCreateManyInput = {
   language?: string
   text: string
   audioBase64?: string | null
+  voice?: string | null
   contentType?: string
   createdAt?: Date | string
 }
@@ -324,6 +341,7 @@ export type DailyReflectionGreetingUpdateManyMutationInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   text?: Prisma.StringFieldUpdateOperationsInput | string
   audioBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -335,6 +353,7 @@ export type DailyReflectionGreetingUncheckedUpdateManyInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   text?: Prisma.StringFieldUpdateOperationsInput | string
   audioBase64?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  voice?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   contentType?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -352,6 +371,7 @@ export type DailyReflectionGreetingCountOrderByAggregateInput = {
   language?: Prisma.SortOrder
   text?: Prisma.SortOrder
   audioBase64?: Prisma.SortOrder
+  voice?: Prisma.SortOrder
   contentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -363,6 +383,7 @@ export type DailyReflectionGreetingMaxOrderByAggregateInput = {
   language?: Prisma.SortOrder
   text?: Prisma.SortOrder
   audioBase64?: Prisma.SortOrder
+  voice?: Prisma.SortOrder
   contentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -374,6 +395,7 @@ export type DailyReflectionGreetingMinOrderByAggregateInput = {
   language?: Prisma.SortOrder
   text?: Prisma.SortOrder
   audioBase64?: Prisma.SortOrder
+  voice?: Prisma.SortOrder
   contentType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -387,6 +409,7 @@ export type DailyReflectionGreetingSelect<ExtArgs extends runtime.Types.Extensio
   language?: boolean
   text?: boolean
   audioBase64?: boolean
+  voice?: boolean
   contentType?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["dailyReflectionGreeting"]>
@@ -398,6 +421,7 @@ export type DailyReflectionGreetingSelectCreateManyAndReturn<ExtArgs extends run
   language?: boolean
   text?: boolean
   audioBase64?: boolean
+  voice?: boolean
   contentType?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["dailyReflectionGreeting"]>
@@ -409,6 +433,7 @@ export type DailyReflectionGreetingSelectUpdateManyAndReturn<ExtArgs extends run
   language?: boolean
   text?: boolean
   audioBase64?: boolean
+  voice?: boolean
   contentType?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["dailyReflectionGreeting"]>
@@ -420,11 +445,12 @@ export type DailyReflectionGreetingSelectScalar = {
   language?: boolean
   text?: boolean
   audioBase64?: boolean
+  voice?: boolean
   contentType?: boolean
   createdAt?: boolean
 }
 
-export type DailyReflectionGreetingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "language" | "text" | "audioBase64" | "contentType" | "createdAt", ExtArgs["result"]["dailyReflectionGreeting"]>
+export type DailyReflectionGreetingOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "date" | "language" | "text" | "audioBase64" | "voice" | "contentType" | "createdAt", ExtArgs["result"]["dailyReflectionGreeting"]>
 
 export type $DailyReflectionGreetingPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "DailyReflectionGreeting"
@@ -436,6 +462,7 @@ export type $DailyReflectionGreetingPayload<ExtArgs extends runtime.Types.Extens
     language: string
     text: string
     audioBase64: string | null
+    voice: string | null
     contentType: string
     createdAt: Date
   }, ExtArgs["result"]["dailyReflectionGreeting"]>
@@ -867,6 +894,7 @@ export interface DailyReflectionGreetingFieldRefs {
   readonly language: Prisma.FieldRef<"DailyReflectionGreeting", 'String'>
   readonly text: Prisma.FieldRef<"DailyReflectionGreeting", 'String'>
   readonly audioBase64: Prisma.FieldRef<"DailyReflectionGreeting", 'String'>
+  readonly voice: Prisma.FieldRef<"DailyReflectionGreeting", 'String'>
   readonly contentType: Prisma.FieldRef<"DailyReflectionGreeting", 'String'>
   readonly createdAt: Prisma.FieldRef<"DailyReflectionGreeting", 'DateTime'>
 }

@@ -17,6 +17,7 @@ import {
   formatTranscriptForSummary,
 } from '../lib/prompts/summary'
 import { toTtsLanguageCode } from '../lib/audio-tags'
+import { resolveVoice } from '../lib/voices'
 import { authMiddleware } from './middleware'
 import { chatCompletion } from './services/openrouter.service'
 import { generateImage, generateSpeech } from './services/falai.service'
@@ -72,6 +73,7 @@ export const preGenerateReflectionGreetingFn = createServerFn({
       where: { userId },
     })
     const language = (preferences?.language || 'en') as Language
+    const voice = resolveVoice(language, preferences?.voice)
 
     // Make sure the user's past sessions have been folded into long-term
     // memory (one-time backfill; no-op once done).
@@ -107,7 +109,12 @@ export const preGenerateReflectionGreetingFn = createServerFn({
       },
     })
 
-    if (existingGreeting && existingGreeting.audioBase64) {
+    // The cached audio is only reusable if it was rendered with the same voice
+    if (
+      existingGreeting &&
+      existingGreeting.audioBase64 &&
+      existingGreeting.voice === voice.key
+    ) {
       const latency = Date.now() - startTime
       console.log(
         `[PreReflectionGreeting] Cache HIT (${latency}ms) - returning cached greeting in ${language}`,
@@ -126,14 +133,21 @@ export const preGenerateReflectionGreetingFn = createServerFn({
       language,
     )
 
-    // Pick up where they left off when we remember them; otherwise (first
-    // conversation, or memory unavailable) a random open-ended greeting.
-    const memoryGreeting = await generateOpeningLine({
-      userId,
-      language,
-      userName: context.user.name || undefined,
-    })
-    const greeting = memoryGreeting ?? getRandomReflectionGreeting(language)
+    // Voice changed since the greeting was cached: keep today's text and only
+    // re-render the audio. Otherwise pick up where they left off when we
+    // remember them, or (first conversation, memory unavailable) a random
+    // open-ended greeting.
+    const memoryGreeting = existingGreeting
+      ? null
+      : await generateOpeningLine({
+          userId,
+          language,
+          userName: context.user.name || undefined,
+        })
+    const greeting =
+      existingGreeting?.text ??
+      memoryGreeting ??
+      getRandomReflectionGreeting(language)
     console.log(
       `[PreReflectionGreeting] Using ${memoryGreeting ? 'memory-based' : 'static'} greeting`,
     )
@@ -143,6 +157,9 @@ export const preGenerateReflectionGreetingFn = createServerFn({
     try {
       const ttsResult = await generateSpeech(greeting, {
         languageCode: toTtsLanguageCode(language),
+        voiceId: voice.elevenLabsVoice,
+        stability: voice.stability,
+        similarityBoost: voice.similarityBoost,
       })
 
       if (ttsResult.audioUrl && ttsResult.audioUrl.length > 0) {
@@ -169,11 +186,13 @@ export const preGenerateReflectionGreetingFn = createServerFn({
             language,
             text: greeting,
             audioBase64,
+            voice: voice.key,
             contentType: 'audio/mpeg',
           },
           update: {
             text: greeting,
             audioBase64,
+            voice: voice.key,
             contentType: 'audio/mpeg',
           },
         })

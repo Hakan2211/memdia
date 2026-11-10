@@ -8,11 +8,13 @@ import { z } from 'zod'
 import { format } from 'date-fns'
 import { prisma } from '../db'
 import { REFLECTION_CONFIG } from '../types/voice-session'
+import { resolveVoice } from '../lib/voices'
 import { authMiddleware } from './middleware'
 import { checkSubscription } from './services/subscription.service'
 import { buildReflectionContextBrief } from './reflection-context.internal'
 import { invalidateRecallCache } from './recall.internal'
 import type {
+  Language,
   ReflectionSession,
   ReflectionTurn,
   SessionStatus,
@@ -260,6 +262,17 @@ export const startReflectionFn = createServerFn({ method: 'POST' })
       return null
     })
 
+    // Snapshot the companion voice so it stays the same for the whole
+    // conversation, even if the user changes it in their profile meanwhile.
+    const preferences = await prisma.userPreferences.findUnique({
+      where: { userId: context.user.id },
+      select: { language: true, voice: true },
+    })
+    const ttsVoice = resolveVoice(
+      (preferences?.language || 'en') as Language,
+      preferences?.voice,
+    ).key
+
     // Create new reflection session
     const session = await prisma.reflectionSession.create({
       data: {
@@ -269,6 +282,7 @@ export const startReflectionFn = createServerFn({ method: 'POST' })
         maxDuration: REFLECTION_CONFIG.MAX_DURATION_SECONDS,
         recordingAttempt: 1,
         contextBrief,
+        ttsVoice,
       },
     })
 

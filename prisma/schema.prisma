@@ -190,6 +190,9 @@ model UserPreferences {
   // Supported: en, es, fr, de, it, pt, nl, ja, ru, hi
   language String @default("en")
 
+  // Companion voice key from src/lib/voices.ts (null = language default)
+  voice String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -257,6 +260,10 @@ model ReflectionSession {
   // start and injected into the system prompt so the companion has continuity.
   // Null for the user's first-ever reflection (no history yet).
   contextBrief String?
+
+  // Voice key snapshotted at session start so the voice never changes
+  // mid-conversation (src/lib/voices.ts)
+  ttsVoice String?
 
   // Note written FOR the companion (not shown to the user) after the session:
   // what was explored, positions taken, what's unresolved, what to follow up.
@@ -344,6 +351,7 @@ model DailyReflectionGreeting {
   // Greeting content
   text        String
   audioBase64 String? // Base64 encoded audio for instant playback
+  voice       String? // Voice key the audio was rendered with
   contentType String  @default("audio/mpeg")
 
   createdAt DateTime @default(now())

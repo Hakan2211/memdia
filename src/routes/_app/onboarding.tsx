@@ -7,6 +7,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import {
+  AudioLines,
   Check,
   ChevronRight,
   Clock,
@@ -17,6 +18,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { Label } from '../../components/ui/label'
+import { VoicePicker } from '../../components/voice/VoicePicker'
 import {
   Select,
   SelectContent,
@@ -90,6 +92,7 @@ export const Route = createFileRoute('/_app/onboarding')({
 type OnboardingStep =
   | 'welcome'
   | 'language'
+  | 'voice'
   | 'microphone'
   | 'timezone'
   | 'preferences'
@@ -189,6 +192,8 @@ function OnboardingPage() {
   const [selectedLanguage, setSelectedLanguage] = useState<Language>(() =>
     detectBrowserLanguage(),
   )
+  // null = the language's default voice (pre-selected in the picker)
+  const [selectedVoice, setSelectedVoice] = useState<string | null>(null)
 
   // Get existing preferences (if any)
   const { data: existingPrefs } = useQuery({
@@ -205,6 +210,7 @@ function OnboardingPage() {
       if (existingPrefs.language) {
         setSelectedLanguage(existingPrefs.language as Language)
       }
+      setSelectedVoice(existingPrefs.voice)
     }
   })
 
@@ -248,6 +254,17 @@ function OnboardingPage() {
         await updatePrefsMutation.mutateAsync({
           data: { language: selectedLanguage },
         })
+        setStep('voice')
+        break
+
+      case 'voice':
+        // null = untouched: keep any voice saved earlier (language default
+        // otherwise) instead of overwriting it
+        if (selectedVoice) {
+          await updatePrefsMutation.mutateAsync({
+            data: { voice: selectedVoice },
+          })
+        }
         setStep('microphone')
         break
 
@@ -306,6 +323,7 @@ function OnboardingPage() {
   const steps = [
     { id: 'welcome', label: 'Welcome', icon: Sparkles },
     { id: 'language', label: 'Language', icon: Languages },
+    { id: 'voice', label: 'Voice', icon: AudioLines },
     { id: 'microphone', label: 'Mic', icon: Mic },
     { id: 'timezone', label: 'Timezone', icon: Clock },
     { id: 'preferences', label: 'Preferences', icon: Palette },
@@ -341,7 +359,12 @@ function OnboardingPage() {
           </div>
 
           {/* Steps Grid */}
-          <div className="grid grid-cols-6 relative z-10">
+          <div
+            className="grid relative z-10"
+            style={{
+              gridTemplateColumns: `repeat(${stepCount}, minmax(0, 1fr))`,
+            }}
+          >
             {steps.map((s, i) => {
               const Icon = s.icon
               const isActive = i === currentStepIndex
@@ -507,6 +530,43 @@ function OnboardingPage() {
               </div>
 
               <div className="pt-6 border-t flex justify-end">
+                <Button
+                  onClick={handleNext}
+                  size="lg"
+                  className="w-full md:w-auto min-w-[150px]"
+                  disabled={updatePrefsMutation.isPending}
+                >
+                  {updatePrefsMutation.isPending ? 'Saving...' : 'Continue'}
+                  <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Voice Step */}
+          {step === 'voice' && (
+            <div className="max-w-xl mx-auto py-8">
+              <div className="text-center">
+                <div className="h-20 w-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+                  <AudioLines className="h-10 w-10 text-primary" />
+                </div>
+                <h1 className="text-2xl font-semibold mb-3">
+                  Choose your companion's voice
+                </h1>
+                <p className="text-muted-foreground mb-8">
+                  Tap a voice to hear it. You can change it anytime in your
+                  profile.
+                </p>
+              </div>
+
+              <VoicePicker
+                language={selectedLanguage}
+                value={selectedVoice}
+                onChange={setSelectedVoice}
+                sampleBaseUrl={existingPrefs?.voiceSampleBaseUrl ?? ''}
+              />
+
+              <div className="pt-6 mt-6 border-t flex justify-end">
                 <Button
                   onClick={handleNext}
                   size="lg"

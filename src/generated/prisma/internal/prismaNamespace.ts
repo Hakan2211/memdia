@@ -2271,6 +2271,7 @@ export const UserPreferencesScalarFieldEnum = {
   imageStyle: 'imageStyle',
   aiPersonality: 'aiPersonality',
   language: 'language',
+  voice: 'voice',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2311,6 +2312,7 @@ export const ReflectionSessionScalarFieldEnum = {
   totalUserSpeakingTime: 'totalUserSpeakingTime',
   maxDuration: 'maxDuration',
   contextBrief: 'contextBrief',
+  ttsVoice: 'ttsVoice',
   memoryNote: 'memoryNote',
   memoryMergedAt: 'memoryMergedAt',
   memoryForgotten: 'memoryForgotten',
@@ -2358,6 +2360,7 @@ export const DailyReflectionGreetingScalarFieldEnum = {
   language: 'language',
   text: 'text',
   audioBase64: 'audioBase64',
+  voice: 'voice',
   contentType: 'contentType',
   createdAt: 'createdAt'
 } as const
