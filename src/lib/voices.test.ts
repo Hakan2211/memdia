@@ -65,7 +65,7 @@ describe('voice catalog', () => {
     const path = getVoiceSamplePath(aria, 'de')
     expect(path).toMatch(/^voice-samples\/aria-de-[a-z0-9]+\.mp3$/)
     expect(getVoiceSamplePath(aria, 'de')).toBe(path)
-    expect(getVoiceSamplePath({ ...aria, stability: 0.5 }, 'de')).not.toBe(path)
+    expect(getVoiceSamplePath({ ...aria, stability: 0.4 }, 'de')).not.toBe(path)
     expect(getVoiceSamplePath(aria, 'en')).not.toBe(path)
   })
 
@@ -74,6 +74,12 @@ describe('voice catalog', () => {
       expect(voice.stability).toBe(0.5)
       expect(voice.similarityBoost).toBe(0.6)
     }
-    expect(MULTILINGUAL_VOICES[0].stability).toBeUndefined()
+  })
+
+  it('gives the multilingual voices stability 0.5', () => {
+    for (const voice of MULTILINGUAL_VOICES) {
+      expect(voice.stability).toBe(0.5)
+      expect(voice.similarityBoost).toBeUndefined()
+    }
   })
 })

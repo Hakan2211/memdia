@@ -43,6 +43,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     name: 'Rachel',
     gender: 'female',
     character: 'Calm & warm',
+    stability: 0.5,
   },
   {
     key: 'aria',
@@ -50,6 +51,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     name: 'Aria',
     gender: 'female',
     character: 'Bright & expressive',
+    stability: 0.5,
   },
   {
     key: 'brian',
@@ -57,6 +59,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     name: 'Brian',
     gender: 'male',
     character: 'Deep & reassuring',
+    stability: 0.5,
   },
   {
     key: 'george',
@@ -64,6 +67,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     name: 'George',
     gender: 'male',
     character: 'Warm & grounded',
+    stability: 0.5,
   },
 ]
 
