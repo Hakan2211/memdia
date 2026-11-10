@@ -436,26 +436,22 @@ export const deleteReflectionFn = createServerFn({ method: 'POST' })
       date: session.date,
     })
 
-    const isCompleted = session.status === 'completed'
-
-    // Track deleted attempt only for non-completed sessions (to prevent re-recording abuse)
-    // Completed sessions can be deleted freely but still counts as used attempt
-    if (!isCompleted) {
-      const sessionDate = getStartOfDay(session.date)
-      await prisma.deletedReflectionAttempt.upsert({
-        where: {
-          userId_date: {
-            userId: context.user.id,
-            date: sessionDate,
-          },
-        },
-        create: {
+    // Only one conversation per day: deleting it (whatever its status) still
+    // uses up that day's attempt, so the user can't delete and record again.
+    const sessionDate = getStartOfDay(session.date)
+    await prisma.deletedReflectionAttempt.upsert({
+      where: {
+        userId_date: {
           userId: context.user.id,
           date: sessionDate,
         },
-        update: {}, // No update needed, just ensure the record exists
-      })
-    }
+      },
+      create: {
+        userId: context.user.id,
+        date: sessionDate,
+      },
+      update: {}, // No update needed, just ensure the record exists
+    })
 
     // Delete from Bunny.net (audio files if any)
     try {

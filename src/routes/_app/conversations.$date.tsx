@@ -292,7 +292,8 @@ function ReflectionByDate() {
             </h3>
             <p className="text-muted-foreground mb-4">
               This will permanently delete the transcript and summary. This
-              action cannot be undone.
+              action cannot be undone, and you won&apos;t be able to start
+              another conversation that day.
             </p>
             <div className="flex gap-3 justify-end">
               <Button
