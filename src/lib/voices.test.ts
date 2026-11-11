@@ -65,7 +65,13 @@ describe('voice catalog', () => {
     const path = getVoiceSamplePath(aria, 'de')
     expect(path).toMatch(/^voice-samples\/aria-de-[a-z0-9]+\.mp3$/)
     expect(getVoiceSamplePath(aria, 'de')).toBe(path)
-    expect(getVoiceSamplePath({ ...aria, stability: 0.4 }, 'de')).not.toBe(path)
+    expect(
+      getVoiceSamplePath({ ...aria, sampleSettings: { stability: 0.4 } }, 'de'),
+    ).not.toBe(path)
+    const lena = resolveVoice('de', 'de-lena')
+    expect(getVoiceSamplePath({ ...lena, stability: 0.4 }, 'de')).not.toBe(
+      getVoiceSamplePath(lena, 'de'),
+    )
     expect(getVoiceSamplePath(aria, 'en')).not.toBe(path)
   })
 
@@ -74,6 +80,16 @@ describe('voice catalog', () => {
       expect(voice.stability).toBe(0.5)
       expect(voice.similarityBoost).toBe(0.6)
     }
+  })
+
+  it('keeps the multilingual voices on their original preview clips', () => {
+    // Paths of the clips rendered before the stability 0.5 change (on Bunny)
+    expect(getVoiceSamplePath(resolveVoice('en', 'rachel'), 'en')).toBe(
+      'voice-samples/rachel-en-cvd3bt.mp3',
+    )
+    expect(getVoiceSamplePath(resolveVoice('en', 'george'), 'en')).toBe(
+      'voice-samples/george-en-ogqa6b.mp3',
+    )
   })
 
   it('gives the multilingual voices stability 0.5', () => {

@@ -30,7 +30,19 @@ export interface VoiceOption {
    */
   stability?: number
   similarityBoost?: number
+  /**
+   * Settings the preview clip was rendered with, when they differ from the
+   * live ones above (keeps an existing clip instead of re-rendering it).
+   * Unset = the clip uses the live settings.
+   */
+  sampleSettings?: { stability?: number; similarityBoost?: number }
 }
+
+/**
+ * Clips rendered before the multilingual voices moved to stability 0.5
+ * (commit 895014b) used the shared defaults; reuse them as previews.
+ */
+const ORIGINAL_SAMPLE_SETTINGS = {}
 
 /**
  * Offered in every supported language. The first entry (Rachel) is the
@@ -44,6 +56,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     gender: 'female',
     character: 'Calm & warm',
     stability: 0.5,
+    sampleSettings: ORIGINAL_SAMPLE_SETTINGS,
   },
   {
     key: 'aria',
@@ -52,6 +65,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     gender: 'female',
     character: 'Bright & expressive',
     stability: 0.5,
+    sampleSettings: ORIGINAL_SAMPLE_SETTINGS,
   },
   {
     key: 'brian',
@@ -60,6 +74,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     gender: 'male',
     character: 'Deep & reassuring',
     stability: 0.5,
+    sampleSettings: ORIGINAL_SAMPLE_SETTINGS,
   },
   {
     key: 'george',
@@ -68,6 +83,7 @@ export const MULTILINGUAL_VOICES: Array<VoiceOption> = [
     gender: 'male',
     character: 'Warm & grounded',
     stability: 0.5,
+    sampleSettings: ORIGINAL_SAMPLE_SETTINGS,
   },
 ]
 
@@ -165,13 +181,27 @@ export function getVoiceSamplePath(
   voice: VoiceOption,
   language: Language,
 ): string {
+  const settings = getSampleSettings(voice)
   const fingerprint = [
     SAMPLE_VERSION,
     voice.elevenLabsVoice,
-    voice.stability ?? '',
-    voice.similarityBoost ?? '',
+    settings.stability ?? '',
+    settings.similarityBoost ?? '',
   ].join('|')
   return `voice-samples/${voice.key}-${language}-${shortHash(fingerprint)}.mp3`
+}
+
+/** The TTS settings a voice's preview clip is (or will be) rendered with. */
+export function getSampleSettings(voice: VoiceOption): {
+  stability?: number
+  similarityBoost?: number
+} {
+  return (
+    voice.sampleSettings ?? {
+      stability: voice.stability,
+      similarityBoost: voice.similarityBoost,
+    }
+  )
 }
 
 /** Small, stable string hash (djb2), base36. Not for security. */

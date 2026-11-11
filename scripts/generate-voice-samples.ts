@@ -16,7 +16,11 @@
 import { config } from 'dotenv'
 import { fal } from '@fal-ai/client'
 import { toTtsLanguageCode } from '../src/lib/audio-tags'
-import { getVoiceSamplePath, getVoicesForLanguage } from '../src/lib/voices'
+import {
+  getSampleSettings,
+  getVoiceSamplePath,
+  getVoicesForLanguage,
+} from '../src/lib/voices'
 import { SUPPORTED_LANGUAGES } from '../src/types/voice-session'
 import type { Language } from '../src/types/voice-session'
 import type { VoiceOption } from '../src/lib/voices'
@@ -102,6 +106,7 @@ async function main(): Promise<void> {
       while (next < jobs.length) {
         const { voice, language } = jobs[next++]
         const path = getVoiceSamplePath(voice, language)
+        const settings = getSampleSettings(voice)
         try {
           if (!force) {
             const head = await fetch(`${cdnUrl}/${path}`, { method: 'HEAD' })
@@ -114,8 +119,9 @@ async function main(): Promise<void> {
             input: {
               text: PREVIEW_LINES[language].replace('{name}', voice.name),
               voice: voice.elevenLabsVoice,
-              stability: voice.stability ?? TTS_STABILITY,
-              similarity_boost: voice.similarityBoost ?? TTS_SIMILARITY_BOOST,
+              stability: settings.stability ?? TTS_STABILITY,
+              similarity_boost:
+                settings.similarityBoost ?? TTS_SIMILARITY_BOOST,
               language_code: toTtsLanguageCode(language),
             },
           })
